@@ -1,0 +1,20 @@
+{
+	"name": "signals-migrator",
+	"image": "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm",
+	"forwardPorts": [8080],
+  "initializeCommand": "bash -c 'stat .env || cp .env.example .env'",
+  "postAttachCommand": "./.devcontainer/post-attach.sh",
+  "runArgs": [
+    "--env-file", "${localWorkspaceFolder}/.env"
+],
+"customizations": {
+	"vscode": {
+		"extensions": [
+			"Gruntfuggly.todo-tree"
+		]
+	}
+},
+"features": {
+	"ghcr.io/devcontainers/features/terraform:1": {}
+}
+}

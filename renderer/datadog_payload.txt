@@ -1,0 +1,10 @@
+{
+  "summary": "$EVENT_TITLE",
+  "body": "$EVENT_MSG",
+  "unique_key": "$ALERT_ID",
+  "level": "$ALERT_TYPE",
+  "status": "$ALERT_TRANSITION",
+  "links": [{"href": "$LINK", "text": "Datadog Monitor"}],
+  "images": [{"src": "$SNAPSHOT", "alt": "Snapshot from $EVENT_TITLE"}],
+  "tags": "$TAGS"
+}
