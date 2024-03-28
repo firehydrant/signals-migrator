@@ -7,7 +7,6 @@ require (
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.10.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/firehydrant/terraform-provider-firehydrant v0.5.0
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.20.0

@@ -62,7 +62,9 @@ func datadogAction(ctx *cli.Context) error {
 		return fmt.Errorf("unable to render HCL: %w", err)
 	}
 
-	writeHclToFile(hcl, "datadog.tf")
+	if err := writeHclToFile(hcl, "datadog.tf"); err != nil {
+		return fmt.Errorf("could not write HCL to file: %w", err)
+	}
 
 	return nil
 }

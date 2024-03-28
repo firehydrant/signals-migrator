@@ -1,8 +1,6 @@
 package renderer
 
 import (
-	_ "embed"
-
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -12,13 +10,14 @@ type terraform struct {
 	providerBlock *hclwrite.Body
 }
 
-func NewTerraform() terraform {
+func NewTerraform() (*terraform, error) {
 	t := terraform{
 		file: hclwrite.NewEmptyFile(),
 	}
-	t.Build(t.file)
-
-	return t
+	if err := t.Build(t.file); err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
 func (t *terraform) Hcl() (string, error) {

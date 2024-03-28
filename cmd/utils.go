@@ -27,7 +27,10 @@ func ConcatFlags[T any](slices [][]T) []T {
 }
 
 func writeProviders() error {
-	t := renderer.NewTerraform()
+	t, err := renderer.NewTerraform()
+	if err != nil {
+		return fmt.Errorf("initializing terraform renderer: %w", err)
+	}
 	t.Provider("datadog", "datadog/datadog", "~> 3.37.0")
 	t.Provider("firehydrant", "firehydrant/firehydrant", "~> 0.5.0")
 

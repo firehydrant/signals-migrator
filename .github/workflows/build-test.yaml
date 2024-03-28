@@ -1,0 +1,89 @@
+name: build-test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+  # Annotate checks in code.
+  pull-requests: read
+  checks: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.x
+          cache-dependency-path: |
+             ./go.sum
+             _tools/go.sum
+
+      - name: Go version
+        run: go version
+
+      - name: Binary dependencies
+        run: |
+          ./deps.sh gotest.tools/gotestsum
+          echo "$(pwd)/bin" >> $GITHUB_PATH
+
+      - name: Run tests
+        run: |
+          gotestsum \
+            --format github-actions \
+            --format-hivis \
+            -- ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.x
+          cache-dependency-path: |
+             ./go.sum
+             _tools/go.sum
+
+      - name: Go version
+        run: go version
+
+      - name: Binary dependencies
+        run: |
+          ./deps.sh github.com/golangci/golangci-lint/cmd/golangci-lint
+          echo "$(pwd)/bin" >> $GITHUB_PATH
+
+      - name: Run linters
+        run: |
+          golangci-lint run --out-format=github-actions
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.x
+          cache-dependency-path: |
+             ./go.sum
+             _tools/go.sum
+
+      - name: Go version
+        run: go version
+
+        # We don't actually use the output of this build.
+        # We just want to make sure it compiles.
+        # A separate "release" workflow will build the final binary.
+      - name: Build
+        run: go build ./...
