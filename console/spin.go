@@ -7,7 +7,9 @@ import (
 )
 
 func Spin(action func(), title string, args ...any) {
-	spinner.New().
+	if err := spinner.New().
 		Title(fmt.Sprintf(title, args...)).
-		Action(action).Run()
+		Action(action).Run(); err != nil {
+		panic(err)
+	}
 }

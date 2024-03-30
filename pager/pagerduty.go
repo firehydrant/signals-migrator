@@ -95,7 +95,7 @@ func (p *PagerDuty) ListUsers(ctx context.Context) ([]*User, error) {
 	opts := pagerduty.ListUsersOptions{}
 
 	for {
-		resp, err := p.client.ListUsers(opts)
+		resp, err := p.client.ListUsersWithContext(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
