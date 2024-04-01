@@ -2,7 +2,6 @@ package pager
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gosimple/slug"
 	"github.com/victorops/go-victorops/victorops"
@@ -13,7 +12,6 @@ type VictorOps struct {
 }
 
 func NewVictorOps(apiKey string, appId string) *VictorOps {
-	fmt.Println(apiKey, appId)
 	return &VictorOps{
 		client: victorops.NewClient(appId, apiKey, "https://api.victorops.com"),
 	}
@@ -26,12 +24,12 @@ func (v *VictorOps) Kind() string {
 func (v *VictorOps) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	members := []*User{}
 
-	vteammembers, _, err := v.client.GetTeamMembers(team.ID)
+	vmembers, _, err := v.client.GetTeamMembers(team.ID)
 	if err != nil {
 		return err
 	}
 
-	for _, member := range vteammembers.Members {
+	for _, member := range vmembers.Members {
 		members = append(members, &User{Resource: Resource{ID: member.Username}})
 	}
 
