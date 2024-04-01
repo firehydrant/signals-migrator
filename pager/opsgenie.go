@@ -106,6 +106,7 @@ func (p *Opsgenie) ListUsers(ctx context.Context) ([]*User, error) {
 		if resp.Paging.Next == "" {
 			break
 		}
+		opts.Offset += len(resp.Users)
 	}
 	return users, nil
 }
