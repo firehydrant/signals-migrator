@@ -24,6 +24,9 @@ func NewPager(kind string, apiKey string) (Pager, error) {
 	switch strings.ToLower(kind) {
 	case "pagerduty":
 		return NewPagerDuty(apiKey), nil
+	case "opsgenie":
+		return NewOpsgenie(apiKey), nil
 	}
+
 	return nil, fmt.Errorf("%w '%s'", ErrUnknownProvider, kind)
 }
