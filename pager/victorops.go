@@ -30,7 +30,7 @@ func (v *VictorOps) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	}
 
 	for _, member := range vmembers.Members {
-		members = append(members, &User{Resource: Resource{ID: member.Username}})
+		members = append(members, v.toUser(member))
 	}
 
 	team.Members = members
@@ -59,7 +59,7 @@ func (v *VictorOps) ListTeams(ctx context.Context) ([]*Team, error) {
 
 func (v *VictorOps) toTeam(team victorops.Team) *Team {
 	return &Team{
-		// PagerDuty does not expose a slug, so generate one.
+		// Victorops does not expose a slug, so generate one.
 		Slug: slug.Make(team.Name),
 		Resource: Resource{
 			ID:   team.Slug,
