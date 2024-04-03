@@ -4,11 +4,11 @@ This can be used to import resources from legacy alerting providers into Signals
 
 # Todo
 
-* Add support for getting transposer URLs (specifically for Datadog) to the team data resource or a signals ingest URL data resource
-* Deduplicate FireHydrant team definitions
-* Add support for importing escalation policies -- a default is created
-* Test coverage
-* Build + publish Docker image to simplify usage down to `docker run firehydrant/signals-migrator import`
+- Add support for getting transposer URLs (specifically for Datadog) to the team data resource or a signals ingest URL data resource
+- Deduplicate FireHydrant team definitions
+- Add support for importing escalation policies -- a default is created
+- Test coverage
+- Build + publish Docker image to simplify usage down to `docker run firehydrant/signals-migrator import`
 
 ## Usage
 
@@ -16,32 +16,35 @@ This can be used to import resources from legacy alerting providers into Signals
 
 A Datadog API key and application key with the `create_webhook` scope are required.
 
-Ensure FIREHYDRANT_API_KEY, DATADOG_API_KEY and DATADOG_APP_KEY are exported and run `go run main.go datadog`. This will generate Terraform files in output/*.tf.
+Ensure FIREHYDRANT_API_KEY, DATADOG_API_KEY and DATADOG_APP_KEY are exported and run `go run main.go datadog`. This will generate Terraform files in output/\*.tf.
 
-*They will not be valid TF until ingest URL support is added to the provider and can not be applied*
+_They will not be valid TF until ingest URL support is added to the provider and can not be applied_
 
 ## Generate Signals resources from PagerDuty
-Ensure PAGERDUTY_API_KEY and FIREHYDRANT_API_KEY are exported and run `go run main.go import`. This will generate Terraform files in output/*.tf
+
+Ensure PAGERDUTY_API_KEY and FIREHYDRANT_API_KEY are exported and run `go run main.go import`. This will generate Terraform files in output/\*.tf
 
 ### Process
-* Fetch users from provider
-* Fetch teams from provider
-* Fetch schedules for each team from provider
-* Map any users that don't exist in FH with the same email address
-* Map any teams that don't exist in FH with the same name
-* Render data resources for each user in the organization
-* Render data resources for eacn team in the organization
-* Render on_call_schedule resources for each schedule, referencing the users and teams above
+
+- Fetch users from provider
+- Fetch teams from provider
+- Fetch schedules for each team from provider
+- Map any users that don't exist in FH with the same email address
+- Map any teams that don't exist in FH with the same name
+- Render data resources for each user in the organization
+- Render data resources for eacn team in the organization
+- Render on_call_schedule resources for each schedule, referencing the users and teams above
 
 ## Debugging
+
 Debugging this is a little tricky if you end up in the bubbletea resource picker because no TTY is available. You need to run the applicationw with delve and then `start debugging` to attach VSCode to it.
 
 `dlv debug github.com/firehydrant/signals-migrator --headless --listen=0.0.0.0:2345 --log --api-version 2 -- import`
 
-
 ## Sample outputs
 
 ### Datadog
+
 ```
 provider "datadog" {
 }
@@ -63,6 +66,7 @@ resource "datadog_webhook" "team-with-no-service" {
 ```
 
 ### PagerDuty
+
 ```
 provider "firehydrant" {
 }

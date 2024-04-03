@@ -18,6 +18,12 @@ var importFlags = []cli.Flag{
 		Required: true,
 	},
 	&cli.StringFlag{
+		Name:     "provider-app-id",
+		Usage:    "Provider APP ID",
+		EnvVars:  []string{"PROVIDER_APP_ID"},
+		Required: false,
+	},
+	&cli.StringFlag{
 		Name:     "provider",
 		Usage:    "The alerting provider to generate from",
 		EnvVars:  []string{"PROVIDER"},
@@ -45,7 +51,7 @@ func importAction(ctx *cli.Context) error {
 	}
 
 	providerName := ctx.String("provider")
-	provider, err := pager.NewPager(providerName, ctx.String("provider-api-key"))
+	provider, err := pager.NewPager(providerName, ctx.String("provider-api-key"), ctx.String("provider-app-id"))
 	if err != nil {
 		return fmt.Errorf("initializing pager provider: %w", err)
 	}
