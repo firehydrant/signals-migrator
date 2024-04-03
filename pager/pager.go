@@ -26,6 +26,9 @@ func NewPager(kind string, apiKey string, appId string) (Pager, error) {
 		return NewPagerDuty(apiKey), nil
 	case "victorops":
 		return NewVictorOps(apiKey, appId), nil
+	case "opsgenie":
+		return NewOpsgenie(apiKey), nil
 	}
+
 	return nil, fmt.Errorf("%w '%s'", ErrUnknownProvider, kind)
 }

@@ -10,6 +10,7 @@ require (
 	github.com/firehydrant/terraform-provider-firehydrant v0.7.2-0.20240330021416-d142daa1ba3e
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.20.0
+	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.13.0
@@ -34,7 +35,9 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.2.1 // indirect
+	github.com/hashicorp/go-retryablehttp v0.5.1 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.7.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
@@ -50,6 +53,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/mod v0.13.0 // indirect
