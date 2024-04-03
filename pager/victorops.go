@@ -71,15 +71,13 @@ func (v *VictorOps) toTeam(team victorops.Team) *Team {
 func (v *VictorOps) ListUsers(ctx context.Context) ([]*User, error) {
 	users := []*User{}
 
-	vusers, _, err := v.client.GetAllUsers()
+	vusers, _, err := v.client.GetAllUserV2()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, userSlice := range vusers.Users {
-		for _, user := range userSlice {
-			users = append(users, v.toUser(user))
-		}
+	for _, user := range vusers.Users {
+		users = append(users, v.toUser(user))
 	}
 
 	return users, nil
