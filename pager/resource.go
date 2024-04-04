@@ -39,9 +39,8 @@ func (o *Organization) Slug() string {
 // FireHydrant Signals use to group users and their schedules, but other
 // providers may label them differently, e.g. Service Owners / User Groups.
 type Team struct {
-	Slug      string
-	Schedules []*Schedule
-	Members   []*User
+	Slug    string
+	Members []*User
 	Resource
 }
 
