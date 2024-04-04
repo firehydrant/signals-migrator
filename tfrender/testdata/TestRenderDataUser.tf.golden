@@ -1,0 +1,16 @@
+terraform {
+  required_providers {
+  }
+}
+
+data "firehydrant_user" "user0" {
+  email = "user0@example.com"
+}
+
+data "firehydrant_user" "user1" {
+  email = "user1@example.com"
+}
+
+data "firehydrant_user" "user2" {
+  email = "user2@example.com"
+}

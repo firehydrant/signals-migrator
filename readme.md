@@ -20,7 +20,7 @@ Ensure these environment variables are set:
 - `PROVIDER_API_KEY`
 - `PROVIDER_APP_ID` (optional, not all providers require this)
 
-Afterwards, run `signals-migrator import` (or `go run . import` for development version), which will generate `output/tf_imported.tf` file.
+Afterwards, run `signals-migrator import` (or `go run . import` for development version), which will generate `output/[PROVIDER]_to_fh_signals.tf` file.
 
 During the process, we will attempt to match users by email to existing users in FireHydrant. For users without a match, we will ask you to decide on whether to skip the user or manually match them to existing user.
 

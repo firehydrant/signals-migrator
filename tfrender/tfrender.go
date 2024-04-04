@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime/debug"
+	"strings"
 
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/hashicorp/hcl/v2"
@@ -17,10 +20,36 @@ type TFRender struct {
 	provider *hclwrite.Body
 	root     *hclwrite.Body
 
+	// Output file directory.
 	dir string
+	// Output file name.
+	filename string
 }
 
-func New(dir string) (*TFRender, error) {
+func fhProviderVersion() string {
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		return ">= 0.7.1"
+	}
+
+	// Recommend version which is used in the migration tool
+	for _, dep := range bi.Deps {
+		if dep.Path == "github.com/firehydrant/terraform-provider-firehydrant" {
+			versionStr := strings.Split(dep.Version, "-")[0]
+			// Version tag may be using Go-module commit hash syntax.
+			// This means the version we use is potentially unknown to Terraform provider registry.
+			// Bail out and use the latest version.
+			if versionStr != dep.Version {
+				break
+			}
+			return fmt.Sprintf("~> %s", dep.Version)
+		}
+	}
+
+	return ">= 0.7.1"
+}
+
+func New(dir string, name string) (*TFRender, error) {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, fmt.Errorf("preparing output directory: %w", err)
 	}
@@ -28,18 +57,30 @@ func New(dir string) (*TFRender, error) {
 	f := hclwrite.NewEmptyFile()
 	root := f.Body()
 	provider := root.AppendNewBlock("terraform", nil).Body().AppendNewBlock("required_providers", nil).Body()
-	// TODO: add provider information
+	provider.SetAttributeValue("firehydrant", cty.ObjectVal(map[string]cty.Value{
+		"source":  cty.StringVal("firehydrant/firehydrant"),
+		"version": cty.StringVal(fhProviderVersion()),
+	}))
 
 	return &TFRender{
 		f:        f,
 		provider: provider,
 		root:     root,
 		dir:      dir,
+		filename: name,
 	}, nil
 }
 
+func (r *TFRender) Filepath() string {
+	return filepath.Join(r.dir, r.filename)
+}
+
+func (r *TFRender) Filename() string {
+	return r.filename
+}
+
 func (r *TFRender) Write(ctx context.Context) error {
-	f, err := os.Create(r.dir + "/fh_imported.tf")
+	f, err := os.Create(r.Filepath())
 	if err != nil {
 		return fmt.Errorf("creating file: %w", err)
 	}

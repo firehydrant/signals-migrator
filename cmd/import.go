@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/pager"
@@ -67,7 +68,10 @@ func importAction(ctx *cli.Context) error {
 	}
 	console.Infof("Imported teams from %s.\n", providerName)
 
-	tfr, err := tfrender.New(ctx.String("output-dir"))
+	tfr, err := tfrender.New(
+		ctx.String("output-dir"),
+		fmt.Sprintf("%s_to_fh_signals.tf", strings.ToLower(providerName)),
+	)
 	if err != nil {
 		return fmt.Errorf("initializing Terraform render space: %w", err)
 	}
