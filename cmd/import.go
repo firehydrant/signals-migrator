@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/pager"
+	"github.com/firehydrant/signals-migrator/store"
 	"github.com/firehydrant/signals-migrator/tfrender"
 	"github.com/urfave/cli/v2"
 )
@@ -45,11 +47,6 @@ var ImportCommand = &cli.Command{
 }
 
 func importAction(ctx *cli.Context) error {
-	tfr, err := tfrender.New(ctx.String("output-dir"))
-	if err != nil {
-		return fmt.Errorf("initializing Terraform render space: %w", err)
-	}
-
 	providerName := ctx.String("provider")
 	provider, err := pager.NewPager(providerName, ctx.String("provider-api-key"), ctx.String("provider-app-id"))
 	if err != nil {
@@ -60,22 +57,24 @@ func importAction(ctx *cli.Context) error {
 		return fmt.Errorf("initializing FireHydrant client: %w", err)
 	}
 
-	users, err := importUsers(ctx.Context, tfr, provider, fh)
-	if err != nil {
+	if err := importUsers(ctx.Context, provider, fh); err != nil {
 		return fmt.Errorf("importing users: %w", err)
 	}
-	console.Infof("Imported users from %s to FireHydrant.\n", providerName)
+	console.Infof("Imported users from %s.\n", providerName)
 
-	teams, err := importTeams(ctx.Context, tfr, users, provider, fh)
-	if err != nil {
+	if err := importTeams(ctx.Context, provider, fh); err != nil {
 		return fmt.Errorf("importing teams: %w", err)
 	}
-	console.Infof("Imported %d teams from %s to FireHydrant.\n", len(teams), providerName)
+	console.Infof("Imported teams from %s.\n", providerName)
 
-	return fmt.Errorf("not implemented")
+	tfr, err := tfrender.New(ctx.String("output-dir"))
+	if err != nil {
+		return fmt.Errorf("initializing Terraform render space: %w", err)
+	}
+	return tfr.Write(ctx.Context)
 }
 
-func importTeams(ctx context.Context, tfr *tfrender.TFRender, users map[string]*pager.User, provider pager.Pager, fh *pager.FireHydrant) (map[string]*pager.Team, error) {
+func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
 	// Get all of the teams registered from Pager Provider (e.g. PagerDuty)
 	var err error
 	var providerTeams []*pager.Team
@@ -83,7 +82,7 @@ func importTeams(ctx context.Context, tfr *tfrender.TFRender, users map[string]*
 		providerTeams, err = provider.ListTeams(ctx)
 	}, "Fetching all teams from provider...")
 	if err != nil {
-		return nil, fmt.Errorf("unable to fetch teamsfrom provider: %w", err)
+		return fmt.Errorf("unable to fetch teamsfrom provider: %w", err)
 	}
 	console.Successf("Found %d teams from provider.\n", len(providerTeams))
 
@@ -93,12 +92,10 @@ func importTeams(ctx context.Context, tfr *tfrender.TFRender, users map[string]*
 		fhTeams, err = fh.ListTeams(ctx)
 	}, "Fetching all teams from FireHydrant...")
 	if err != nil {
-		return nil, fmt.Errorf("unable to match users to FireHydrant: %w", err)
+		return fmt.Errorf("unable to match users to FireHydrant: %w", err)
 	}
 	console.Successf("Found %d teams on FireHydrant.\n", len(fhTeams))
 
-	matchedTeams := map[string]*pager.Team{}
-	toCreateTeams := []*pager.Team{}
 	// Now, for every team we found in Pager provider, we prompt console for one of three choices:
 	// 1. Create a new team in FireHydrant
 	// 2. Match with an existing team in FireHydrant
@@ -107,46 +104,72 @@ func importTeams(ctx context.Context, tfr *tfrender.TFRender, users map[string]*
 		&pager.Team{Slug: "[<] Skip"},
 		&pager.Team{Slug: "[+] Create"},
 	}, fhTeams...)
-	for _, team := range providerTeams {
+	for _, extTeam := range providerTeams {
 		i, t, err := console.Selectf(options, func(u *pager.Team) string {
 			return u.String()
-		}, "For the team '%s' from provider:", team.String())
+		}, "For the team '%s' from provider:", extTeam.String())
 		if err != nil {
-			return nil, fmt.Errorf("selecting match for '%s': %w", team.String(), err)
+			return fmt.Errorf("selecting match for '%s': %w", extTeam.String(), err)
 		}
 		switch i {
 		case 0:
-			console.Warnf("[SKIPPED] '%s' will not be imported to FireHydrant.\n", team.String())
+			console.Warnf("[< SKIPPED] '%s' will not be imported to FireHydrant.\n", extTeam.String())
 			continue
 		case 1:
-			console.Successf("[ CREATE] '%s' will be created in FireHydrant.\n", team.String())
-			toCreateTeams = append(toCreateTeams, team)
+			console.Successf("[+  CREATE] '%s' will be created in FireHydrant.\n", extTeam.String())
+			if err := store.Query.InsertExtTeam(ctx, store.InsertExtTeamParams{
+				ID:       extTeam.ID,
+				Name:     extTeam.Name,
+				Slug:     extTeam.Slug,
+				FhTeamID: sql.NullString{Valid: false},
+			}); err != nil {
+				return fmt.Errorf("unable to insert team '%s' into database: %w", extTeam.String(), err)
+			}
 			continue
 		default:
-			console.Infof("[MATCHED] '%s' => '%s'.\n", team.String(), t.String())
-			matchedTeams[team.Resource.ID] = t
+			if err := store.Query.InsertExtTeam(ctx, store.InsertExtTeamParams{
+				ID:       extTeam.ID,
+				Name:     extTeam.Name,
+				Slug:     extTeam.Slug,
+				FhTeamID: sql.NullString{Valid: true, String: t.ID},
+			}); err != nil {
+				return fmt.Errorf("unable to insert team '%s' into database: %w", extTeam.String(), err)
+			} else {
+				console.Infof("[= MATCHED]\n  '%s'\n  => '%s'.\n", extTeam.String(), t.String())
+			}
 		}
-	}
-	console.Successf("Found %d teams with existing match and %d teams to be created\n", len(matchedTeams), len(toCreateTeams))
-
-	for _, team := range toCreateTeams {
-		if err := provider.PopulateTeamMembers(ctx, team); err != nil {
-			return nil, fmt.Errorf("unable to populate members of '%s': %w", team.String(), err)
-		}
-		// TODO: populate schedules
-	}
-	for _, team := range matchedTeams {
-		if err := provider.PopulateTeamMembers(ctx, team); err != nil {
-			return nil, fmt.Errorf("unable to populate members of '%s': %w", team.String(), err)
-		}
-		// TODO: populate schedules
 	}
 
-	// TODO: write to Terraform
-	return nil, nil
+	allTeams, err := store.Query.ListExtTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to list all teams: %w", err)
+	}
+	for _, extTeam := range allTeams {
+		t := &pager.Team{
+			Resource: pager.Resource{
+				ID:   extTeam.ID,
+				Name: extTeam.Name,
+			},
+			Slug: extTeam.Slug,
+		}
+		if err := provider.PopulateTeamMembers(ctx, t); err != nil {
+			return fmt.Errorf("unable to populate team members for '%s': %w", extTeam.Name, err)
+		}
+
+		for _, member := range t.Members {
+			if err := store.Query.InsertExtMembership(ctx, store.InsertExtMembershipParams{
+				TeamID: extTeam.ID,
+				UserID: member.ID,
+			}); err != nil {
+				return fmt.Errorf("unable to insert team member '%s' into database: %w", member.String(), err)
+			}
+		}
+	}
+
+	return nil
 }
 
-func importUsers(ctx context.Context, tfr *tfrender.TFRender, provider pager.Pager, fh *pager.FireHydrant) (map[string]*pager.User, error) {
+func importUsers(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
 	// Get all of the users registered from Pager Provider (e.g. PagerDuty)
 	var err error
 	var providerUsers []*pager.User
@@ -154,21 +177,30 @@ func importUsers(ctx context.Context, tfr *tfrender.TFRender, provider pager.Pag
 		providerUsers, err = provider.ListUsers(ctx)
 	}, "Fetching all users from provider...")
 	if err != nil {
-		return nil, fmt.Errorf("unable to fetch users from provider: %w", err)
+		return fmt.Errorf("unable to fetch users from provider: %w", err)
 	}
 	console.Successf("Found %d users from provider.\n", len(providerUsers))
+	for _, user := range providerUsers {
+		if err := store.Query.InsertExtUser(ctx, store.InsertExtUserParams{
+			ID:       user.ID,
+			Name:     user.Name,
+			Email:    user.Email,
+			FhUserID: sql.NullString{Valid: false},
+		}); err != nil {
+			return fmt.Errorf("unable to insert user '%s' into database: %w", user.Email, err)
+		}
+	}
 
 	// Find out which users do not already have a FireHydrant account
-	var users map[string]*pager.User
 	var unmatchedUsers []*pager.User
 	console.Spin(func() {
-		users, unmatchedUsers, err = fh.MatchUsers(ctx, providerUsers)
+		unmatchedUsers, err = fh.MatchUsers(ctx, providerUsers)
 		if err != nil {
 			return
 		}
 	}, "Matching users with existing FireHydrant users...")
 	if err != nil {
-		return nil, fmt.Errorf("unable to match users to FireHydrant: %w", err)
+		return fmt.Errorf("unable to match users to FireHydrant: %w", err)
 	}
 
 	// Prompt console to match users manually if necessary.
@@ -176,31 +208,29 @@ func importUsers(ctx context.Context, tfr *tfrender.TFRender, provider pager.Pag
 		console.Warnf("Found %d users which require manual mapping to FireHydrant.\n", len(unmatchedUsers))
 		options, err := fh.ListUsers(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("unable to list users from FireHydrant: %w", err)
+			return fmt.Errorf("unable to list users from FireHydrant: %w", err)
 		}
 		console.Warnf("Please select from %d FireHydrant users to match.\n", len(options))
 
 		// Prepend options with a choice to skip
 		options = append([]*pager.User{&pager.User{Email: "[<] Skip"}}, options...)
-		for _, user := range unmatchedUsers {
-			i, u, err := console.Selectf(options, func(u *pager.User) string {
+		for _, extUser := range unmatchedUsers {
+			i, fhUser, err := console.Selectf(options, func(u *pager.User) string {
 				return u.String()
-			}, "Select a FireHydrant user to match with '%s'", user.String())
+			}, "Select a FireHydrant user to match with '%s'", extUser.String())
 			if err != nil {
-				return nil, fmt.Errorf("selecting match for '%s': %w", user.String(), err)
+				return fmt.Errorf("selecting match for '%s': %w", extUser.String(), err)
 			}
 			if i == 0 {
-				console.Warnf("[SKIPPED] '%s' will not be imported to FireHydrant.\n", user.String())
+				console.Warnf("[< SKIPPED] '%s' will not be imported to FireHydrant.\n", extUser.String())
 				continue
 			}
-			console.Infof("[MATCHED] '%s' => '%s'.\n", user.String(), u.String())
-			users[user.Email] = u
+			if err := fh.PairUsers(ctx, fhUser.ID, extUser.ID); err != nil {
+				return fmt.Errorf("pairing '%s' with '%s': %w", extUser.String(), fhUser.String(), err)
+			} else {
+				console.Successf("[= MATCHED]\n  '%s'\n  => '%s'.\n", extUser.String(), fhUser.String())
+			}
 		}
 	}
-
-	// Render user information to TFRender.
-	if err := tfr.DataFireHydrantUsers(users); err != nil {
-		return nil, fmt.Errorf("writing users to Terraform: %w", err)
-	}
-	return users, nil
+	return nil
 }
