@@ -20,13 +20,6 @@ func tfrInit(t *testing.T) (context.Context, *tfrender.TFRender) {
 	ctx := store.WithContext(context.Background())
 	t.Cleanup(func() { store.FromContext(ctx).Close() })
 
-	ctx = store.WithTx(ctx)
-	t.Cleanup(func() {
-		if err := store.RollbackTx(ctx); err != nil {
-			t.Log(err)
-		}
-	})
-
 	tfr, err := tfrender.New(t.TempDir(), t.Name()+".tf")
 	if err != nil {
 		t.Fatal(err)

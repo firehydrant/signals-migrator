@@ -16,11 +16,6 @@ type storeCtxKey string
 
 const (
 	queryContextKey = storeCtxKey("fh-signals-migrator-store")
-	txContextKey    = storeCtxKey("fh-signals-migrator-tx")
-)
-
-var (
-	ErrNoTx = sql.ErrTxDone
 )
 
 type Connection interface {
@@ -57,37 +52,6 @@ func FromContext(ctx context.Context) *Store {
 	return ctx.Value(queryContextKey).(*Store)
 }
 
-func WithTx(ctx context.Context) context.Context {
-	s := FromContext(ctx)
-	tx, err := s.conn.Begin()
-	if err != nil {
-		panic(err)
-	}
-	return context.WithValue(ctx, txContextKey, tx)
-}
-
-func CommitTx(ctx context.Context) error {
-	txVal := ctx.Value(txContextKey)
-	if txVal == nil {
-		return ErrNoTx
-	}
-	tx := txVal.(*sql.Tx)
-	return tx.Commit()
-}
-
-func RollbackTx(ctx context.Context) error {
-	txVal := ctx.Value(txContextKey)
-	if txVal == nil {
-		return ErrNoTx
-	}
-	tx := txVal.(*sql.Tx)
-	return tx.Rollback()
-}
-
 func UseQueries(ctx context.Context) *Queries {
-	tx := ctx.Value(txContextKey)
-	if tx != nil {
-		return New(tx.(*sql.Tx))
-	}
 	return New(FromContext(ctx))
 }
