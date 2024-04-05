@@ -12,9 +12,11 @@ import (
 //go:embed schema.sql
 var schema string
 
+type storeCtxKey string
+
 const (
-	queryContextKey = "fh-signals-migrator-store"
-	txContextKey    = "fh-signals-migrator-tx"
+	queryContextKey = storeCtxKey("fh-signals-migrator-store")
+	txContextKey    = storeCtxKey("fh-signals-migrator-tx")
 )
 
 var (
