@@ -39,7 +39,6 @@ Afterwards, the tool will generate the mapping appropriately, handling de-duplic
 
 - [x] Importing users
 - [x] Importing teams and members
-- [ ] Test coverage
 - [ ] Pre-create a default escalation policy
 - [ ] Import scheduling strategy
 - [ ] Pre-create scheduling strategy
