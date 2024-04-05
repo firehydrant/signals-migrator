@@ -47,3 +47,19 @@ Afterwards, the tool will generate the mapping appropriately, handling de-duplic
 - [ ] Support for importing escalation policies
 - [ ] Auto-run `terraform apply` for users who would not manage their organization with Terraform after importing
 - [ ] Build + publish Docker image to simplify usage down to `docker run firehydrant/signals-migrator import`
+
+## Developing
+
+A devcontainer setup has been prepared to be used in VS Code. Run `direnv allow` to auto-load `.env` file.
+
+If alternative method is preferred, you will need:
+
+- Go compiler
+- Install tools in `./deps.sh`
+
+Also recommended to smooth out development outside of devcontainer:
+
+- [direnv](https://direnv.net/) for autoloading `.env` file, also automatically adds `./bin` to `$PATH`.
+- [just](https://just.systems/) for running tasks defined in `Justfile`.
+
+Most commands in `Justfile` can be run out in regular bash too.

@@ -14,11 +14,18 @@ import (
 	"github.com/fatih/color"
 )
 
-type loggedQueries struct {
-	q *sql.DB
+func NewStore() *Store {
+	f := filepath.Join(os.TempDir(), "signals-migrator.db")
+	log.Printf("using db file: %s", f)
+
+	db, err := sql.Open("sqlite", f)
+	if err != nil {
+		panic(err)
+	}
+	return &Store{conn: db}
 }
 
-func (q *loggedQueries) log(t time.Duration, queryStr string) {
+func (s *Store) log(t time.Duration, queryStr string) {
 	qInfo := strings.SplitN(queryStr, "\n", 2)
 	name := strings.TrimSpace(qInfo[0])
 	query := ""
@@ -33,49 +40,26 @@ func (q *loggedQueries) log(t time.Duration, queryStr string) {
 	)
 }
 
-func (q *loggedQueries) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+func (s *Store) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	t := time.Now()
-	defer func() { q.log(time.Since(t), query) }()
-	return q.q.ExecContext(ctx, query, args...)
+	defer func() { s.log(time.Since(t), query) }()
+	return s.conn.ExecContext(ctx, query, args...)
 }
 
-func (q *loggedQueries) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+func (s *Store) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
 	t := time.Now()
-	defer func() { q.log(time.Since(t), query) }()
-	return q.q.PrepareContext(ctx, query)
+	defer func() { s.log(time.Since(t), query) }()
+	return s.conn.PrepareContext(ctx, query)
 }
 
-func (q *loggedQueries) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+func (s *Store) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
 	t := time.Now()
-	defer func() { q.log(time.Since(t), query) }()
-	return q.q.QueryContext(ctx, query, args...)
+	defer func() { s.log(time.Since(t), query) }()
+	return s.conn.QueryContext(ctx, query, args...)
 }
 
-func (q *loggedQueries) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+func (s *Store) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
 	t := time.Now()
-	defer func() { q.log(time.Since(t), query) }()
-	return q.q.QueryRowContext(ctx, query, args...)
-}
-
-func openDB() *Queries {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	f := filepath.Join(os.TempDir(), "signals-migrator.db")
-	log.Printf("using db file %s", f)
-
-	db, err := sql.Open("sqlite", f)
-	if err != nil {
-		panic(err)
-	}
-	dbtx := &loggedQueries{q: db}
-	_, err = dbtx.ExecContext(ctx, `PRAGMA foreign_keys = true;`)
-	if err != nil {
-		panic(err)
-	}
-	_, err = dbtx.ExecContext(ctx, schema)
-	if err != nil {
-		panic(err)
-	}
-	return New(dbtx)
+	defer func() { s.log(time.Since(t), query) }()
+	return s.conn.QueryRowContext(ctx, query, args...)
 }

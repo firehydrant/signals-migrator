@@ -29,7 +29,7 @@ func NewFireHydrant(apiKey string, apiURL string) (*FireHydrant, error) {
 
 func (f *FireHydrant) ListTeams(ctx context.Context) ([]*Team, error) {
 	teams := []*Team{}
-	stored, err := store.Query.ListFhTeams(ctx)
+	stored, err := store.UseQueries(ctx).ListFhTeams(ctx)
 	if err == nil && len(stored) > 0 {
 		for _, t := range stored {
 			teams = append(teams, &Team{
@@ -59,7 +59,7 @@ func (f *FireHydrant) ListTeams(ctx context.Context) ([]*Team, error) {
 	}
 
 	for _, t := range teams {
-		if err := store.Query.InsertFhTeam(ctx, store.InsertFhTeamParams{
+		if err := store.UseQueries(ctx).InsertFhTeam(ctx, store.InsertFhTeamParams{
 			ID:   t.ID,
 			Name: t.Name,
 			Slug: t.Slug,
@@ -85,7 +85,7 @@ func (f *FireHydrant) toTeam(team firehydrant.TeamResponse) *Team {
 // the provided API key access.
 func (f *FireHydrant) ListUsers(ctx context.Context) ([]*User, error) {
 	users := []*User{}
-	stored, err := store.Query.ListFhUsers(ctx)
+	stored, err := store.UseQueries(ctx).ListFhUsers(ctx)
 	if err == nil && len(stored) > 0 {
 		for _, u := range stored {
 			users = append(users, &User{
@@ -115,7 +115,7 @@ func (f *FireHydrant) ListUsers(ctx context.Context) ([]*User, error) {
 	}
 
 	for _, u := range users {
-		if err := store.Query.InsertFhUser(ctx, store.InsertFhUserParams{
+		if err := store.UseQueries(ctx).InsertFhUser(ctx, store.InsertFhUserParams{
 			ID:    u.ID,
 			Email: u.Email,
 			Name:  u.Name,
@@ -147,7 +147,7 @@ func (f *FireHydrant) MatchUsers(ctx context.Context, users []*User) ([]*User, e
 
 	unmatchedUsers := []*User{}
 	for _, user := range users {
-		fhUser, err := store.Query.GetFhUserByEmail(ctx, user.Email)
+		fhUser, err := store.UseQueries(ctx).GetFhUserByEmail(ctx, user.Email)
 		if err == nil {
 			if err := f.PairUsers(ctx, fhUser.ID, user.ID); err != nil {
 				return nil, fmt.Errorf("pairing users: %w", err)
@@ -161,7 +161,7 @@ func (f *FireHydrant) MatchUsers(ctx context.Context, users []*User) ([]*User, e
 }
 
 func (f *FireHydrant) PairUsers(ctx context.Context, fhUserID string, extUserID string) error {
-	return store.Query.LinkExtUser(ctx, store.LinkExtUserParams{
+	return store.UseQueries(ctx).LinkExtUser(ctx, store.LinkExtUserParams{
 		FhUserID: sql.NullString{Valid: true, String: fhUserID},
 		ID:       extUserID,
 	})

@@ -47,35 +47,38 @@ var ImportCommand = &cli.Command{
 	Flags:  ConcatFlags([][]cli.Flag{importFlags, flags}),
 }
 
-func importAction(ctx *cli.Context) error {
-	providerName := ctx.String("provider")
-	provider, err := pager.NewPager(providerName, ctx.String("provider-api-key"), ctx.String("provider-app-id"))
+func importAction(cliCtx *cli.Context) error {
+	providerName := cliCtx.String("provider")
+	provider, err := pager.NewPager(providerName, cliCtx.String("provider-api-key"), cliCtx.String("provider-app-id"))
 	if err != nil {
 		return fmt.Errorf("initializing pager provider: %w", err)
 	}
-	fh, err := pager.NewFireHydrant(ctx.String("firehydrant-api-key"), ctx.String("firehydrant-api-endpoint"))
+	fh, err := pager.NewFireHydrant(cliCtx.String("firehydrant-api-key"), cliCtx.String("firehydrant-api-endpoint"))
 	if err != nil {
 		return fmt.Errorf("initializing FireHydrant client: %w", err)
 	}
 
-	if err := importUsers(ctx.Context, provider, fh); err != nil {
+	ctx := store.WithContext(cliCtx.Context)
+	defer store.FromContext(ctx).Close()
+
+	if err := importUsers(ctx, provider, fh); err != nil {
 		return fmt.Errorf("importing users: %w", err)
 	}
 	console.Infof("Imported users from %s.\n", providerName)
 
-	if err := importTeams(ctx.Context, provider, fh); err != nil {
+	if err := importTeams(ctx, provider, fh); err != nil {
 		return fmt.Errorf("importing teams: %w", err)
 	}
 	console.Infof("Imported teams from %s.\n", providerName)
 
 	tfr, err := tfrender.New(
-		ctx.String("output-dir"),
+		cliCtx.String("output-dir"),
 		fmt.Sprintf("%s_to_fh_signals.tf", strings.ToLower(providerName)),
 	)
 	if err != nil {
 		return fmt.Errorf("initializing Terraform render space: %w", err)
 	}
-	return tfr.Write(ctx.Context)
+	return tfr.Write(ctx)
 }
 
 func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
@@ -121,7 +124,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 			continue
 		case 1:
 			console.Successf("[+  CREATE] '%s' will be created in FireHydrant.\n", extTeam.String())
-			if err := store.Query.InsertExtTeam(ctx, store.InsertExtTeamParams{
+			if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
 				ID:       extTeam.ID,
 				Name:     extTeam.Name,
 				Slug:     extTeam.Slug,
@@ -131,7 +134,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 			}
 			continue
 		default:
-			if err := store.Query.InsertExtTeam(ctx, store.InsertExtTeamParams{
+			if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
 				ID:       extTeam.ID,
 				Name:     extTeam.Name,
 				Slug:     extTeam.Slug,
@@ -144,7 +147,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 		}
 	}
 
-	allTeams, err := store.Query.ListExtTeams(ctx)
+	allTeams, err := store.UseQueries(ctx).ListExtTeams(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to list all teams: %w", err)
 	}
@@ -161,7 +164,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 		}
 
 		for _, member := range t.Members {
-			if err := store.Query.InsertExtMembership(ctx, store.InsertExtMembershipParams{
+			if err := store.UseQueries(ctx).InsertExtMembership(ctx, store.InsertExtMembershipParams{
 				TeamID: extTeam.ID,
 				UserID: member.ID,
 			}); err != nil {
@@ -185,7 +188,7 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 	}
 	console.Successf("Found %d users from provider.\n", len(providerUsers))
 	for _, user := range providerUsers {
-		if err := store.Query.InsertExtUser(ctx, store.InsertExtUserParams{
+		if err := store.UseQueries(ctx).InsertExtUser(ctx, store.InsertExtUserParams{
 			ID:       user.ID,
 			Name:     user.Name,
 			Email:    user.Email,

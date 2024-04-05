@@ -102,7 +102,7 @@ func (r *TFRender) Write(ctx context.Context) error {
 }
 
 func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
-	extTeams, err := store.Query.ListExtTeams(ctx)
+	extTeams, err := store.UseQueries(ctx).ListExtTeams(ctx)
 	if err != nil {
 		return fmt.Errorf("querying teams: %w", err)
 	}
@@ -127,7 +127,7 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 			fhTeamBlocks[name].SetAttributeValue("name", cty.StringVal(name))
 		}
 
-		members, err := store.Query.ListFhMembersByExtTeamID(ctx, t.ExtTeam().ID)
+		members, err := store.UseQueries(ctx).ListFhMembersByExtTeamID(ctx, t.ExtTeam().ID)
 		if err != nil {
 			return fmt.Errorf("querying team members: %w", err)
 		}
@@ -166,7 +166,7 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 }
 
 func (r *TFRender) DataFireHydrantUsers(ctx context.Context) error {
-	users, err := store.Query.ListFhUsers(ctx)
+	users, err := store.UseQueries(ctx).ListFhUsers(ctx)
 	if err != nil {
 		return fmt.Errorf("querying users: %w", err)
 	}
