@@ -1,9 +1,11 @@
 package pager
 
+// TODO: [noted with apologies]
+//   This file existed before the pivot to using SQLite. Now that we're using
+//   SQLite, we can instead make use of store/models.go instead of this file.
+
 import (
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/gosimple/slug"
 )
@@ -37,18 +39,13 @@ func (o *Organization) Slug() string {
 // FireHydrant Signals use to group users and their schedules, but other
 // providers may label them differently, e.g. Service Owners / User Groups.
 type Team struct {
-	Slug      string
-	Schedules []*Schedule
-	Members   []*User
+	Slug    string
+	Members []*User
 	Resource
 }
 
 func (t *Team) String() string {
 	return fmt.Sprintf("%s %s (%s)", t.Resource.ID, t.Resource.Name, t.Slug)
-}
-
-func (t *Team) TFSlug() string {
-	return strings.ReplaceAll(t.Slug, "-", "_")
 }
 
 // User refers to a user within a Pager service, may also be referred
@@ -72,28 +69,4 @@ func (u *User) String() string {
 
 func (u *User) Slug() string {
 	return slug.Make(u.Email)
-}
-
-func (u *User) TFSlug() string {
-	return strings.ReplaceAll(u.Slug(), "-", "_")
-}
-
-// ScheduleStrategy refers to the strategy used to determine the scheduling
-// order of users within a team.
-type ScheduleStrategy int
-
-//go:generate stringer -type=ScheduleStrategy
-const (
-	Daily ScheduleStrategy = iota
-	Weekly
-	Fortnightly
-)
-
-// Schedule refers to collection of on-call shifts within a team. It dictates
-// the parameters on how shifts are scheduled automatically by pager provider.
-type Schedule struct {
-	Strategy    ScheduleStrategy
-	TimeZone    string
-	HandoffTime time.Time
-	HandoffDay  time.Weekday
 }
