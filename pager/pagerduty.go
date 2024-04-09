@@ -161,11 +161,6 @@ func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	return nil
 }
 
-func (p *PagerDuty) PopulateTeamSchedules(ctx context.Context, team *Team) error {
-	// TODO: implement
-	return nil
-}
-
 func (p *PagerDuty) ListTeams(ctx context.Context) ([]*Team, error) {
 	teams := []*Team{}
 	opts := pagerduty.ListTeamOptions{}

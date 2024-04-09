@@ -5,10 +5,12 @@ package store
 import (
 	"context"
 	"database/sql"
+
+	_ "modernc.org/sqlite"
 )
 
 func NewStore() *Store {
-	db, err := sql.Open("sqlite", ":memory:")
+	db, err := sql.Open("sqlite", "file::memory:?cache=shared")
 	if err != nil {
 		panic(err)
 	}

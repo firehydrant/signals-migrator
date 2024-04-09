@@ -19,7 +19,6 @@ type Pager interface {
 	LoadSchedules(ctx context.Context) error
 
 	PopulateTeamMembers(ctx context.Context, team *Team) error
-	PopulateTeamSchedules(ctx context.Context, team *Team) error
 }
 
 func NewPager(kind string, apiKey string, appId string) (Pager, error) {
