@@ -67,11 +67,9 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 }
 
 func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedule, layer pagerduty.ScheduleLayer) error {
-	desc := fmt.Sprintf("(%s)", layer.Name)
-	if schedule.Description == "" {
-		desc = schedule.Description + " " + desc
-	}
+	desc := fmt.Sprintf("%s (%s)", schedule.Description, layer.Name)
 	desc = strings.TrimSpace(desc)
+
 	s := store.InsertExtScheduleParams{
 		ID:       schedule.ID + "-" + layer.ID,
 		Name:     schedule.Name + " - " + layer.Name,
