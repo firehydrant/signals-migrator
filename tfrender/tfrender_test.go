@@ -149,7 +149,7 @@ func TestRenderOnCallScheduleResource(t *testing.T) {
 	if err := store.UseQueries(ctx).InsertExtSchedule(ctx, store.InsertExtScheduleParams{
 		ID:          "id-for-ext-schedule-0",
 		Name:        "Schedule 0",
-		Description: sql.NullString{String: "Schedule 0 description", Valid: true},
+		Description: "Schedule 0 description",
 		HandoffTime: "11:00",
 		HandoffDay:  "wednesday",
 		Strategy:    "daily",

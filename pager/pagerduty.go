@@ -2,7 +2,6 @@ package pager
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
@@ -58,43 +57,39 @@ func (p *PagerDuty) LoadSchedules(ctx context.Context) error {
 }
 
 func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Schedule) error {
+	for _, layer := range schedule.ScheduleLayers {
+		if err := p.saveLayerToDB(ctx, schedule, layer); err != nil {
+			return fmt.Errorf("saving layer to db: %w", err)
+		}
+	}
+	return nil
+}
+
+func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedule, layer pagerduty.ScheduleLayer) error {
 	s := store.InsertExtScheduleParams{
-		ID:       schedule.ID,
-		Name:     schedule.Name,
+		ID:       schedule.ID + "-" + layer.ID,
+		Name:     schedule.Name + "-" + layer.Name,
 		Timezone: schedule.TimeZone,
 
 		// Add fallback values and override them later if API provides valid information.
-		Description: sql.NullString{Valid: false},
+		Description: fmt.Sprintf("%s (%s)", schedule.Description, layer.Name),
 		HandoffTime: "11:00",
 		HandoffDay:  "wednesday",
 		Strategy:    "weekly",
 	}
-	if schedule.Description != "" {
-		s.Description.String = schedule.Description
-		s.Description.Valid = true
-	}
-	if len(schedule.ScheduleLayers) > 0 {
-		// TODO: PagerDuty schedule with N layers should create N schedules in the DB.
-		if len(schedule.ScheduleLayers) > 1 {
-			console.Warnf("Schedule '%s' has more than one layer, only the first one will be used\n", s.Name)
-		}
-		layer := schedule.ScheduleLayers[0]
 
-		// TODO: support custom strategy. For now:
-		// - any less than "weekly" is considered "daily"
-		// - any more than "weekly" is considered "weekly" anyway
-		if layer.RotationTurnLengthSeconds < 60*60*24*7 {
-			s.Strategy = "daily"
-		}
-		virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
-		if err == nil {
-			s.HandoffTime = fmt.Sprintf("%02d:%02d", virtualStart.Hour(), virtualStart.Minute())
-			s.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
-		} else {
-			console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
-		}
+	// TODO: support custom strategy. For now:
+	// - any less than "weekly" is considered "daily"
+	// - any more than "weekly" is considered "weekly" anyway
+	if layer.RotationTurnLengthSeconds < 60*60*24*7 {
+		s.Strategy = "daily"
+	}
+	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
+	if err == nil {
+		s.HandoffTime = fmt.Sprintf("%02d:%02d", virtualStart.Hour(), virtualStart.Minute())
+		s.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
 	} else {
-		console.Errorf("schedule %s has no layers, assuming default values", s.Name)
+		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
 	}
 
 	q := store.UseQueries(ctx)
@@ -117,22 +112,22 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 		}
 	}
 
-	// Root-level Users slice contains aggregate of all users in the schedule layers.
-	// If we move to creating new schedule for every layer, use the users from each layer.
-	for _, user := range schedule.Users {
+	for _, user := range layer.Users {
 		if err := q.InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
 			ScheduleID: s.ID,
-			UserID:     user.ID,
+			UserID:     user.User.ID,
 		}); err != nil {
 			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
-				console.Warnf("User %s not found for schedule %s, skipping...\n", user.ID, s.ID)
+				console.Warnf("User %s not found for schedule %s, skipping...\n", user.User.ID, s.ID)
 			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
-				console.Warnf("User %s already exists for schedule %s, skipping duplicate...\n", user.ID, s.ID)
+				console.Warnf("User %s already exists for schedule %s, skipping duplicate...\n", user.User.ID, s.ID)
 			} else {
 				return fmt.Errorf("saving schedule user: %w", err)
 			}
 		}
 	}
+
+	// TODO: add restrictions
 
 	return nil
 }

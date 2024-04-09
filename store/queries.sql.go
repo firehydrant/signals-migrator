@@ -51,13 +51,13 @@ INSERT INTO ext_schedules (id, name, description, timezone, strategy, handoff_ti
 `
 
 type InsertExtScheduleParams struct {
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	Timezone    string         `json:"timezone"`
-	Strategy    string         `json:"strategy"`
-	HandoffTime string         `json:"handoff_time"`
-	HandoffDay  string         `json:"handoff_day"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Timezone    string `json:"timezone"`
+	Strategy    string `json:"strategy"`
+	HandoffTime string `json:"handoff_time"`
+	HandoffDay  string `json:"handoff_day"`
 }
 
 func (q *Queries) InsertExtSchedule(ctx context.Context, arg InsertExtScheduleParams) error {

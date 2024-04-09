@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS ext_memberships (
 CREATE TABLE IF NOT EXISTS ext_schedules (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  description TEXT,
+  description TEXT NOT NULL,
   timezone TEXT NOT NULL,
   strategy TEXT NOT NULL,
   handoff_time TEXT NOT NULL,

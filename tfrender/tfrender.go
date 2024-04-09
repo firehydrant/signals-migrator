@@ -121,8 +121,8 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 
 			b := r.root.AppendNewBlock("resource", []string{"firehydrant_on_call_schedule", s.TFSlug()}).Body()
 			b.SetAttributeValue("name", cty.StringVal(s.Name))
-			if s.Description.Valid {
-				b.SetAttributeValue("description", cty.StringVal(s.Description.String))
+			if s.Description != "" {
+				b.SetAttributeValue("description", cty.StringVal(s.Description))
 			}
 			b.SetAttributeTraversal("team_id", hcl.Traversal{
 				hcl.TraverseRoot{Name: "resource"},
