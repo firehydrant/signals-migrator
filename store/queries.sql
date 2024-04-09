@@ -20,6 +20,9 @@ INSERT INTO ext_users (id, name, email, fh_user_id) VALUES (?, ?, ?, ?);
 SELECT ext_teams.*, fh_teams.name as fh_team_name, fh_teams.slug as fh_team_slug FROM ext_teams
   LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id;
 
+-- name: CheckExtTeamExists :one
+SELECT COUNT(*) > 0 FROM ext_teams WHERE id = ?;
+
 -- name: InsertExtTeam :exec
 INSERT INTO ext_teams (id, name, slug, fh_team_id) VALUES (?, ?, ?, ?);
 
@@ -39,3 +42,27 @@ SELECT fh_users.* FROM ext_memberships
   JOIN fh_users ON fh_users.id = ext_users.fh_user_id
   LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id
 WHERE ext_teams.id = ?;
+
+-- name: ListExtSchedules :many
+SELECT * FROM ext_schedules;
+
+-- name: InsertExtSchedule :exec
+INSERT INTO ext_schedules (id, name, description, timezone, strategy, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- name: ListFhTeamsByExtScheduleID :many
+SELECT ext_teams.*, fh_teams.name as fh_team_name, fh_teams.slug as fh_team_slug FROM ext_schedule_teams
+  JOIN ext_teams ON ext_teams.id = ext_schedule_teams.team_id
+  LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id
+WHERE ext_schedule_teams.schedule_id = ?;
+
+-- name: InsertExtScheduleTeam :exec
+INSERT INTO ext_schedule_teams (schedule_id, team_id) VALUES (?, ?);
+
+-- name: ListFhMembersByExtScheduleID :many
+SELECT fh_users.* FROM ext_schedule_members
+  JOIN ext_users ON ext_users.id = ext_schedule_members.user_id
+  JOIN fh_users ON fh_users.id = ext_users.fh_user_id
+WHERE ext_schedule_members.schedule_id = ?;
+
+-- name: InsertExtScheduleMember :exec
+INSERT INTO ext_schedule_members (schedule_id, user_id) VALUES (?, ?);

@@ -2,8 +2,13 @@ package pager
 
 import (
 	"context"
+	"fmt"
+	"strings"
+	"time"
 
 	"github.com/PagerDuty/go-pagerduty"
+	"github.com/firehydrant/signals-migrator/console"
+	"github.com/firehydrant/signals-migrator/store"
 	"github.com/gosimple/slug"
 )
 
@@ -27,6 +32,106 @@ func (p *PagerDuty) Kind() string {
 	return "pagerduty"
 }
 
+func (p *PagerDuty) LoadSchedules(ctx context.Context) error {
+	opts := pagerduty.ListSchedulesOptions{Includes: []string{"schedule_layers"}}
+	for {
+		resp, err := p.client.ListSchedulesWithContext(ctx, opts)
+		if err != nil {
+			return err
+		}
+
+		for _, schedule := range resp.Schedules {
+			if err := p.saveScheduleToDB(ctx, schedule); err != nil {
+				return fmt.Errorf("saving schedule to db: %w", err)
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset = resp.Offset
+	}
+
+	return nil
+}
+
+func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Schedule) error {
+	for _, layer := range schedule.ScheduleLayers {
+		if err := p.saveLayerToDB(ctx, schedule, layer); err != nil {
+			return fmt.Errorf("saving layer to db: %w", err)
+		}
+	}
+	return nil
+}
+
+func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedule, layer pagerduty.ScheduleLayer) error {
+	s := store.InsertExtScheduleParams{
+		ID:       schedule.ID + "-" + layer.ID,
+		Name:     schedule.Name + "-" + layer.Name,
+		Timezone: schedule.TimeZone,
+
+		// Add fallback values and override them later if API provides valid information.
+		Description: fmt.Sprintf("%s (%s)", schedule.Description, layer.Name),
+		HandoffTime: "11:00",
+		HandoffDay:  "wednesday",
+		Strategy:    "weekly",
+	}
+
+	// TODO: support custom strategy. For now:
+	// - any less than "weekly" is considered "daily"
+	// - any more than "weekly" is considered "weekly" anyway
+	if layer.RotationTurnLengthSeconds < 60*60*24*7 {
+		s.Strategy = "daily"
+	}
+	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
+	if err == nil {
+		s.HandoffTime = fmt.Sprintf("%02d:%02d", virtualStart.Hour(), virtualStart.Minute())
+		s.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
+	} else {
+		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
+	}
+
+	q := store.UseQueries(ctx)
+	if err := q.InsertExtSchedule(ctx, s); err != nil {
+		return fmt.Errorf("saving schedule: %w", err)
+	}
+
+	for _, team := range schedule.Teams {
+		if err := q.InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
+			ScheduleID: s.ID,
+			TeamID:     team.ID,
+		}); err != nil {
+			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
+				console.Warnf("Team %s not found for schedule %s, skipping...\n", team.ID, s.ID)
+			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
+				console.Warnf("Team %s already exists for schedule %s, skipping duplicate...\n", team.ID, s.ID)
+			} else {
+				return fmt.Errorf("saving schedule team: %w", err)
+			}
+		}
+	}
+
+	for _, user := range layer.Users {
+		if err := q.InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
+			ScheduleID: s.ID,
+			UserID:     user.User.ID,
+		}); err != nil {
+			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
+				console.Warnf("User %s not found for schedule %s, skipping...\n", user.User.ID, s.ID)
+			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
+				console.Warnf("User %s already exists for schedule %s, skipping duplicate...\n", user.User.ID, s.ID)
+			} else {
+				return fmt.Errorf("saving schedule user: %w", err)
+			}
+		}
+	}
+
+	// TODO: add restrictions
+
+	return nil
+}
+
 func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	members := []*User{}
 	opts := pagerduty.ListTeamMembersOptions{}
@@ -48,11 +153,6 @@ func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
 		opts.Offset = resp.Offset
 	}
 	team.Members = members
-	return nil
-}
-
-func (p *PagerDuty) PopulateTeamSchedules(ctx context.Context, team *Team) error {
-	// TODO: implement
 	return nil
 }
 

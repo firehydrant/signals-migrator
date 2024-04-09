@@ -10,6 +10,17 @@ import (
 	"database/sql"
 )
 
+const checkExtTeamExists = `-- name: CheckExtTeamExists :one
+SELECT COUNT(*) > 0 FROM ext_teams WHERE id = ?
+`
+
+func (q *Queries) CheckExtTeamExists(ctx context.Context, id string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkExtTeamExists, id)
+	var column_1 bool
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const getFhUserByEmail = `-- name: GetFhUserByEmail :one
 SELECT id, name, email FROM fh_users WHERE email = ?
 `
@@ -32,6 +43,61 @@ type InsertExtMembershipParams struct {
 
 func (q *Queries) InsertExtMembership(ctx context.Context, arg InsertExtMembershipParams) error {
 	_, err := q.db.ExecContext(ctx, insertExtMembership, arg.UserID, arg.TeamID)
+	return err
+}
+
+const insertExtSchedule = `-- name: InsertExtSchedule :exec
+INSERT INTO ext_schedules (id, name, description, timezone, strategy, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?)
+`
+
+type InsertExtScheduleParams struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Timezone    string `json:"timezone"`
+	Strategy    string `json:"strategy"`
+	HandoffTime string `json:"handoff_time"`
+	HandoffDay  string `json:"handoff_day"`
+}
+
+func (q *Queries) InsertExtSchedule(ctx context.Context, arg InsertExtScheduleParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtSchedule,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.Timezone,
+		arg.Strategy,
+		arg.HandoffTime,
+		arg.HandoffDay,
+	)
+	return err
+}
+
+const insertExtScheduleMember = `-- name: InsertExtScheduleMember :exec
+INSERT INTO ext_schedule_members (schedule_id, user_id) VALUES (?, ?)
+`
+
+type InsertExtScheduleMemberParams struct {
+	ScheduleID string `json:"schedule_id"`
+	UserID     string `json:"user_id"`
+}
+
+func (q *Queries) InsertExtScheduleMember(ctx context.Context, arg InsertExtScheduleMemberParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtScheduleMember, arg.ScheduleID, arg.UserID)
+	return err
+}
+
+const insertExtScheduleTeam = `-- name: InsertExtScheduleTeam :exec
+INSERT INTO ext_schedule_teams (schedule_id, team_id) VALUES (?, ?)
+`
+
+type InsertExtScheduleTeamParams struct {
+	ScheduleID string `json:"schedule_id"`
+	TeamID     string `json:"team_id"`
+}
+
+func (q *Queries) InsertExtScheduleTeam(ctx context.Context, arg InsertExtScheduleTeamParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtScheduleTeam, arg.ScheduleID, arg.TeamID)
 	return err
 }
 
@@ -135,6 +201,41 @@ func (q *Queries) LinkExtUser(ctx context.Context, arg LinkExtUserParams) error 
 	return err
 }
 
+const listExtSchedules = `-- name: ListExtSchedules :many
+SELECT id, name, description, timezone, strategy, handoff_time, handoff_day FROM ext_schedules
+`
+
+func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
+	rows, err := q.db.QueryContext(ctx, listExtSchedules)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtSchedule
+	for rows.Next() {
+		var i ExtSchedule
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Timezone,
+			&i.Strategy,
+			&i.HandoffTime,
+			&i.HandoffDay,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listExtTeams = `-- name: ListExtTeams :many
 SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, fh_teams.name as fh_team_name, fh_teams.slug as fh_team_slug FROM ext_teams
   LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id
@@ -166,6 +267,36 @@ func (q *Queries) ListExtTeams(ctx context.Context) ([]ListExtTeamsRow, error) {
 			&i.FhTeamName,
 			&i.FhTeamSlug,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFhMembersByExtScheduleID = `-- name: ListFhMembersByExtScheduleID :many
+SELECT fh_users.id, fh_users.name, fh_users.email FROM ext_schedule_members
+  JOIN ext_users ON ext_users.id = ext_schedule_members.user_id
+  JOIN fh_users ON fh_users.id = ext_users.fh_user_id
+WHERE ext_schedule_members.schedule_id = ?
+`
+
+func (q *Queries) ListFhMembersByExtScheduleID(ctx context.Context, scheduleID string) ([]FhUser, error) {
+	rows, err := q.db.QueryContext(ctx, listFhMembersByExtScheduleID, scheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FhUser
+	for rows.Next() {
+		var i FhUser
+		if err := rows.Scan(&i.ID, &i.Name, &i.Email); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -225,6 +356,52 @@ func (q *Queries) ListFhTeams(ctx context.Context) ([]FhTeam, error) {
 	for rows.Next() {
 		var i FhTeam
 		if err := rows.Scan(&i.ID, &i.Name, &i.Slug); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFhTeamsByExtScheduleID = `-- name: ListFhTeamsByExtScheduleID :many
+SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, fh_teams.name as fh_team_name, fh_teams.slug as fh_team_slug FROM ext_schedule_teams
+  JOIN ext_teams ON ext_teams.id = ext_schedule_teams.team_id
+  LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id
+WHERE ext_schedule_teams.schedule_id = ?
+`
+
+type ListFhTeamsByExtScheduleIDRow struct {
+	ID         string         `json:"id"`
+	Name       string         `json:"name"`
+	Slug       string         `json:"slug"`
+	FhTeamID   sql.NullString `json:"fh_team_id"`
+	FhTeamName sql.NullString `json:"fh_team_name"`
+	FhTeamSlug sql.NullString `json:"fh_team_slug"`
+}
+
+func (q *Queries) ListFhTeamsByExtScheduleID(ctx context.Context, scheduleID string) ([]ListFhTeamsByExtScheduleIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listFhTeamsByExtScheduleID, scheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListFhTeamsByExtScheduleIDRow
+	for rows.Next() {
+		var i ListFhTeamsByExtScheduleIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.FhTeamID,
+			&i.FhTeamName,
+			&i.FhTeamSlug,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

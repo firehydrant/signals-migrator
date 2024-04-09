@@ -3,6 +3,7 @@ package pager
 import (
 	"context"
 
+	"github.com/firehydrant/signals-migrator/console"
 	"github.com/gosimple/slug"
 	"github.com/victorops/go-victorops/victorops"
 )
@@ -21,6 +22,12 @@ func (v *VictorOps) Kind() string {
 	return "victorops"
 }
 
+func (v *VictorOps) LoadSchedules(ctx context.Context) error {
+	// TODO: implement
+	console.Warnf("victorops.LoadSchedules is not currently supported.")
+	return nil
+}
+
 func (v *VictorOps) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	members := []*User{}
 
@@ -34,11 +41,6 @@ func (v *VictorOps) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	}
 
 	team.Members = members
-	return nil
-}
-
-func (v *VictorOps) PopulateTeamSchedules(ctx context.Context, team *Team) error {
-	// TODO: implement
 	return nil
 }
 

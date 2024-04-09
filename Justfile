@@ -20,5 +20,5 @@ mod:
 dependencies *args='':
   ./deps.sh "$@"
 
-generate: dependencies
+generate:
   go generate ./...

@@ -1,0 +1,330 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "users": [
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/eeb09aa148a8931e622d2e46c3e1ed49.png?d=mm&r=PG",
+      "billed": true,
+      "color": "orange-red",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "POBZ8LY",
+          "self": "https://api.pagerduty.com/users/P5A1XH2/contact_methods/POBZ8LY",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "mika+eng@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/P5A1XH2",
+      "id": "P5A1XH2",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Mika",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PCE9L8X",
+          "self": "https://api.pagerduty.com/users/P5A1XH2/notification_rules/PCE9L8X",
+          "summary": "0 minutes: channel POBZ8LY",
+          "type": "assignment_notification_rule_reference"
+        },
+        {
+          "html_url": null,
+          "id": "PGQXLKK",
+          "self": "https://api.pagerduty.com/users/P5A1XH2/notification_rules/PGQXLKK",
+          "summary": "0 minutes: channel POBZ8LY",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "owner",
+      "self": "https://api.pagerduty.com/users/P5A1XH2",
+      "summary": "Mika",
+      "teams": [],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/d83b4a6efd73775da197d5c76a59bc86.png?d=mm&r=PG",
+      "billed": true,
+      "color": "blue",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PYL455S",
+          "self": "https://api.pagerduty.com/users/PRXEEQ8/contact_methods/PYL455S",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        },
+        {
+          "html_url": null,
+          "id": "PWHZSEP",
+          "self": "https://api.pagerduty.com/users/PRXEEQ8/contact_methods/PWHZSEP",
+          "summary": "Mobile",
+          "type": "phone_contact_method_reference"
+        },
+        {
+          "html_url": null,
+          "id": "PT8OS1M",
+          "self": "https://api.pagerduty.com/users/PRXEEQ8/contact_methods/PT8OS1M",
+          "summary": "Mobile",
+          "type": "sms_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "horse+eng@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PRXEEQ8",
+      "id": "PRXEEQ8",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Horse",
+      "notification_rules": [],
+      "role": "admin",
+      "self": "https://api.pagerduty.com/users/PRXEEQ8",
+      "summary": "Horse",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PV9JOXL",
+          "id": "PV9JOXL",
+          "self": "https://api.pagerduty.com/teams/PV9JOXL",
+          "summary": "Service Catalog Team",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/b3e9e108cf4af05ca55154b171b0f9bf.png?d=mm&r=PG",
+      "billed": true,
+      "color": "red",
+      "contact_methods": [],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "acme-eng@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PXI6XNI",
+      "id": "PXI6XNI",
+      "invitation_sent": false,
+      "job_title": "Developer",
+      "name": "Acme Engineering",
+      "notification_rules": [],
+      "role": "admin",
+      "self": "https://api.pagerduty.com/users/PXI6XNI",
+      "summary": "Acme Engineering",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PV9JOXL",
+          "id": "PV9JOXL",
+          "self": "https://api.pagerduty.com/teams/PV9JOXL",
+          "summary": "Service Catalog Team",
+          "type": "team_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/P5PH8KY",
+          "id": "P5PH8KY",
+          "self": "https://api.pagerduty.com/teams/P5PH8KY",
+          "summary": "Page Responder Team",
+          "type": "team_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PT54U20",
+          "id": "PT54U20",
+          "self": "https://api.pagerduty.com/teams/PT54U20",
+          "summary": "Jen",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/New_York",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/a288b8ebce8ae6b302678728354094d5.png?d=mm&r=PG",
+      "billed": true,
+      "color": "green",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "P5XF74R",
+          "self": "https://api.pagerduty.com/users/P8ZZ1ZB/contact_methods/P5XF74R",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        },
+        {
+          "html_url": null,
+          "id": "P4DX2W5",
+          "self": "https://api.pagerduty.com/users/P8ZZ1ZB/contact_methods/P4DX2W5",
+          "summary": "Pixel 7a",
+          "type": "push_notification_contact_method_reference"
+        },
+        {
+          "html_url": null,
+          "id": "P5WOSWE",
+          "self": "https://api.pagerduty.com/users/P8ZZ1ZB/contact_methods/P5WOSWE",
+          "summary": "Mobile",
+          "type": "sms_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "kiran+eng@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/P8ZZ1ZB",
+      "id": "P8ZZ1ZB",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Kiran",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PI0RHFF",
+          "self": "https://api.pagerduty.com/users/P8ZZ1ZB/notification_rules/PI0RHFF",
+          "summary": "1 minutes: channel P5XF74R",
+          "type": "assignment_notification_rule_reference"
+        },
+        {
+          "html_url": null,
+          "id": "PER3H3S",
+          "self": "https://api.pagerduty.com/users/P8ZZ1ZB/notification_rules/PER3H3S",
+          "summary": "0 minutes: channel P4DX2W5",
+          "type": "assignment_notification_rule_reference"
+        },
+        {
+          "html_url": null,
+          "id": "PLZCIV5",
+          "self": "https://api.pagerduty.com/users/P8ZZ1ZB/notification_rules/PLZCIV5",
+          "summary": "2 minutes: channel P5WOSWE",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "admin",
+      "self": "https://api.pagerduty.com/users/P8ZZ1ZB",
+      "summary": "Kiran",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PT54U20",
+          "id": "PT54U20",
+          "self": "https://api.pagerduty.com/teams/PT54U20",
+          "summary": "Jen",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/2910858549fdbb2e04d666900d9614a9.png?d=mm&r=PG",
+      "billed": true,
+      "color": "dark-orchid",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "P3WKE0D",
+          "self": "https://api.pagerduty.com/users/P2C9LBA/contact_methods/P3WKE0D",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "acme-success+eng@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/P2C9LBA",
+      "id": "P2C9LBA",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Wong",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PM17K45",
+          "self": "https://api.pagerduty.com/users/P2C9LBA/notification_rules/PM17K45",
+          "summary": "0 minutes: channel P3WKE0D",
+          "type": "assignment_notification_rule_reference"
+        },
+        {
+          "html_url": null,
+          "id": "P34LJGL",
+          "self": "https://api.pagerduty.com/users/P2C9LBA/notification_rules/P34LJGL",
+          "summary": "0 minutes: channel P3WKE0D",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "admin",
+      "self": "https://api.pagerduty.com/users/P2C9LBA",
+      "summary": "Wong",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PEGBTKE",
+          "id": "PEGBTKE",
+          "self": "https://api.pagerduty.com/teams/PEGBTKE",
+          "summary": "CS-Test-Alerting",
+          "type": "team_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PT54U20",
+          "id": "PT54U20",
+          "self": "https://api.pagerduty.com/teams/PT54U20",
+          "summary": "Jen",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/60d5c83afe3b1435d80cecd9e8896932.png?d=mm&r=PG",
+      "billed": true,
+      "color": "purple",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "P6H75VQ",
+          "self": "https://api.pagerduty.com/users/P4CMCAU/contact_methods/P6H75VQ",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "jack+eng@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/P4CMCAU",
+      "id": "P4CMCAU",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Jack T.",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "P24R3WN",
+          "self": "https://api.pagerduty.com/users/P4CMCAU/notification_rules/P24R3WN",
+          "summary": "0 minutes: channel P6H75VQ",
+          "type": "assignment_notification_rule_reference"
+        },
+        {
+          "html_url": null,
+          "id": "P5DC48A",
+          "self": "https://api.pagerduty.com/users/P4CMCAU/notification_rules/P5DC48A",
+          "summary": "0 minutes: channel P6H75VQ",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "admin",
+      "self": "https://api.pagerduty.com/users/P4CMCAU",
+      "summary": "Jack T.",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PD2F80U",
+          "id": "PD2F80U",
+          "self": "https://api.pagerduty.com/teams/PD2F80U",
+          "summary": "Jack Team",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    }
+  ]
+}

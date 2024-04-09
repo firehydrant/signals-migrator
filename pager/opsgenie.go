@@ -3,6 +3,7 @@ package pager
 import (
 	"context"
 
+	"github.com/firehydrant/signals-migrator/console"
 	"github.com/gosimple/slug"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/team"
@@ -35,6 +36,12 @@ func (p *Opsgenie) Kind() string {
 	return "opsgenie"
 }
 
+func (o *Opsgenie) LoadSchedules(ctx context.Context) error {
+	// TODO: implement
+	console.Warnf("opsgenie.LoadSchedules is not currently supported.")
+	return nil
+}
+
 func (p *Opsgenie) PopulateTeamMembers(ctx context.Context, t *Team) error {
 	members := []*User{}
 
@@ -53,11 +60,6 @@ func (p *Opsgenie) PopulateTeamMembers(ctx context.Context, t *Team) error {
 
 	t.Members = members
 
-	return nil
-}
-
-func (p *Opsgenie) PopulateTeamSchedules(ctx context.Context, team *Team) error {
-	// TODO: implement
 	return nil
 }
 

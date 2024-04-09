@@ -12,12 +12,14 @@ func Selectf[T any](options []T, toString func(T) string, title string, args ...
 		opts[i] = huh.NewOption(toString(option), i)
 	}
 	var value int
-	if err := huh.NewSelect[int]().
+
+	s := huh.NewSelect[int]().
 		Title(fmt.Sprintf(title, args...)).
 		Options(opts...).
 		Value(&value).
-		WithHeight(15).
-		Run(); err != nil {
+		WithHeight(15)
+
+	if err := huh.NewForm(huh.NewGroup(s)).Run(); err != nil {
 		return -1, options[0], fmt.Errorf("selecting options: %w", err)
 	}
 
