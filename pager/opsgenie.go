@@ -35,6 +35,10 @@ func (p *Opsgenie) Kind() string {
 	return "opsgenie"
 }
 
+func (o *Opsgenie) LoadSchedules(ctx context.Context) error {
+	panic("not implemented") // TODO: Implement
+}
+
 func (p *Opsgenie) PopulateTeamMembers(ctx context.Context, t *Team) error {
 	members := []*User{}
 

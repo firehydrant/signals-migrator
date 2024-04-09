@@ -20,5 +20,6 @@ mod:
 dependencies *args='':
   ./deps.sh "$@"
 
-generate: dependencies
+generate:
+  just dependencies github.com/sqlc-dev/sqlc/cmd/sqlc
   go generate ./...

@@ -21,6 +21,10 @@ func (v *VictorOps) Kind() string {
 	return "victorops"
 }
 
+func (v *VictorOps) LoadSchedules(ctx context.Context) error {
+	panic("not implemented") // TODO: Implement
+}
+
 func (v *VictorOps) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	members := []*User{}
 

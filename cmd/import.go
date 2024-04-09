@@ -71,6 +71,11 @@ func importAction(cliCtx *cli.Context) error {
 	}
 	console.Infof("Imported teams from %s.\n", providerName)
 
+	if err := provider.LoadSchedules(ctx); err != nil {
+		return fmt.Errorf("importing schedules: %w", err)
+	}
+	console.Infof("Imported schedules from %s.\n", providerName)
+
 	tfr, err := tfrender.New(
 		cliCtx.String("output-dir"),
 		fmt.Sprintf("%s_to_fh_signals.tf", strings.ToLower(providerName)),

@@ -134,3 +134,57 @@ func TestRenderTeamResource(t *testing.T) {
 	//   - team 0 has 1 user membership, linked with user 0
 	golden.Assert(t, string(content), goldenFile(tfr.Filename()))
 }
+
+func TestRenderOnCallScheduleResource(t *testing.T) {
+	ctx, tfr := tfrInit(t)
+	for i := range 4 {
+		createUsers(t, ctx, strconv.Itoa(i))
+	}
+	for i := range 4 {
+		// team0 and team2 refers to existing FireHydrant teams,
+		// so they will have import {} block associated to them.
+		createTeams(t, ctx, strconv.Itoa(i), i%2 == 0)
+	}
+
+	if err := store.UseQueries(ctx).InsertExtSchedule(ctx, store.InsertExtScheduleParams{
+		ID:          "id-for-ext-schedule-0",
+		Name:        "Schedule 0",
+		Description: sql.NullString{String: "Schedule 0 description", Valid: true},
+		HandoffTime: "11:00",
+		HandoffDay:  "wednesday",
+		Strategy:    "daily",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.UseQueries(ctx).InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
+		ScheduleID: "id-for-ext-schedule-0",
+		TeamID:     "id-for-ext-team-1",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.UseQueries(ctx).InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
+		ScheduleID: "id-for-ext-schedule-0",
+		UserID:     "id-for-ext-user-0",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := tfr.Write(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(tfr.Filepath())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Expect output to have:
+	// - 4 user blocks
+	// - 4 team blocks, where:
+	//   - team 0 and team 2 have import {} block
+	//   - team 0 has 1 user membership, linked with user 0
+	// - 1 on-call schedule block, linked with team 1
+	golden.Assert(t, string(content), goldenFile(tfr.Filename()))
+}

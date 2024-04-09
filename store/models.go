@@ -13,6 +13,26 @@ type ExtMembership struct {
 	TeamID string `json:"team_id"`
 }
 
+type ExtSchedule struct {
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	Timezone    string         `json:"timezone"`
+	Strategy    string         `json:"strategy"`
+	HandoffTime string         `json:"handoff_time"`
+	HandoffDay  string         `json:"handoff_day"`
+}
+
+type ExtScheduleMember struct {
+	ScheduleID string `json:"schedule_id"`
+	UserID     string `json:"user_id"`
+}
+
+type ExtScheduleTeam struct {
+	ScheduleID string `json:"schedule_id"`
+	TeamID     string `json:"team_id"`
+}
+
 type ExtTeam struct {
 	ID       string         `json:"id"`
 	Name     string         `json:"name"`

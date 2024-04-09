@@ -86,18 +86,77 @@ func (r *TFRender) Write(ctx context.Context) error {
 	}
 	defer f.Close()
 
-	if err := r.DataFireHydrantUsers(ctx); err != nil {
-		return fmt.Errorf("rendering user block: %w", err)
+	toWrite := []func(context.Context) error{
+		r.DataFireHydrantUsers,
+		r.ResourceFireHydrantTeams,
+		r.ResourceFireHydrantOnCallSchedule,
 	}
 
-	if err := r.ResourceFireHydrantTeams(ctx); err != nil {
-		return fmt.Errorf("rendering team block: %w", err)
+	for _, w := range toWrite {
+		if err := w(ctx); err != nil {
+			return err
+		}
 	}
 
 	if _, err := f.Write(r.f.Bytes()); err != nil {
 		return fmt.Errorf("writing file: %w", err)
 	}
 
+	return nil
+}
+
+func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error {
+	schedules, err := store.UseQueries(ctx).ListExtSchedules(ctx)
+	if err != nil {
+		return fmt.Errorf("querying schedules: %w", err)
+	}
+
+	for _, s := range schedules {
+		teams, err := store.UseQueries(ctx).ListFhTeamsByExtScheduleID(ctx, s.ID)
+		if err != nil {
+			return fmt.Errorf("querying teams for schedule '%s': %w", s.Name, err)
+		}
+		for _, t := range teams {
+			r.root.AppendNewline()
+
+			b := r.root.AppendNewBlock("resource", []string{"firehydrant_on_call_schedule", s.TFSlug()}).Body()
+			b.SetAttributeValue("name", cty.StringVal(s.Name))
+			if s.Description.Valid {
+				b.SetAttributeValue("description", cty.StringVal(s.Description.String))
+			}
+			b.SetAttributeTraversal("team_id", hcl.Traversal{
+				hcl.TraverseRoot{Name: "resource"},
+				hcl.TraverseAttr{Name: "firehydrant_team"},
+				hcl.TraverseAttr{Name: t.TFSlug()},
+				hcl.TraverseAttr{Name: "id"},
+			})
+
+			members, err := store.UseQueries(ctx).ListFhMembersByExtScheduleID(ctx, s.ID)
+			if err != nil {
+				return fmt.Errorf("querying members for schedule '%s': %w", s.Name, err)
+			}
+
+			memberList := []hclwrite.Tokens{}
+			for _, m := range members {
+				member := hcl.Traversal{
+					hcl.TraverseRoot{Name: "data"},
+					hcl.TraverseAttr{Name: "firehydrant_user"},
+					hcl.TraverseAttr{Name: m.TFSlug()},
+					hcl.TraverseAttr{Name: "id"},
+				}
+				memberList = append(memberList, hclwrite.TokensForTraversal(member))
+			}
+
+			b.AppendNewline()
+			b.SetAttributeRaw("member_ids", hclwrite.TokensForTuple(memberList))
+
+			b.AppendNewline()
+			strategy := b.AppendNewBlock("strategy", []string{}).Body()
+			strategy.SetAttributeValue("type", cty.StringVal(s.Strategy))
+			strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
+			strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
+		}
+	}
 	return nil
 }
 
@@ -114,13 +173,9 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 
 	fhTeamBlocks := map[string]*hclwrite.Body{}
 	for _, t := range extTeams {
-		// FireHydrant team name takes precedence as we need it to match existing whenever possible.
-		name := t.FhTeam().Name
-		tfSlug := t.FhTeam().TFSlug()
-		if name == "" {
-			name = t.ExtTeam().Name
-			tfSlug = t.ExtTeam().TFSlug()
-		}
+		name := t.ValidName()
+		tfSlug := t.TFSlug()
+
 		if _, ok := fhTeamBlocks[name]; !ok {
 			r.root.AppendNewline()
 			fhTeamBlocks[name] = r.root.AppendNewBlock("resource", []string{"firehydrant_team", tfSlug}).Body()

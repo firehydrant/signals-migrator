@@ -31,3 +31,29 @@ CREATE TABLE IF NOT EXISTS ext_memberships (
   FOREIGN KEY (user_id) REFERENCES ext_users(id),
   FOREIGN KEY (team_id) REFERENCES ext_teams(id)
 ) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_schedules (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  timezone TEXT NOT NULL,
+  strategy TEXT NOT NULL,
+  handoff_time TEXT NOT NULL,
+  handoff_day TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_schedule_teams (
+  schedule_id TEXT NOT NULL,
+  team_id TEXT NOT NULL,
+  PRIMARY KEY (schedule_id, team_id),
+  FOREIGN KEY (schedule_id) REFERENCES ext_schedules(id),
+  FOREIGN KEY (team_id) REFERENCES ext_teams(id)
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_schedule_members (
+  schedule_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  PRIMARY KEY (schedule_id, user_id),
+  FOREIGN KEY (schedule_id) REFERENCES ext_schedules(id),
+  FOREIGN KEY (user_id) REFERENCES ext_users(id)
+) STRICT;
