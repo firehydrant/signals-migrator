@@ -119,7 +119,10 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 		for _, t := range teams {
 			r.root.AppendNewline()
 
-			b := r.root.AppendNewBlock("resource", []string{"firehydrant_on_call_schedule", s.TFSlug()}).Body()
+			b := r.root.AppendNewBlock("resource", []string{
+				"firehydrant_on_call_schedule",
+				fmt.Sprintf("%s_%s", t.TFSlug(), s.TFSlug()),
+			}).Body()
 			b.SetAttributeValue("name", cty.StringVal(s.Name))
 			if s.Description != "" {
 				b.SetAttributeValue("description", cty.StringVal(s.Description))
@@ -156,6 +159,19 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			strategy.SetAttributeValue("type", cty.StringVal(s.Strategy))
 			strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
 			strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
+
+			restrictions, err := store.UseQueries(ctx).ListExtScheduleRestrictionsByExtScheduleID(ctx, s.ID)
+			if err != nil {
+				return fmt.Errorf("querying restrictions for schedule '%s': %w", s.Name, err)
+			}
+			for _, r := range restrictions {
+				b.AppendNewline()
+				restriction := b.AppendNewBlock("restrictions", []string{}).Body()
+				restriction.SetAttributeValue("start_day", cty.StringVal(r.StartDay))
+				restriction.SetAttributeValue("start_time", cty.StringVal(r.StartTime))
+				restriction.SetAttributeValue("end_day", cty.StringVal(r.EndDay))
+				restriction.SetAttributeValue("end_time", cty.StringVal(r.EndTime))
+			}
 		}
 	}
 	return nil
@@ -210,10 +226,8 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 			importBody := r.root.AppendNewBlock("import", []string{}).Body()
 			importBody.SetAttributeValue("id", cty.StringVal(t.FhTeamID.String))
 			importBody.SetAttributeTraversal("to", hcl.Traversal{
-				hcl.TraverseRoot{Name: "resource"},
-				hcl.TraverseAttr{Name: "firehydrant_team"},
+				hcl.TraverseRoot{Name: "firehydrant_team"},
 				hcl.TraverseAttr{Name: tfSlug},
-				hcl.TraverseAttr{Name: "id"},
 			})
 			importedTeams[t.FhTeamID.String] = true
 		}

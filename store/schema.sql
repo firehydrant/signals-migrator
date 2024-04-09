@@ -38,8 +38,20 @@ CREATE TABLE IF NOT EXISTS ext_schedules (
   description TEXT NOT NULL,
   timezone TEXT NOT NULL,
   strategy TEXT NOT NULL,
+  shift_duration TEXT NOT NULL,
   handoff_time TEXT NOT NULL,
   handoff_day TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_schedule_restrictions (
+  schedule_id TEXT NOT NULL,
+  restriction_index TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  start_day TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  end_day TEXT NOT NULL,
+  PRIMARY KEY (schedule_id, restriction_index),
+  FOREIGN KEY (schedule_id) REFERENCES ext_schedules(id)
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_schedule_teams (

@@ -12,7 +12,7 @@ test: generate
   go test -v ./...
 
 update-golden: generate
-  go test -v ./... -test.update-golden
+  go test -v ./tfrender -test.update-golden
 
 mod: 
   go mod tidy

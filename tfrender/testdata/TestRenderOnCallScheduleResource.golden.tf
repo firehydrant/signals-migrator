@@ -29,7 +29,7 @@ resource "firehydrant_team" "team_0_slug" {
 
 import {
   id = "id-for-team-0"
-  to = resource.firehydrant_team.team_0_slug.id
+  to = firehydrant_team.team_0_slug
 }
 
 resource "firehydrant_team" "team_1_slug" {
@@ -42,17 +42,18 @@ resource "firehydrant_team" "team_2_slug" {
 
 import {
   id = "id-for-team-2"
-  to = resource.firehydrant_team.team_2_slug.id
+  to = firehydrant_team.team_2_slug
 }
 
 resource "firehydrant_team" "team_3_slug" {
   name = "Team 3"
 }
 
-resource "firehydrant_on_call_schedule" "schedule_0" {
+resource "firehydrant_on_call_schedule" "team_1_slug_schedule_0" {
   name        = "Schedule 0"
   description = "Schedule 0 description"
   team_id     = resource.firehydrant_team.team_1_slug.id
+  time_zone   = ""
 
   member_ids = [data.firehydrant_user.user_0.id]
 

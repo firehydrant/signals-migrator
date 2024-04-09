@@ -14,18 +14,28 @@ type ExtMembership struct {
 }
 
 type ExtSchedule struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Timezone    string `json:"timezone"`
-	Strategy    string `json:"strategy"`
-	HandoffTime string `json:"handoff_time"`
-	HandoffDay  string `json:"handoff_day"`
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Timezone      string `json:"timezone"`
+	Strategy      string `json:"strategy"`
+	ShiftDuration string `json:"shift_duration"`
+	HandoffTime   string `json:"handoff_time"`
+	HandoffDay    string `json:"handoff_day"`
 }
 
 type ExtScheduleMember struct {
 	ScheduleID string `json:"schedule_id"`
 	UserID     string `json:"user_id"`
+}
+
+type ExtScheduleRestriction struct {
+	ScheduleID       string `json:"schedule_id"`
+	RestrictionIndex string `json:"restriction_index"`
+	StartTime        string `json:"start_time"`
+	StartDay         string `json:"start_day"`
+	EndTime          string `json:"end_time"`
+	EndDay           string `json:"end_day"`
 }
 
 type ExtScheduleTeam struct {

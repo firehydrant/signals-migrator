@@ -47,7 +47,13 @@ WHERE ext_teams.id = ?;
 SELECT * FROM ext_schedules;
 
 -- name: InsertExtSchedule :exec
-INSERT INTO ext_schedules (id, name, description, timezone, strategy, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: ListExtScheduleRestrictionsByExtScheduleID :many
+SELECT * FROM ext_schedule_restrictions WHERE schedule_id = ?;
+
+-- name: InsertExtScheduleRestriction :exec
+INSERT INTO ext_schedule_restrictions (schedule_id, restriction_index, start_time, start_day, end_time, end_day) VALUES (?, ?, ?, ?, ?, ?);
 
 -- name: ListFhTeamsByExtScheduleID :many
 SELECT ext_teams.*, fh_teams.name as fh_team_name, fh_teams.slug as fh_team_slug FROM ext_schedule_teams
