@@ -21,5 +21,4 @@ dependencies *args='':
   ./deps.sh "$@"
 
 generate:
-  just dependencies github.com/sqlc-dev/sqlc/cmd/sqlc
   go generate ./...
