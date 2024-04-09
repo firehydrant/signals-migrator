@@ -130,6 +130,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 				hcl.TraverseAttr{Name: t.TFSlug()},
 				hcl.TraverseAttr{Name: "id"},
 			})
+			b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
 
 			members, err := store.UseQueries(ctx).ListFhMembersByExtScheduleID(ctx, s.ID)
 			if err != nil {
