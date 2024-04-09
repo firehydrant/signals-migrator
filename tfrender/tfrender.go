@@ -193,8 +193,8 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 
 			b := fhTeamBlocks[name]
 			b.AppendNewline()
-			b.AppendNewBlock("membership", []string{}).Body().
-				SetAttributeTraversal("id", hcl.Traversal{
+			b.AppendNewBlock("memberships", []string{}).Body().
+				SetAttributeTraversal("user_id", hcl.Traversal{
 					hcl.TraverseRoot{Name: "data"},
 					hcl.TraverseAttr{Name: "firehydrant_user"},
 					hcl.TraverseAttr{Name: m.TFSlug()},
