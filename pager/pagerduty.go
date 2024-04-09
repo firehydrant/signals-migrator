@@ -71,6 +71,7 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 	if schedule.Description == "" {
 		desc = schedule.Description + " " + desc
 	}
+	desc = strings.TrimSpace(desc)
 	s := store.InsertExtScheduleParams{
 		ID:       schedule.ID + "-" + layer.ID,
 		Name:     schedule.Name + " - " + layer.Name,
