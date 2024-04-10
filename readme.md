@@ -37,11 +37,14 @@ Afterwards, the tool will generate the mapping appropriately, handling de-duplic
 
 ## Feature roadmap
 
-- [x] Importing users
-- [x] Importing teams and members
-- [ ] Pre-create a default escalation policy
-- [ ] Import scheduling strategy
-- [ ] Pre-create scheduling strategy
+| | PagerDuty | VictorOps | OpsGenie |
+| --- | --- | --- | --- |
+| Import users | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Import teams and members | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Import escalation policies | :x: | :x: | :x: |
+| Import scheduling strategy | :heavy_check_mark: | :x: | :x: |
+
+
 - [ ] Getting transposer URLs (e.g. Datadog) to the team data resource or a Signals ingest URL data resource
 - [ ] Support for importing escalation policies
 - [ ] Auto-run `terraform apply` for users who would not manage their organization with Terraform after importing
