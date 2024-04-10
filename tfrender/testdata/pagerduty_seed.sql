@@ -24,11 +24,11 @@ INSERT INTO ext_memberships VALUES('P8ZZ1ZB','PT54U20');
 INSERT INTO ext_memberships VALUES('P2C9LBA','PT54U20');
 INSERT INTO ext_memberships VALUES('P4CMCAU','PD2F80U');
 
-INSERT INTO ext_schedules VALUES('P3D7DLW-PC1DX4O','Jen - primary - Layer 2','(Layer 2)','America/Los_Angeles','weekly','','16:00','monday');
-INSERT INTO ext_schedules VALUES('P3D7DLW-PSQ0VRL','Jen - primary - Layer 1','(Layer 1)','America/Los_Angeles','weekly','','16:00','friday');
-INSERT INTO ext_schedules VALUES('PVJMUIC-P3BRVNT','CS-on-call - Layer 1',' (Layer 1)','America/Los_Angeles','daily','','10:00','tuesday');
-INSERT INTO ext_schedules VALUES('P85QTXZ-PE2BA4Y','Jack On-Call Schedule - Layer 1',' (Layer 1)','America/Los_Angeles','weekly','','14:00','friday');
-INSERT INTO ext_schedules VALUES('PGR96WL-PR3J6XJ','🐴 is always on call - Layer 1','(Layer 1)','America/Los_Angeles','weekly','','12:00','friday');
+INSERT INTO ext_schedules VALUES('P3D7DLW-PC1DX4O','Jen - primary - Layer 2','(Layer 2)','America/Los_Angeles','weekly','','16:00:00','monday');
+INSERT INTO ext_schedules VALUES('P3D7DLW-PSQ0VRL','Jen - primary - Layer 1','(Layer 1)','America/Los_Angeles','weekly','','16:00:00','friday');
+INSERT INTO ext_schedules VALUES('PVJMUIC-P3BRVNT','CS-on-call - Layer 1',' (Layer 1)','America/Los_Angeles','daily','','10:00:00','tuesday');
+INSERT INTO ext_schedules VALUES('P85QTXZ-PE2BA4Y','Jack On-Call Schedule - Layer 1',' (Layer 1)','America/Los_Angeles','weekly','','14:00:00','friday');
+INSERT INTO ext_schedules VALUES('PGR96WL-PR3J6XJ','🐴 is always on call - Layer 1','(Layer 1)','America/Los_Angeles','weekly','','12:00:00','friday');
 
 INSERT INTO ext_schedule_restrictions VALUES('P3D7DLW-PC1DX4O','0','09:00:00','monday','17:00:00','friday');
 INSERT INTO ext_schedule_restrictions VALUES('P3D7DLW-PSQ0VRL','0-0','09:00:00','sunday','17:00:00','sunday');

@@ -99,7 +99,7 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 	}
 	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
 	if err == nil {
-		s.HandoffTime = fmt.Sprintf("%02d:%02d", virtualStart.Hour(), virtualStart.Minute())
+		s.HandoffTime = virtualStart.Format(time.TimeOnly)
 		s.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
 	} else {
 		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
