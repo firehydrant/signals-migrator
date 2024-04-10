@@ -75,7 +75,7 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
 
   strategy {
     type         = "weekly"
-    handoff_time = "16:00"
+    handoff_time = "16:00:00"
     handoff_day  = "monday"
   }
 
@@ -97,7 +97,7 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
 
   strategy {
     type         = "weekly"
-    handoff_time = "16:00"
+    handoff_time = "16:00:00"
     handoff_day  = "friday"
   }
 
@@ -161,7 +161,7 @@ resource "firehydrant_on_call_schedule" "dunder_mifflin_scranton_jack_on_call_sc
 
   strategy {
     type         = "weekly"
-    handoff_time = "14:00"
+    handoff_time = "14:00:00"
     handoff_day  = "friday"
   }
 }
