@@ -5,6 +5,7 @@ This can be used to import resources from legacy alerting providers into Signals
 ## Supported providers
 
 ### Alerting 
+
 - PagerDuty
 - VictorOps
 - OpsGenie
@@ -39,10 +40,10 @@ Afterwards, the tool will generate the mapping appropriately, handling de-duplic
 
 | | PagerDuty | VictorOps | OpsGenie |
 | --- | --- | --- | --- |
-| Import users | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| Import teams and members | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Import users | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Import teams and members | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Import escalation policies | :x: | :x: | :x: |
-| Import scheduling strategy | :heavy_check_mark: | :x: | :x: |
+| Import scheduling strategy | :white_check_mark: | :x: | :x: |
 
 
 - [ ] Getting transposer URLs (e.g. Datadog) to the team data resource or a Signals ingest URL data resource
