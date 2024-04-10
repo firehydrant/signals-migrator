@@ -16,7 +16,7 @@ require (
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.13.0
 	gotest.tools v2.2.0+incompatible
-	modernc.org/sqlite v1.29.5
+	modernc.org/sqlite v1.29.6
 )
 
 require (
