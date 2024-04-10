@@ -10,7 +10,7 @@ require (
 	// Remove once PR is merged: https://github.com/firehydrant/terraform-provider-firehydrant/pull/151
 	github.com/firehydrant/terraform-provider-firehydrant v0.7.2-0.20240409165220-1012cb85d276
 	github.com/gosimple/slug v1.14.0
-	github.com/hashicorp/hcl/v2 v2.20.0
+	github.com/hashicorp/hcl/v2 v2.20.1
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/victorops/go-victorops v1.0.7
@@ -42,7 +42,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.5.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.7.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
