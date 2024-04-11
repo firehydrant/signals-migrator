@@ -20,6 +20,7 @@ type ExtSchedule struct {
 	Timezone      string `json:"timezone"`
 	Strategy      string `json:"strategy"`
 	ShiftDuration string `json:"shift_duration"`
+	StartTime     string `json:"start_time"`
 	HandoffTime   string `json:"handoff_time"`
 	HandoffDay    string `json:"handoff_day"`
 }

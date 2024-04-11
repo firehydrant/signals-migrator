@@ -47,7 +47,7 @@ func (q *Queries) InsertExtMembership(ctx context.Context, arg InsertExtMembersh
 }
 
 const insertExtSchedule = `-- name: InsertExtSchedule :exec
-INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type InsertExtScheduleParams struct {
@@ -57,6 +57,7 @@ type InsertExtScheduleParams struct {
 	Timezone      string `json:"timezone"`
 	Strategy      string `json:"strategy"`
 	ShiftDuration string `json:"shift_duration"`
+	StartTime     string `json:"start_time"`
 	HandoffTime   string `json:"handoff_time"`
 	HandoffDay    string `json:"handoff_day"`
 }
@@ -69,6 +70,7 @@ func (q *Queries) InsertExtSchedule(ctx context.Context, arg InsertExtSchedulePa
 		arg.Timezone,
 		arg.Strategy,
 		arg.ShiftDuration,
+		arg.StartTime,
 		arg.HandoffTime,
 		arg.HandoffDay,
 	)
@@ -263,7 +265,7 @@ func (q *Queries) ListExtScheduleRestrictionsByExtScheduleID(ctx context.Context
 }
 
 const listExtSchedules = `-- name: ListExtSchedules :many
-SELECT id, name, description, timezone, strategy, shift_duration, handoff_time, handoff_day FROM ext_schedules
+SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules
 `
 
 func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
@@ -282,6 +284,7 @@ func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
 			&i.Timezone,
 			&i.Strategy,
 			&i.ShiftDuration,
+			&i.StartTime,
 			&i.HandoffTime,
 			&i.HandoffDay,
 		); err != nil {

@@ -91,6 +91,15 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 	default:
 		s.Strategy = "custom"
 		s.ShiftDuration = fmt.Sprintf("PT%dS", layer.RotationTurnLengthSeconds)
+
+		now := time.Now()
+		loc, err := time.LoadLocation(schedule.TimeZone)
+		if err == nil {
+			now = now.In(loc)
+		} else {
+			console.Warnf("unable to parse timezone '%v', using current machine's local time", schedule.TimeZone)
+		}
+		s.StartTime = now.Format(time.RFC3339)
 	}
 	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
 	if err == nil {
@@ -139,20 +148,20 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 		switch restriction.Type {
 		case "daily_restriction":
 			for day := range 7 {
-				dayStr := strings.ToLower(time.Weekday(day).String())
 				start, err := time.Parse(time.TimeOnly, restriction.StartTimeOfDay)
 				if err != nil {
 					return fmt.Errorf("parsing start time of day '%s': %w", restriction.StartTimeOfDay, err)
 				}
 				end := start.Add(time.Duration(restriction.DurationSeconds) * time.Second)
 
+				dayStr := strings.ToLower(time.Weekday(day).String())
 				r := store.InsertExtScheduleRestrictionParams{
 					ScheduleID:       s.ID,
 					RestrictionIndex: fmt.Sprintf("%d-%d", i, day),
-					StartTime:        start.Format("15:04:05"),
-					EndTime:          end.Format("15:04:05"),
 					StartDay:         dayStr,
 					EndDay:           dayStr,
+					StartTime:        start.Format(time.TimeOnly),
+					EndTime:          end.Format(time.TimeOnly),
 				}
 				if err := q.InsertExtScheduleRestriction(ctx, r); err != nil {
 					return fmt.Errorf("saving daily restriction: %w", err)
@@ -164,17 +173,17 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 				return fmt.Errorf("parsing start time of day '%s': %w", restriction.StartTimeOfDay, err)
 			}
 			// 0000-01-01 is a Saturday, so we need to adjust +1 such that when
-			// restriction.StartDayOfWeek is 0, it is a Sunday.
-			start = start.AddDate(0, 0, int(restriction.StartDayOfWeek)+1)
+			// restriction.StartDayOfWeek is 0, it yields Sunday.
+			start = start.AddDate(0, 0, int(restriction.StartDayOfWeek+1))
 			end := start.Add(time.Duration(restriction.DurationSeconds) * time.Second)
 
 			r := store.InsertExtScheduleRestrictionParams{
 				ScheduleID:       s.ID,
 				RestrictionIndex: strconv.Itoa(i),
-				StartTime:        start.Format(time.TimeOnly),
 				StartDay:         strings.ToLower(start.Weekday().String()),
-				EndTime:          end.Format(time.TimeOnly),
 				EndDay:           strings.ToLower(end.Weekday().String()),
+				StartTime:        start.Format(time.TimeOnly),
+				EndTime:          end.Format(time.TimeOnly),
 			}
 			if err := q.InsertExtScheduleRestriction(ctx, r); err != nil {
 				return fmt.Errorf("saving weekly restriction: %w", err)

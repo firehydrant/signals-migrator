@@ -134,6 +134,9 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 				hcl.TraverseAttr{Name: "id"},
 			})
 			b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
+			if s.Strategy == "custom" && s.StartTime != "" {
+				b.SetAttributeValue("start_time", cty.StringVal(s.StartTime))
+			}
 
 			members, err := store.UseQueries(ctx).ListFhMembersByExtScheduleID(ctx, s.ID)
 			if err != nil {
@@ -157,8 +160,14 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			b.AppendNewline()
 			strategy := b.AppendNewBlock("strategy", []string{}).Body()
 			strategy.SetAttributeValue("type", cty.StringVal(s.Strategy))
-			strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
-			strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
+			if s.Strategy == "weekly" {
+				strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
+			}
+			if s.Strategy == "custom" {
+				strategy.SetAttributeValue("shift_duration", cty.StringVal(s.ShiftDuration))
+			} else {
+				strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
+			}
 
 			restrictions, err := store.UseQueries(ctx).ListExtScheduleRestrictionsByExtScheduleID(ctx, s.ID)
 			if err != nil {

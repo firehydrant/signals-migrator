@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS ext_schedules (
   timezone TEXT NOT NULL,
   strategy TEXT NOT NULL,
   shift_duration TEXT NOT NULL,
+  start_time TEXT NOT NULL,
   handoff_time TEXT NOT NULL,
   handoff_day TEXT NOT NULL
 ) STRICT;

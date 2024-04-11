@@ -70,13 +70,13 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
   description = "(Layer 2)"
   team_id     = resource.firehydrant_team.aaaa_ipv6_migration_strategy.id
   time_zone   = "America/Los_Angeles"
+  start_time  = "2024-04-10T20:39:29-07:00"
 
   member_ids = [data.firehydrant_user.kiran.id]
 
   strategy {
-    type         = "weekly"
-    handoff_time = "16:00:00"
-    handoff_day  = "monday"
+    type           = "custom"
+    shift_duration = "PT93600S"
   }
 
   restrictions {
@@ -92,13 +92,13 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
   description = "(Layer 1)"
   team_id     = resource.firehydrant_team.aaaa_ipv6_migration_strategy.id
   time_zone   = "America/Los_Angeles"
+  start_time  = "2024-04-10T20:39:29-07:00"
 
   member_ids = [data.firehydrant_user.wong.id, data.firehydrant_user.local.id]
 
   strategy {
-    type         = "weekly"
-    handoff_time = "16:00:00"
-    handoff_day  = "friday"
+    type           = "custom"
+    shift_duration = "PT7200S"
   }
 
   restrictions {
@@ -161,7 +161,7 @@ resource "firehydrant_on_call_schedule" "dunder_mifflin_scranton_jack_on_call_sc
 
   strategy {
     type         = "weekly"
-    handoff_time = "14:00:00"
     handoff_day  = "friday"
+    handoff_time = "14:00:00"
   }
 }
