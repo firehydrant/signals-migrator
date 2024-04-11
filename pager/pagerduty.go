@@ -89,13 +89,8 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 	case 60 * 60 * 24 * 7:
 		s.Strategy = "weekly"
 	default:
-		console.Warnf("Found custom shift duration '%d seconds' for schedule '%s', rounding to daily value.\n", layer.RotationTurnLengthSeconds, s.Name)
-		if layer.RotationTurnLengthSeconds < 60*60*24 {
-			s.Strategy = "daily"
-		} else {
-			s.Strategy = "custom"
-			s.ShiftDuration = fmt.Sprintf("P%dD", layer.RotationTurnLengthSeconds/60/60/24)
-		}
+		s.Strategy = "custom"
+		s.ShiftDuration = fmt.Sprintf("PT%dS", layer.RotationTurnLengthSeconds)
 	}
 	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
 	if err == nil {
