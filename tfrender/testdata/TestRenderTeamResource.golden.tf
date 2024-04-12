@@ -26,14 +26,14 @@ data "firehydrant_user" "user_3" {
 resource "firehydrant_team" "team_0_slug" {
   name = "Team 0"
 
-  membership {
-    id = data.firehydrant_user.user_0.id
+  memberships {
+    user_id = data.firehydrant_user.user_0.id
   }
 }
 
 import {
   id = "id-for-team-0"
-  to = resource.firehydrant_team.team_0_slug.id
+  to = firehydrant_team.team_0_slug
 }
 
 resource "firehydrant_team" "team_1_slug" {
@@ -46,7 +46,7 @@ resource "firehydrant_team" "team_2_slug" {
 
 import {
   id = "id-for-team-2"
-  to = resource.firehydrant_team.team_2_slug.id
+  to = firehydrant_team.team_2_slug
 }
 
 resource "firehydrant_team" "team_3_slug" {

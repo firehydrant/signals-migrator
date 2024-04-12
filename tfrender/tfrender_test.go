@@ -153,6 +153,7 @@ func TestRenderOnCallScheduleResource(t *testing.T) {
 		HandoffTime: "11:00",
 		HandoffDay:  "wednesday",
 		Strategy:    "daily",
+		Timezone:    "UTC",
 	}); err != nil {
 		t.Fatal(err)
 	}

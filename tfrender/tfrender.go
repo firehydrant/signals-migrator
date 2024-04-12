@@ -119,7 +119,10 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 		for _, t := range teams {
 			r.root.AppendNewline()
 
-			b := r.root.AppendNewBlock("resource", []string{"firehydrant_on_call_schedule", s.TFSlug()}).Body()
+			b := r.root.AppendNewBlock("resource", []string{
+				"firehydrant_on_call_schedule",
+				fmt.Sprintf("%s_%s", t.TFSlug(), s.TFSlug()),
+			}).Body()
 			b.SetAttributeValue("name", cty.StringVal(s.Name))
 			if s.Description != "" {
 				b.SetAttributeValue("description", cty.StringVal(s.Description))
@@ -130,6 +133,10 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 				hcl.TraverseAttr{Name: t.TFSlug()},
 				hcl.TraverseAttr{Name: "id"},
 			})
+			b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
+			if s.Strategy == "custom" && s.StartTime != "" {
+				b.SetAttributeValue("start_time", cty.StringVal(s.StartTime))
+			}
 
 			members, err := store.UseQueries(ctx).ListFhMembersByExtScheduleID(ctx, s.ID)
 			if err != nil {
@@ -153,8 +160,27 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			b.AppendNewline()
 			strategy := b.AppendNewBlock("strategy", []string{}).Body()
 			strategy.SetAttributeValue("type", cty.StringVal(s.Strategy))
-			strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
-			strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
+			if s.Strategy == "weekly" {
+				strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
+			}
+			if s.Strategy == "custom" {
+				strategy.SetAttributeValue("shift_duration", cty.StringVal(s.ShiftDuration))
+			} else {
+				strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
+			}
+
+			restrictions, err := store.UseQueries(ctx).ListExtScheduleRestrictionsByExtScheduleID(ctx, s.ID)
+			if err != nil {
+				return fmt.Errorf("querying restrictions for schedule '%s': %w", s.Name, err)
+			}
+			for _, r := range restrictions {
+				b.AppendNewline()
+				restriction := b.AppendNewBlock("restrictions", []string{}).Body()
+				restriction.SetAttributeValue("start_day", cty.StringVal(r.StartDay))
+				restriction.SetAttributeValue("start_time", cty.StringVal(r.StartTime))
+				restriction.SetAttributeValue("end_day", cty.StringVal(r.EndDay))
+				restriction.SetAttributeValue("end_time", cty.StringVal(r.EndTime))
+			}
 		}
 	}
 	return nil
@@ -193,8 +219,8 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 
 			b := fhTeamBlocks[name]
 			b.AppendNewline()
-			b.AppendNewBlock("membership", []string{}).Body().
-				SetAttributeTraversal("id", hcl.Traversal{
+			b.AppendNewBlock("memberships", []string{}).Body().
+				SetAttributeTraversal("user_id", hcl.Traversal{
 					hcl.TraverseRoot{Name: "data"},
 					hcl.TraverseAttr{Name: "firehydrant_user"},
 					hcl.TraverseAttr{Name: m.TFSlug()},
@@ -209,10 +235,8 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 			importBody := r.root.AppendNewBlock("import", []string{}).Body()
 			importBody.SetAttributeValue("id", cty.StringVal(t.FhTeamID.String))
 			importBody.SetAttributeTraversal("to", hcl.Traversal{
-				hcl.TraverseRoot{Name: "resource"},
-				hcl.TraverseAttr{Name: "firehydrant_team"},
+				hcl.TraverseRoot{Name: "firehydrant_team"},
 				hcl.TraverseAttr{Name: tfSlug},
-				hcl.TraverseAttr{Name: "id"},
 			})
 			importedTeams[t.FhTeamID.String] = true
 		}

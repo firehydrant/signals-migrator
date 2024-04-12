@@ -6,7 +6,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/PT54U20",
+      "html_url": "https://acme-inc.pagerduty.com/teams/PT54U20",
       "id": "PT54U20",
       "name": "Jen",
       "parent": null,
@@ -17,7 +17,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/PO206TE",
+      "html_url": "https://acme-inc.pagerduty.com/teams/PO206TE",
       "id": "PO206TE",
       "name": "canary-team",
       "parent": null,
@@ -28,7 +28,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/PO34CI9",
+      "html_url": "https://acme-inc.pagerduty.com/teams/PO34CI9",
       "id": "PO34CI9",
       "name": "CS-Team-Test",
       "parent": null,
@@ -39,7 +39,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/PEGBTKE",
+      "html_url": "https://acme-inc.pagerduty.com/teams/PEGBTKE",
       "id": "PEGBTKE",
       "name": "CS-Test-Alerting",
       "parent": null,
@@ -50,7 +50,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/P7E9UET",
+      "html_url": "https://acme-inc.pagerduty.com/teams/P7E9UET",
       "id": "P7E9UET",
       "name": "caroline-team-test",
       "parent": null,
@@ -61,7 +61,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/P7A9Q6H",
+      "html_url": "https://acme-inc.pagerduty.com/teams/P7A9Q6H",
       "id": "P7A9Q6H",
       "name": "operational-team-test",
       "parent": null,
@@ -72,7 +72,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/P5PH8KY",
+      "html_url": "https://acme-inc.pagerduty.com/teams/P5PH8KY",
       "id": "P5PH8KY",
       "name": "Page Responder Team",
       "parent": null,
@@ -83,7 +83,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/PV9JOXL",
+      "html_url": "https://acme-inc.pagerduty.com/teams/PV9JOXL",
       "id": "PV9JOXL",
       "name": "Service Catalog Team",
       "parent": null,
@@ -94,7 +94,7 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://firehydrant-eng.pagerduty.com/teams/PD2F80U",
+      "html_url": "https://acme-inc.pagerduty.com/teams/PD2F80U",
       "id": "PD2F80U",
       "name": "Jack Team",
       "parent": null,

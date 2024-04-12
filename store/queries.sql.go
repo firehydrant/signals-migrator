@@ -47,17 +47,19 @@ func (q *Queries) InsertExtMembership(ctx context.Context, arg InsertExtMembersh
 }
 
 const insertExtSchedule = `-- name: InsertExtSchedule :exec
-INSERT INTO ext_schedules (id, name, description, timezone, strategy, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type InsertExtScheduleParams struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Timezone    string `json:"timezone"`
-	Strategy    string `json:"strategy"`
-	HandoffTime string `json:"handoff_time"`
-	HandoffDay  string `json:"handoff_day"`
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Timezone      string `json:"timezone"`
+	Strategy      string `json:"strategy"`
+	ShiftDuration string `json:"shift_duration"`
+	StartTime     string `json:"start_time"`
+	HandoffTime   string `json:"handoff_time"`
+	HandoffDay    string `json:"handoff_day"`
 }
 
 func (q *Queries) InsertExtSchedule(ctx context.Context, arg InsertExtScheduleParams) error {
@@ -67,6 +69,8 @@ func (q *Queries) InsertExtSchedule(ctx context.Context, arg InsertExtSchedulePa
 		arg.Description,
 		arg.Timezone,
 		arg.Strategy,
+		arg.ShiftDuration,
+		arg.StartTime,
 		arg.HandoffTime,
 		arg.HandoffDay,
 	)
@@ -84,6 +88,31 @@ type InsertExtScheduleMemberParams struct {
 
 func (q *Queries) InsertExtScheduleMember(ctx context.Context, arg InsertExtScheduleMemberParams) error {
 	_, err := q.db.ExecContext(ctx, insertExtScheduleMember, arg.ScheduleID, arg.UserID)
+	return err
+}
+
+const insertExtScheduleRestriction = `-- name: InsertExtScheduleRestriction :exec
+INSERT INTO ext_schedule_restrictions (schedule_id, restriction_index, start_time, start_day, end_time, end_day) VALUES (?, ?, ?, ?, ?, ?)
+`
+
+type InsertExtScheduleRestrictionParams struct {
+	ScheduleID       string `json:"schedule_id"`
+	RestrictionIndex string `json:"restriction_index"`
+	StartTime        string `json:"start_time"`
+	StartDay         string `json:"start_day"`
+	EndTime          string `json:"end_time"`
+	EndDay           string `json:"end_day"`
+}
+
+func (q *Queries) InsertExtScheduleRestriction(ctx context.Context, arg InsertExtScheduleRestrictionParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtScheduleRestriction,
+		arg.ScheduleID,
+		arg.RestrictionIndex,
+		arg.StartTime,
+		arg.StartDay,
+		arg.EndTime,
+		arg.EndDay,
+	)
 	return err
 }
 
@@ -201,8 +230,42 @@ func (q *Queries) LinkExtUser(ctx context.Context, arg LinkExtUserParams) error 
 	return err
 }
 
+const listExtScheduleRestrictionsByExtScheduleID = `-- name: ListExtScheduleRestrictionsByExtScheduleID :many
+SELECT schedule_id, restriction_index, start_time, start_day, end_time, end_day FROM ext_schedule_restrictions WHERE schedule_id = ?
+`
+
+func (q *Queries) ListExtScheduleRestrictionsByExtScheduleID(ctx context.Context, scheduleID string) ([]ExtScheduleRestriction, error) {
+	rows, err := q.db.QueryContext(ctx, listExtScheduleRestrictionsByExtScheduleID, scheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtScheduleRestriction
+	for rows.Next() {
+		var i ExtScheduleRestriction
+		if err := rows.Scan(
+			&i.ScheduleID,
+			&i.RestrictionIndex,
+			&i.StartTime,
+			&i.StartDay,
+			&i.EndTime,
+			&i.EndDay,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listExtSchedules = `-- name: ListExtSchedules :many
-SELECT id, name, description, timezone, strategy, handoff_time, handoff_day FROM ext_schedules
+SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules
 `
 
 func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
@@ -220,6 +283,8 @@ func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
 			&i.Description,
 			&i.Timezone,
 			&i.Strategy,
+			&i.ShiftDuration,
+			&i.StartTime,
 			&i.HandoffTime,
 			&i.HandoffDay,
 		); err != nil {

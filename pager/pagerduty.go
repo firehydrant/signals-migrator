@@ -3,6 +3,7 @@ package pager
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -66,27 +67,43 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 }
 
 func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedule, layer pagerduty.ScheduleLayer) error {
+	desc := fmt.Sprintf("%s (%s)", schedule.Description, layer.Name)
+	desc = strings.TrimSpace(desc)
+
 	s := store.InsertExtScheduleParams{
 		ID:       schedule.ID + "-" + layer.ID,
-		Name:     schedule.Name + "-" + layer.Name,
+		Name:     schedule.Name + " - " + layer.Name,
 		Timezone: schedule.TimeZone,
 
 		// Add fallback values and override them later if API provides valid information.
-		Description: fmt.Sprintf("%s (%s)", schedule.Description, layer.Name),
-		HandoffTime: "11:00",
-		HandoffDay:  "wednesday",
-		Strategy:    "weekly",
+		Description:   desc,
+		HandoffTime:   "11:00:00",
+		HandoffDay:    "wednesday",
+		Strategy:      "weekly",
+		ShiftDuration: "",
 	}
 
-	// TODO: support custom strategy. For now:
-	// - any less than "weekly" is considered "daily"
-	// - any more than "weekly" is considered "weekly" anyway
-	if layer.RotationTurnLengthSeconds < 60*60*24*7 {
+	switch layer.RotationTurnLengthSeconds {
+	case 60 * 60 * 24:
 		s.Strategy = "daily"
+	case 60 * 60 * 24 * 7:
+		s.Strategy = "weekly"
+	default:
+		s.Strategy = "custom"
+		s.ShiftDuration = fmt.Sprintf("PT%dS", layer.RotationTurnLengthSeconds)
+
+		now := time.Now()
+		loc, err := time.LoadLocation(schedule.TimeZone)
+		if err == nil {
+			now = now.In(loc)
+		} else {
+			console.Warnf("unable to parse timezone '%v', using current machine's local time", schedule.TimeZone)
+		}
+		s.StartTime = now.Format(time.RFC3339)
 	}
 	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
 	if err == nil {
-		s.HandoffTime = fmt.Sprintf("%02d:%02d", virtualStart.Hour(), virtualStart.Minute())
+		s.HandoffTime = virtualStart.Format(time.TimeOnly)
 		s.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
 	} else {
 		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
@@ -127,7 +144,54 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 		}
 	}
 
-	// TODO: add restrictions
+	for i, restriction := range layer.Restrictions {
+		switch restriction.Type {
+		case "daily_restriction":
+			for day := range 7 {
+				start, err := time.Parse(time.TimeOnly, restriction.StartTimeOfDay)
+				if err != nil {
+					return fmt.Errorf("parsing start time of day '%s': %w", restriction.StartTimeOfDay, err)
+				}
+				end := start.Add(time.Duration(restriction.DurationSeconds) * time.Second)
+
+				dayStr := strings.ToLower(time.Weekday(day).String())
+				r := store.InsertExtScheduleRestrictionParams{
+					ScheduleID:       s.ID,
+					RestrictionIndex: fmt.Sprintf("%d-%d", i, day),
+					StartDay:         dayStr,
+					EndDay:           dayStr,
+					StartTime:        start.Format(time.TimeOnly),
+					EndTime:          end.Format(time.TimeOnly),
+				}
+				if err := q.InsertExtScheduleRestriction(ctx, r); err != nil {
+					return fmt.Errorf("saving daily restriction: %w", err)
+				}
+			}
+		case "weekly_restriction":
+			start, err := time.Parse(time.TimeOnly, restriction.StartTimeOfDay)
+			if err != nil {
+				return fmt.Errorf("parsing start time of day '%s': %w", restriction.StartTimeOfDay, err)
+			}
+			// 0000-01-01 is a Saturday, so we need to adjust +1 such that when
+			// restriction.StartDayOfWeek is 0, it yields Sunday.
+			start = start.AddDate(0, 0, int(restriction.StartDayOfWeek+1))
+			end := start.Add(time.Duration(restriction.DurationSeconds) * time.Second)
+
+			r := store.InsertExtScheduleRestrictionParams{
+				ScheduleID:       s.ID,
+				RestrictionIndex: strconv.Itoa(i),
+				StartDay:         strings.ToLower(start.Weekday().String()),
+				EndDay:           strings.ToLower(end.Weekday().String()),
+				StartTime:        start.Format(time.TimeOnly),
+				EndTime:          end.Format(time.TimeOnly),
+			}
+			if err := q.InsertExtScheduleRestriction(ctx, r); err != nil {
+				return fmt.Errorf("saving weekly restriction: %w", err)
+			}
+		default:
+			console.Warnf("Unknown schedule restriction type '%s' for schedule '%s', skipping...\n", restriction.Type, s.ID)
+		}
+	}
 
 	return nil
 }

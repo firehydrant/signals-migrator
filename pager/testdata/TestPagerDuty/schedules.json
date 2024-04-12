@@ -54,9 +54,10 @@
           "rendered_schedule_entries": [],
           "restrictions": [
             {
-              "duration_seconds": 28800,
+              "type": "weekly_restriction",
               "start_time_of_day": "09:00:00",
-              "type": "daily_restriction"
+              "duration_seconds": 374400,
+              "start_day_of_week": 1
             }
           ],
           "rotation_turn_length_seconds": 604800,
