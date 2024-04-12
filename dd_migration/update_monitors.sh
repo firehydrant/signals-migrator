@@ -1,4 +1,5 @@
-#! /bin/bash
+#! /usr/bin/env bash
+set -eo pipefail
 
 # By default, we will make a copy of any alert with notification OLD_NOTIFICATION that is identical in all other ways but replaces OLD_NOTIFICATION
 # with NEW_NOTIFICATION.  Setting UPDATE_IN_PLACE here changes that behavior to modify the existing alert instead of making a new one.
@@ -21,6 +22,8 @@ then
   echo "Please export your datadog application key as DD_APP_KEY"
   exit 1
 fi
+
+set -u
 
 URL_ENCODED_OLD_NOTIFICATION=$(echo ${OLD_NOTIFICATION:1}| jq -Rr @uri)
 
