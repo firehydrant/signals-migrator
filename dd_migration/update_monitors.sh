@@ -38,7 +38,31 @@ for ((i=0; i<$PAGES; i++)); do
   MONITORS+=" "
 done
 
-echo "updating $MONITOR_COUNT monitors..."
+echo "Found $MONITOR_COUNT monitors..."
+
+monitornames=()
+for monitorid in $MONITORS; do
+  rawmonitor=$(curl -s --fail-with-body "https://api.$DD_SITE_PARAMETER/api/v1/monitor/$monitorid" -H "Accept: application/json" -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY")
+  monitornames+=$(echo $rawmonitor | jq .name)
+  monitornames+='\n'
+done
+
+if [ $UPDATE_IN_PLACE == "true" ]
+then
+  echo -e "The following monitors will be updated to point to $NEW_NOTIFICATION:\n"
+else
+  echo -e "Copies of the following monitors will be created pointing to $NEW_NOTIFICATION:\n"
+fi
+
+echo -e $monitornames
+
+echo "Continue?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) break;;
+        No ) exit;;
+    esac
+done
 
 for monitorid in $MONITORS; do
   rawmonitor=$(curl -s --fail-with-body "https://api.$DD_SITE_PARAMETER/api/v1/monitor/$monitorid" -H "Accept: application/json" -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY")
