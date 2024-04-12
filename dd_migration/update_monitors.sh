@@ -56,13 +56,11 @@ fi
 
 echo -e $monitornames
 
-echo "Continue?"
-select yn in "Yes" "No"; do
-    case $yn in
-        Yes ) break;;
-        No ) exit;;
-    esac
-done
+read -p "Type Yes to continue: " yn
+case $yn in
+    Yes ) ;;
+    * ) exit 1;;
+esac
 
 for monitorid in $MONITORS; do
   rawmonitor=$(curl -s --fail-with-body "https://api.$DD_SITE_PARAMETER/api/v1/monitor/$monitorid" -H "Accept: application/json" -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY")
