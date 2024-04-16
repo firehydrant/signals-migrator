@@ -70,3 +70,29 @@ CREATE TABLE IF NOT EXISTS ext_schedule_members (
   FOREIGN KEY (schedule_id) REFERENCES ext_schedules(id),
   FOREIGN KEY (user_id) REFERENCES ext_users(id)
 ) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_escalation_policies (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  team_id TEXT REFERENCES ext_teams(id),
+  repeat INTEGER NOT NULL,
+  handoff_target_type TEXT NOT NULL,
+  handoff_target_id TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_escalation_policy_steps (
+  id TEXT PRIMARY KEY,
+  escalation_policy_id TEXT NOT NULL,
+  position INTEGER NOT NULL,
+  timeout TEXT NOT NULL,
+  FOREIGN KEY (escalation_policy_id) REFERENCES ext_escalation_policies(id)
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_escalation_policy_targets (
+  escalation_policy_step_id TEXT NOT NULL,
+  target_type TEXT NOT NULL,
+  target_id TEXT NOT NULL,
+  PRIMARY KEY (escalation_policy_step_id, target_type, target_id),
+  FOREIGN KEY (escalation_policy_step_id) REFERENCES ext_escalation_policy_steps(id)
+) STRICT;
