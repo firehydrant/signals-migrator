@@ -91,6 +91,11 @@ func importAction(cliCtx *cli.Context) error {
 	return tfr.Write(ctx)
 }
 
+// Because the amount of escalation policies being queried can be large for some organizations,
+// we preemptively save everything from API response to database. Then, we prompt user to select
+// which rows to import. We mark the selected rows from users in `to_import` field and delete
+// the ones that we will not import to FireHydrant. This is done to simplify the state management
+// between queries and filtering.
 func importEscalationPolicies(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
 	if err := provider.LoadEscalationPolicies(ctx); err != nil {
 		return fmt.Errorf("unable to load escalation policies: %w", err)
