@@ -6,6 +6,59 @@ import (
 	"github.com/gosimple/slug"
 )
 
+func (u *LinkedUser) TFSlug() string {
+	username := strings.Split(u.Email, "@")[0]
+	return strings.ReplaceAll(slug.Make(username), "-", "_")
+}
+
+func (r *LinkedTeam) ExtTeam() *ExtTeam {
+	return &ExtTeam{
+		ID:   r.ID,
+		Name: r.Name,
+		Slug: r.Slug,
+	}
+}
+
+func (r *LinkedTeam) FhTeam() *FhTeam {
+	var id, name, slug string
+	if r.FhTeamID.Valid {
+		id = r.FhTeamID.String
+	}
+	if r.FhName.Valid {
+		name = r.FhName.String
+	}
+	if r.FhSlug.Valid {
+		slug = r.FhSlug.String
+	}
+	return &FhTeam{
+		ID:   id,
+		Name: name,
+		Slug: slug,
+	}
+}
+
+func (r *LinkedTeam) ValidName() string {
+	if r.FhTeamID.Valid {
+		return r.FhName.String
+	}
+	return r.Name
+}
+
+func (r *LinkedTeam) TFSlug() string {
+	s := r.Slug
+	if r.FhTeamID.Valid {
+		s = r.FhSlug.String
+	}
+	if s == "" {
+		s = slug.Make(r.ValidName())
+	}
+	return strings.ReplaceAll(s, "-", "_")
+}
+
+func (r *ExtEscalationPolicy) TFSlug() string {
+	return strings.ReplaceAll(slug.Make(r.Name), "-", "_")
+}
+
 func (r *ListExtTeamsRow) ExtTeam() *ExtTeam {
 	return &ExtTeam{
 		ID:   r.ID,
@@ -98,7 +151,6 @@ func (s *ExtSchedule) TFSlug() string {
 	return strings.ReplaceAll(slug.Make(s.Name), "-", "_")
 }
 
-// Technically this should never be used, but available as a fallback.
 func (t *ExtTeam) TFSlug() string {
 	if t.Slug == "" {
 		return strings.ReplaceAll(slug.Make(t.Name), "-", "_")

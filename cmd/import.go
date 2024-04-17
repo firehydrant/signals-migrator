@@ -76,6 +76,11 @@ func importAction(cliCtx *cli.Context) error {
 	}
 	console.Infof("Imported schedules from %s.\n", providerName)
 
+	if err := importEscalationPolicies(ctx, provider, fh); err != nil {
+		return fmt.Errorf("importing escalation policies: %w", err)
+	}
+	console.Infof("Imported escalation policies from %s.\n", providerName)
+
 	tfr, err := tfrender.New(
 		cliCtx.String("output-dir"),
 		fmt.Sprintf("%s_to_fh_signals.tf", strings.ToLower(providerName)),
@@ -84,6 +89,53 @@ func importAction(cliCtx *cli.Context) error {
 		return fmt.Errorf("initializing Terraform render space: %w", err)
 	}
 	return tfr.Write(ctx)
+}
+
+func importEscalationPolicies(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
+	if err := provider.LoadEscalationPolicies(ctx); err != nil {
+		return fmt.Errorf("unable to load escalation policies: %w", err)
+	}
+	allEps, err := store.UseQueries(ctx).ListExtEscalationPolicies(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to list escalation policies: %w", err)
+	}
+	options := []store.ExtEscalationPolicy{{ID: "[+] ADD ALL"}, {ID: "[<] SKIP ALL"}}
+	options = append(options, allEps...)
+	console.Warnf("Please select (out of %d) which escalation policies to migrate.\n", len(allEps))
+	selected, toImport, err := console.MultiSelectf(options, func(ep store.ExtEscalationPolicy) string {
+		return fmt.Sprintf("%s %s", ep.ID, ep.Name)
+	}, "Which escalation policies should be migrated to FireHydrant?")
+	if err != nil {
+		return fmt.Errorf("selecting escalation policies: %w", err)
+	}
+	if len(selected) == 0 {
+		console.Warnf("No escalation policies selected for migration. Assuming all...\n")
+		selected = append(selected, 0)
+	}
+
+	switch selected[0] {
+	case 0:
+		console.Successf("[+] All escalation policies will be migrated to FireHydrant.\n")
+		if err := store.UseQueries(ctx).MarkAllExtEscalationPolicyToImport(ctx); err != nil {
+			return fmt.Errorf("unable to mark all escalation policies for import: %w", err)
+		}
+	case 1:
+		console.Warnf("[<] No escalation policies will be migrated to FireHydrant.\n")
+	default:
+		for _, ep := range toImport {
+			if ep.ID == "[+] ADD ALL" || ep.ID == "[<] SKIP ALL" {
+				continue
+			}
+			if err := store.UseQueries(ctx).MarkExtEscalationPolicyToImport(ctx, ep.ID); err != nil {
+				return fmt.Errorf("unable to mark escalation policy '%s' for import: %w", ep.Name, err)
+			}
+		}
+	}
+
+	if err := store.UseQueries(ctx).DeleteExtEscalationPolicyUnimported(ctx); err != nil {
+		return fmt.Errorf("unable to delete unimported escalation policies: %w", err)
+	}
+	return nil
 }
 
 func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {

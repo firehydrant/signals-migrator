@@ -8,6 +8,31 @@ import (
 	"database/sql"
 )
 
+type ExtEscalationPolicy struct {
+	ID                string         `json:"id"`
+	Name              string         `json:"name"`
+	Description       string         `json:"description"`
+	TeamID            sql.NullString `json:"team_id"`
+	RepeatLimit       int64          `json:"repeat_limit"`
+	RepeatInterval    sql.NullString `json:"repeat_interval"`
+	HandoffTargetType string         `json:"handoff_target_type"`
+	HandoffTargetID   string         `json:"handoff_target_id"`
+	ToImport          int64          `json:"to_import"`
+}
+
+type ExtEscalationPolicyStep struct {
+	ID                 string `json:"id"`
+	EscalationPolicyID string `json:"escalation_policy_id"`
+	Position           int64  `json:"position"`
+	Timeout            string `json:"timeout"`
+}
+
+type ExtEscalationPolicyStepTarget struct {
+	EscalationPolicyStepID string `json:"escalation_policy_step_id"`
+	TargetType             string `json:"target_type"`
+	TargetID               string `json:"target_id"`
+}
+
 type ExtMembership struct {
 	UserID string `json:"user_id"`
 	TeamID string `json:"team_id"`
@@ -68,4 +93,22 @@ type FhUser struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+type LinkedTeam struct {
+	ID       string         `json:"id"`
+	Name     string         `json:"name"`
+	Slug     string         `json:"slug"`
+	FhTeamID sql.NullString `json:"fh_team_id"`
+	FhName   sql.NullString `json:"fh_name"`
+	FhSlug   sql.NullString `json:"fh_slug"`
+}
+
+type LinkedUser struct {
+	ID       string         `json:"id"`
+	Name     string         `json:"name"`
+	Email    string         `json:"email"`
+	FhUserID sql.NullString `json:"fh_user_id"`
+	FhName   sql.NullString `json:"fh_name"`
+	FhEmail  sql.NullString `json:"fh_email"`
 }

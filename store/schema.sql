@@ -1,3 +1,5 @@
+PRAGMA main.auto_vacuum = 1;
+
 CREATE TABLE IF NOT EXISTS fh_users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
@@ -11,6 +13,10 @@ CREATE TABLE IF NOT EXISTS ext_users (
   fh_user_id TEXT REFERENCES fh_users(id)
 ) STRICT;
 
+CREATE VIEW IF NOT EXISTS linked_users AS
+  SELECT ext_users.*, fh_users.name as fh_name, fh_users.email as fh_email FROM ext_users
+    LEFT JOIN fh_users ON fh_users.id = ext_users.fh_user_id;
+
 CREATE TABLE IF NOT EXISTS fh_teams (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
@@ -23,6 +29,10 @@ CREATE TABLE IF NOT EXISTS ext_teams (
   slug TEXT NOT NULL,
   fh_team_id TEXT REFERENCES fh_teams(id)
 ) STRICT;
+
+CREATE VIEW IF NOT EXISTS linked_teams AS
+  SELECT ext_teams.*, fh_teams.name as fh_name, fh_teams.slug as fh_slug FROM ext_teams
+    LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id;
 
 CREATE TABLE IF NOT EXISTS ext_memberships (
   user_id TEXT NOT NULL,
@@ -76,9 +86,11 @@ CREATE TABLE IF NOT EXISTS ext_escalation_policies (
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   team_id TEXT REFERENCES ext_teams(id),
-  repeat INTEGER NOT NULL,
+  repeat_limit INTEGER NOT NULL,
+  repeat_interval TEXT,
   handoff_target_type TEXT NOT NULL,
-  handoff_target_id TEXT NOT NULL
+  handoff_target_id TEXT NOT NULL,
+  to_import INTEGER NOT NULL
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_escalation_policy_steps (
@@ -86,13 +98,13 @@ CREATE TABLE IF NOT EXISTS ext_escalation_policy_steps (
   escalation_policy_id TEXT NOT NULL,
   position INTEGER NOT NULL,
   timeout TEXT NOT NULL,
-  FOREIGN KEY (escalation_policy_id) REFERENCES ext_escalation_policies(id)
+  FOREIGN KEY (escalation_policy_id) REFERENCES ext_escalation_policies(id) ON DELETE CASCADE
 ) STRICT;
 
-CREATE TABLE IF NOT EXISTS ext_escalation_policy_targets (
+CREATE TABLE IF NOT EXISTS ext_escalation_policy_step_targets (
   escalation_policy_step_id TEXT NOT NULL,
   target_type TEXT NOT NULL,
   target_id TEXT NOT NULL,
   PRIMARY KEY (escalation_policy_step_id, target_type, target_id),
-  FOREIGN KEY (escalation_policy_step_id) REFERENCES ext_escalation_policy_steps(id)
+  FOREIGN KEY (escalation_policy_step_id) REFERENCES ext_escalation_policy_steps(id) ON DELETE CASCADE
 ) STRICT;

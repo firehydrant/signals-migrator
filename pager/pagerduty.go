@@ -51,7 +51,7 @@ func (p *PagerDuty) LoadSchedules(ctx context.Context) error {
 		if !resp.More {
 			break
 		}
-		opts.Offset = resp.Offset
+		opts.Offset += uint(len(resp.Schedules))
 	}
 
 	return nil
@@ -196,9 +196,107 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 	return nil
 }
 
+func (p *PagerDuty) LoadEscalationPolicies(ctx context.Context) error {
+	opts := pagerduty.ListEscalationPoliciesOptions{
+		Includes: []string{"targets"},
+	}
+
+	for {
+		resp, err := p.client.ListEscalationPoliciesWithContext(ctx, opts)
+		if err != nil {
+			return err
+		}
+
+		for _, policy := range resp.EscalationPolicies {
+			if err := p.saveEscalationPolicyToDB(ctx, policy); err != nil {
+				return fmt.Errorf("saving escalation policy to db: %w", err)
+			}
+		}
+
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.EscalationPolicies))
+	}
+
+	return nil
+}
+
+func (p *PagerDuty) saveEscalationPolicyToDB(ctx context.Context, policy pagerduty.EscalationPolicy) error {
+	ep := store.InsertExtEscalationPolicyParams{
+		ID:          policy.ID,
+		Name:        policy.Name,
+		Description: policy.Description,
+		RepeatLimit: int64(policy.NumLoops),
+	}
+	if err := store.UseQueries(ctx).InsertExtEscalationPolicy(ctx, ep); err != nil {
+		return fmt.Errorf("saving escalation policy %s (%s): %w", ep.Name, ep.ID, err)
+	}
+
+	// PagerDuty's Escalation Rule is equivalent to FireHydrant Escalation Policy Step.
+	for i, rule := range policy.EscalationRules {
+		if err := p.saveEscalationPolicyStepToDB(ctx, ep.ID, rule, int64(i)); err != nil {
+			return fmt.Errorf("saving escalation rule to db: %w", err)
+		}
+	}
+	return nil
+}
+
+func (p *PagerDuty) saveEscalationPolicyStepToDB(
+	ctx context.Context,
+	policyID string,
+	rule pagerduty.EscalationRule,
+	position int64,
+) error {
+	step := store.InsertExtEscalationPolicyStepParams{
+		ID:                 rule.ID,
+		EscalationPolicyID: policyID,
+		Position:           position,
+	}
+	if rule.Delay > 0 {
+		step.Timeout = fmt.Sprintf("PT%dM", rule.Delay)
+	}
+	if err := store.UseQueries(ctx).InsertExtEscalationPolicyStep(ctx, step); err != nil {
+		return fmt.Errorf("saving escalation policy step: %w", err)
+	}
+
+	for i, target := range rule.Targets {
+		if err := p.saveEscalationPolicyStepTargetToDB(ctx, step.ID, target, i); err != nil {
+			return fmt.Errorf("saving escalation policy step target: %w", err)
+		}
+	}
+	return nil
+}
+
+func (p *PagerDuty) saveEscalationPolicyStepTargetToDB(
+	ctx context.Context,
+	stepID string,
+	pdTarget pagerduty.APIObject,
+	position int,
+) error {
+	t := store.InsertExtEscalationPolicyStepTargetParams{EscalationPolicyStepID: stepID}
+	switch pdTarget.Type {
+	case "user", "user_reference":
+		t.TargetType = store.TARGET_TYPE_USER
+		t.TargetID = pdTarget.ID
+	case "schedule", "schedule_reference":
+		t.TargetType = store.TARGET_TYPE_SCHEDULE
+		t.TargetID = pdTarget.ID
+	default:
+		console.Warnf("Unknown escalation policy step target type '%s' for step '%s', skipping...\n", pdTarget.Type, stepID)
+		return nil
+	}
+	if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, t); err != nil {
+		return fmt.Errorf("saving escalation policy step target: %w", err)
+	}
+	return nil
+}
+
 func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	members := []*User{}
-	opts := pagerduty.ListTeamMembersOptions{}
+	opts := pagerduty.ListTeamMembersOptions{
+		Offset: 0,
+	}
 
 	for {
 		resp, err := p.client.ListTeamMembers(ctx, team.ID, opts)
@@ -214,7 +312,7 @@ func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
 		if !resp.More {
 			break
 		}
-		opts.Offset = resp.Offset
+		opts.Offset += uint(len(resp.Members))
 	}
 	team.Members = members
 	return nil
@@ -222,7 +320,9 @@ func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
 
 func (p *PagerDuty) ListTeams(ctx context.Context) ([]*Team, error) {
 	teams := []*Team{}
-	opts := pagerduty.ListTeamOptions{}
+	opts := pagerduty.ListTeamOptions{
+		Offset: 0,
+	}
 
 	for {
 		resp, err := p.client.ListTeamsWithContext(ctx, opts)
@@ -238,7 +338,7 @@ func (p *PagerDuty) ListTeams(ctx context.Context) ([]*Team, error) {
 		if !resp.More {
 			break
 		}
-		opts.Offset = resp.Offset
+		opts.Offset += uint(len(resp.Teams))
 	}
 	return teams, nil
 }
@@ -256,7 +356,9 @@ func (p *PagerDuty) toTeam(team pagerduty.Team) *Team {
 
 func (p *PagerDuty) ListUsers(ctx context.Context) ([]*User, error) {
 	users := []*User{}
-	opts := pagerduty.ListUsersOptions{}
+	opts := pagerduty.ListUsersOptions{
+		Offset: 0,
+	}
 
 	for {
 		resp, err := p.client.ListUsersWithContext(ctx, opts)
@@ -272,7 +374,7 @@ func (p *PagerDuty) ListUsers(ctx context.Context) ([]*User, error) {
 		if !resp.More {
 			break
 		}
-		opts.Offset = resp.Offset
+		opts.Offset += uint(len(resp.Users))
 	}
 	return users, nil
 }
