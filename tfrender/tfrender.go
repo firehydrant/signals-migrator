@@ -128,7 +128,7 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 		if p.TeamID.Valid && p.TeamID.String != "" {
 			t, err := store.UseQueries(ctx).GetTeamByExtID(ctx, p.TeamID.String)
 			if err != nil {
-				return fmt.Errorf("querying team '%s' for policy '%s': %w", p.TeamID, p.Name, err)
+				return fmt.Errorf("querying team '%s' for policy '%s': %w", p.TeamID.String, p.Name, err)
 			}
 			currentTeam = &t
 			b.SetAttributeTraversal("team_id", hcl.Traversal{
