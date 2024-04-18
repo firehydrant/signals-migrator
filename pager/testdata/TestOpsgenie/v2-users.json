@@ -1,0 +1,53 @@
+{
+    "totalCount": 2,
+    "data": [
+      {
+        "blocked": false,
+        "verified": true,
+        "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4",
+        "username": "john.doe@opsgenie.com",
+        "fullName": "john doe",
+        "role": {
+          "id": "Admin",
+          "name": "Admin"
+        },
+        "timeZone": "America/New_York",
+        "locale": "en_US",
+        "userAddress": {
+          "country": "",
+          "state": "",
+          "city": "",
+          "line": "",
+          "zipCode": ""
+        },
+        "createdAt": "2022-07-07T20:42:29.853Z"
+      },
+      {
+        "blocked": false,
+        "verified": true,
+        "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc5",
+        "username": "jane.doe@opsgenie.com",
+        "fullName": "jane doe",
+        "role": {
+          "id": "Admin",
+          "name": "Admin"
+        },
+        "timeZone": "America/New_York",
+        "locale": "en_US",
+        "userAddress": {
+          "country": "",
+          "state": "",
+          "city": "",
+          "line": "",
+          "zipCode": ""
+        },
+        "createdAt": "2022-07-07T20:42:29.853Z"
+      }
+    ],
+    "paging": {
+      "first": "https://api.opsgenie.com/v2/users?limit=100&offset=0&order=ASC&sort=username",
+      "last": "https://api.opsgenie.com/v2/users?limit=100&offset=0&order=ASC&sort=username"
+    },
+    "took": 0.054,
+    "requestId": "1a80d272-80f1-4b38-b319-f617ff8ee136"
+  }

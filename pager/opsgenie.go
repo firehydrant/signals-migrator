@@ -45,6 +45,31 @@ func NewOpsgenie(apiKey string) *Opsgenie {
 	}
 }
 
+func NewOpsgenieWithURL(apiKey, url string) *Opsgenie {
+
+	// Create a new userClient
+	var userClient, _ = user.NewClient(&client.Config{
+		ApiKey:         apiKey,
+		OpsGenieAPIURL: client.ApiUrl(url),
+	})
+
+	var teamClient, _ = team.NewClient(&client.Config{
+		ApiKey:         apiKey,
+		OpsGenieAPIURL: client.ApiUrl(url),
+	})
+
+	var scheduleClient, _ = schedule.NewClient(&client.Config{
+		ApiKey:         apiKey,
+		OpsGenieAPIURL: client.ApiUrl(url),
+	})
+
+	return &Opsgenie{
+		userClient:     userClient,
+		teamClient:     teamClient,
+		scheduleClient: scheduleClient,
+	}
+}
+
 func (p *Opsgenie) Kind() string {
 	return "opsgenie"
 }
