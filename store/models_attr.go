@@ -7,7 +7,14 @@ import (
 )
 
 func (u *LinkedUser) TFSlug() string {
-	username := strings.Split(u.Email, "@")[0]
+	email := u.Email
+	// Always prioritize FH-owned attributes over external ones,
+	// as it means the resource already exists in FH and we should follow it.
+	if u.FhEmail.Valid && u.FhEmail.String != "" {
+		email = u.FhEmail.String
+	}
+
+	username := strings.Split(email, "@")[0]
 	return strings.ReplaceAll(slug.Make(username), "-", "_")
 }
 
