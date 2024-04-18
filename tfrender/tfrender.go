@@ -213,7 +213,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 	}
 
 	for _, s := range schedules {
-		teams, err := store.UseQueries(ctx).ListFhTeamsByExtScheduleID(ctx, s.ID)
+		teams, err := store.UseQueries(ctx).ListTeamsByExtScheduleID(ctx, s.ID)
 		if err != nil {
 			return fmt.Errorf("querying teams for schedule '%s': %w", s.Name, err)
 		}
@@ -287,7 +287,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 }
 
 func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
-	extTeams, err := store.UseQueries(ctx).ListExtTeams(ctx)
+	extTeams, err := store.UseQueries(ctx).ListTeams(ctx)
 	if err != nil {
 		return fmt.Errorf("querying teams: %w", err)
 	}
