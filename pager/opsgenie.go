@@ -75,9 +75,9 @@ func (p *Opsgenie) Kind() string {
 }
 
 func (o *Opsgenie) LoadSchedules(ctx context.Context) error {
+	expandListRequest := true
 	resp, err := o.scheduleClient.List(ctx, &schedule.ListRequest{
-		// this is the cleanest way I found of making a *bool.  Happy to replace it with anything more readable.
-		Expand: func() *bool { b := true; return &b }(),
+		Expand: &expandListRequest,
 	})
 
 	if err != nil {
@@ -191,8 +191,8 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 		switch r.TimeRestriction.Type {
 		case og.WeekdayAndTimeOfDay:
 			for i, tr := range r.TimeRestriction.RestrictionList {
-				startTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.StartHour, *tr.StartMin))
-				endTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.EndHour, *tr.EndMin))
+				startTime := time.Date(0, time.January, 1, int(*tr.StartHour), int(*tr.StartMin), 0, 0, time.UTC)
+				endTime := time.Date(0, time.January, 1, int(*tr.EndHour), int(*tr.EndMin), 0, 0, time.UTC)
 
 				ogsRestrictionsParams := store.InsertExtScheduleRestrictionParams{
 					ScheduleID:       ogsParams.ID,
@@ -210,8 +210,8 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 			for i := range 7 {
 				tr := r.TimeRestriction.Restriction
 				startDayStr := strings.ToLower(time.Weekday(i).String())
-				startTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.StartHour, *tr.StartMin))
-				endTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.EndHour, *tr.EndMin))
+				startTime := time.Date(0, time.January, 1, int(*tr.StartHour), int(*tr.StartMin), 0, 0, time.UTC)
+				endTime := time.Date(0, time.January, 1, int(*tr.EndHour), int(*tr.EndMin), 0, 0, time.UTC)
 				var endDayStr string
 				if endTime.Before(startTime) {
 					day := (i + 1) % 7
