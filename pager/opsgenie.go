@@ -125,15 +125,19 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 	}
 
 	// ExtScheduleTeam
-	if err := q.InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
-		ScheduleID: ogsParams.ID,
-		TeamID:     s.OwnerTeam.Id,
-	}); err != nil {
-		if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
-			console.Warnf("Team %s not found for schedule %s, skipping...\n", s.OwnerTeam.Id, ogsParams.ID)
-		} else {
-			return fmt.Errorf("error saving schedule team: %w", err)
+	if s.OwnerTeam != nil {
+		if err := q.InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
+			ScheduleID: ogsParams.ID,
+			TeamID:     s.OwnerTeam.Id,
+		}); err != nil {
+			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
+				console.Warnf("Team %s not found for schedule %s, skipping...\n", s.OwnerTeam.Id, ogsParams.ID)
+			} else {
+				return fmt.Errorf("error saving schedule team: %w", err)
+			}
 		}
+	} else {
+		console.Warnf("No owning team found for schedule %s, skipping...\n", ogsParams.ID)
 	}
 
 	// ExtScheduleMembers
@@ -153,12 +157,17 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 	}
 
 	// ExtScheduleRestriction
+	// The opsgenie api, may in burn in the hell of a thousand suns, returns TimeRestriction.Restriction if the type is TimeOfDay
+	// and TimeRestriction.RestrictionList if the type is WeekdayAndTimeOfDay because... I've got nothing.  There is no excuse that
+	// works here, and I can't make it make sense for them.  At least they documented this... no wait, they didn't actually document
+	// it at all and I had to guess at this behavior from testing before digging into the source to confirm which, as it turns out,
+	// is exactly how I wanted to spend my morning so thanks for that.
 	if r.TimeRestriction != nil {
 		switch r.TimeRestriction.Type {
 		case og.WeekdayAndTimeOfDay:
 			for i, tr := range r.TimeRestriction.RestrictionList {
-				startTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%d", *tr.StartHour, *tr.StartMin))
-				endTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%d", *tr.EndHour, *tr.EndMin))
+				startTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.StartHour, *tr.StartMin))
+				endTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.EndHour, *tr.EndMin))
 
 				ogsRestrictionsParams := store.InsertExtScheduleRestrictionParams{
 					ScheduleID:       ogsParams.ID,
@@ -173,23 +182,29 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 				}
 			}
 		case og.TimeOfDay:
-			for i, tr := range r.TimeRestriction.RestrictionList {
-				for j := range 7 {
-					dayStr := strings.ToLower(time.Weekday(j).String())
-					startTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%d", *tr.StartHour, *tr.StartMin))
-					endTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%d", *tr.EndHour, *tr.EndMin))
+			for i := range 7 {
+				tr := r.TimeRestriction.Restriction
+				startDayStr := strings.ToLower(time.Weekday(i).String())
+				startTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.StartHour, *tr.StartMin))
+				endTime, _ := time.Parse(time.TimeOnly, fmt.Sprintf("%d:%02d:00", *tr.EndHour, *tr.EndMin))
+				var endDayStr string
+				if endTime.Before(startTime) {
+					day := (i + 1) % 7
+					endDayStr = strings.ToLower(time.Weekday(day).String())
+				} else {
+					endDayStr = startDayStr
+				}
 
-					ogsRestrictionsParams := store.InsertExtScheduleRestrictionParams{
-						ScheduleID:       ogsParams.ID,
-						RestrictionIndex: fmt.Sprintf("%d-%d", i, j),
-						StartDay:         dayStr,
-						StartTime:        startTime.Format(time.TimeOnly),
-						EndDay:           dayStr,
-						EndTime:          endTime.Format(time.TimeOnly),
-					}
-					if err := q.InsertExtScheduleRestriction(ctx, ogsRestrictionsParams); err != nil {
-						return fmt.Errorf("error saving time of day restriction: %w", err)
-					}
+				ogsRestrictionsParams := store.InsertExtScheduleRestrictionParams{
+					ScheduleID:       ogsParams.ID,
+					RestrictionIndex: strconv.Itoa(i),
+					StartDay:         startDayStr,
+					StartTime:        startTime.Format(time.TimeOnly),
+					EndDay:           endDayStr,
+					EndTime:          endTime.Format(time.TimeOnly),
+				}
+				if err := q.InsertExtScheduleRestriction(ctx, ogsRestrictionsParams); err != nil {
+					return fmt.Errorf("error saving time of day restriction: %w", err)
 				}
 			}
 		default:

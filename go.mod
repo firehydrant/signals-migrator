@@ -7,8 +7,7 @@ require (
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240328185852-590ecabc34b9
 	github.com/fatih/color v1.16.0
-	// Remove once PR is merged: https://github.com/firehydrant/terraform-provider-firehydrant/pull/151
-	github.com/firehydrant/terraform-provider-firehydrant v0.7.2-0.20240409165220-1012cb85d276
+	github.com/firehydrant/terraform-provider-firehydrant v0.8.0
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.20.1
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
