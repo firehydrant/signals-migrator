@@ -1,4 +1,5 @@
 PRAGMA main.auto_vacuum = 1;
+PRAGMA foreign_keys=ON;
 
 CREATE TABLE IF NOT EXISTS fh_users (
   id TEXT PRIMARY KEY,
