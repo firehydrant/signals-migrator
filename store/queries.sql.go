@@ -540,50 +540,6 @@ func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
 	return items, nil
 }
 
-const listExtTeams = `-- name: ListExtTeams :many
-SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, fh_teams.name as fh_team_name, fh_teams.slug as fh_team_slug FROM ext_teams
-  LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id
-`
-
-type ListExtTeamsRow struct {
-	ID         string         `json:"id"`
-	Name       string         `json:"name"`
-	Slug       string         `json:"slug"`
-	FhTeamID   sql.NullString `json:"fh_team_id"`
-	FhTeamName sql.NullString `json:"fh_team_name"`
-	FhTeamSlug sql.NullString `json:"fh_team_slug"`
-}
-
-func (q *Queries) ListExtTeams(ctx context.Context) ([]ListExtTeamsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listExtTeams)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListExtTeamsRow
-	for rows.Next() {
-		var i ListExtTeamsRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Slug,
-			&i.FhTeamID,
-			&i.FhTeamName,
-			&i.FhTeamSlug,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listFhMembersByExtScheduleID = `-- name: ListFhMembersByExtScheduleID :many
 SELECT fh_users.id, fh_users.name, fh_users.email FROM ext_schedule_members
   JOIN ext_users ON ext_users.id = ext_schedule_members.user_id
@@ -673,52 +629,6 @@ func (q *Queries) ListFhTeams(ctx context.Context) ([]FhTeam, error) {
 	return items, nil
 }
 
-const listFhTeamsByExtScheduleID = `-- name: ListFhTeamsByExtScheduleID :many
-SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, fh_teams.name as fh_team_name, fh_teams.slug as fh_team_slug FROM ext_schedule_teams
-  JOIN ext_teams ON ext_teams.id = ext_schedule_teams.team_id
-  LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id
-WHERE ext_schedule_teams.schedule_id = ?
-`
-
-type ListFhTeamsByExtScheduleIDRow struct {
-	ID         string         `json:"id"`
-	Name       string         `json:"name"`
-	Slug       string         `json:"slug"`
-	FhTeamID   sql.NullString `json:"fh_team_id"`
-	FhTeamName sql.NullString `json:"fh_team_name"`
-	FhTeamSlug sql.NullString `json:"fh_team_slug"`
-}
-
-func (q *Queries) ListFhTeamsByExtScheduleID(ctx context.Context, scheduleID string) ([]ListFhTeamsByExtScheduleIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, listFhTeamsByExtScheduleID, scheduleID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListFhTeamsByExtScheduleIDRow
-	for rows.Next() {
-		var i ListFhTeamsByExtScheduleIDRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Slug,
-			&i.FhTeamID,
-			&i.FhTeamName,
-			&i.FhTeamSlug,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listFhUsers = `-- name: ListFhUsers :many
 SELECT id, name, email FROM fh_users
 `
@@ -733,6 +643,76 @@ func (q *Queries) ListFhUsers(ctx context.Context) ([]FhUser, error) {
 	for rows.Next() {
 		var i FhUser
 		if err := rows.Scan(&i.ID, &i.Name, &i.Email); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeams = `-- name: ListTeams :many
+SELECT id, name, slug, fh_team_id, fh_name, fh_slug from linked_teams
+`
+
+func (q *Queries) ListTeams(ctx context.Context) ([]LinkedTeam, error) {
+	rows, err := q.db.QueryContext(ctx, listTeams)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []LinkedTeam
+	for rows.Next() {
+		var i LinkedTeam
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.FhTeamID,
+			&i.FhName,
+			&i.FhSlug,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTeamsByExtScheduleID = `-- name: ListTeamsByExtScheduleID :many
+SELECT linked_teams.id, linked_teams.name, linked_teams.slug, linked_teams.fh_team_id, linked_teams.fh_name, linked_teams.fh_slug FROM linked_teams
+  JOIN ext_schedule_teams ON linked_teams.id = ext_schedule_teams.team_id
+WHERE ext_schedule_teams.schedule_id = ?
+`
+
+func (q *Queries) ListTeamsByExtScheduleID(ctx context.Context, scheduleID string) ([]LinkedTeam, error) {
+	rows, err := q.db.QueryContext(ctx, listTeamsByExtScheduleID, scheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []LinkedTeam
+	for rows.Next() {
+		var i LinkedTeam
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.FhTeamID,
+			&i.FhName,
+			&i.FhSlug,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

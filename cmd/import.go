@@ -209,7 +209,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 		}
 	}
 
-	allTeams, err := store.UseQueries(ctx).ListExtTeams(ctx)
+	allTeams, err := store.UseQueries(ctx).ListTeams(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to list all teams: %w", err)
 	}
