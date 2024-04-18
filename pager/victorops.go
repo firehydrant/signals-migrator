@@ -28,6 +28,12 @@ func (v *VictorOps) LoadSchedules(ctx context.Context) error {
 	return nil
 }
 
+func (v *VictorOps) LoadEscalationPolicies(ctx context.Context) error {
+	// TODO: implement
+	console.Warnf("victorops.LoadEscalationPolicies is not currently supported.")
+	return nil
+}
+
 func (v *VictorOps) PopulateTeamMembers(ctx context.Context, team *Team) error {
 	members := []*User{}
 

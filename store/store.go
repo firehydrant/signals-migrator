@@ -36,9 +36,6 @@ func WithContext(ctx context.Context) context.Context {
 
 	pragmaCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	if _, err := s.conn.ExecContext(pragmaCtx, `PRAGMA foreign_keys = true;`); err != nil {
-		panic(err)
-	}
 	if _, err := s.conn.ExecContext(pragmaCtx, schema); err != nil {
 		panic(err)
 	}

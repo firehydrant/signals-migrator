@@ -21,6 +21,36 @@ func (q *Queries) CheckExtTeamExists(ctx context.Context, id string) (bool, erro
 	return column_1, err
 }
 
+const deleteExtEscalationPolicyUnimported = `-- name: DeleteExtEscalationPolicyUnimported :exec
+DELETE FROM ext_escalation_policies WHERE to_import = 0
+`
+
+func (q *Queries) DeleteExtEscalationPolicyUnimported(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteExtEscalationPolicyUnimported)
+	return err
+}
+
+const getExtSchedule = `-- name: GetExtSchedule :one
+SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules WHERE id = ?
+`
+
+func (q *Queries) GetExtSchedule(ctx context.Context, id string) (ExtSchedule, error) {
+	row := q.db.QueryRowContext(ctx, getExtSchedule, id)
+	var i ExtSchedule
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Timezone,
+		&i.Strategy,
+		&i.ShiftDuration,
+		&i.StartTime,
+		&i.HandoffTime,
+		&i.HandoffDay,
+	)
+	return i, err
+}
+
 const getFhUserByEmail = `-- name: GetFhUserByEmail :one
 SELECT id, name, email FROM fh_users WHERE email = ?
 `
@@ -30,6 +60,112 @@ func (q *Queries) GetFhUserByEmail(ctx context.Context, email string) (FhUser, e
 	var i FhUser
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
 	return i, err
+}
+
+const getTeamByExtID = `-- name: GetTeamByExtID :one
+SELECT id, name, slug, fh_team_id, fh_name, fh_slug FROM linked_teams WHERE id = ?
+`
+
+func (q *Queries) GetTeamByExtID(ctx context.Context, id string) (LinkedTeam, error) {
+	row := q.db.QueryRowContext(ctx, getTeamByExtID, id)
+	var i LinkedTeam
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.FhTeamID,
+		&i.FhName,
+		&i.FhSlug,
+	)
+	return i, err
+}
+
+const getUserByExtID = `-- name: GetUserByExtID :one
+SELECT id, name, email, fh_user_id, fh_name, fh_email FROM linked_users WHERE id = ?
+`
+
+func (q *Queries) GetUserByExtID(ctx context.Context, id string) (LinkedUser, error) {
+	row := q.db.QueryRowContext(ctx, getUserByExtID, id)
+	var i LinkedUser
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.FhUserID,
+		&i.FhName,
+		&i.FhEmail,
+	)
+	return i, err
+}
+
+const insertExtEscalationPolicy = `-- name: InsertExtEscalationPolicy :exec
+INSERT INTO ext_escalation_policies (id, name, description, team_id, repeat_interval, repeat_limit, handoff_target_type, handoff_target_id, to_import)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type InsertExtEscalationPolicyParams struct {
+	ID                string         `json:"id"`
+	Name              string         `json:"name"`
+	Description       string         `json:"description"`
+	TeamID            sql.NullString `json:"team_id"`
+	RepeatInterval    sql.NullString `json:"repeat_interval"`
+	RepeatLimit       int64          `json:"repeat_limit"`
+	HandoffTargetType string         `json:"handoff_target_type"`
+	HandoffTargetID   string         `json:"handoff_target_id"`
+	ToImport          int64          `json:"to_import"`
+}
+
+func (q *Queries) InsertExtEscalationPolicy(ctx context.Context, arg InsertExtEscalationPolicyParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtEscalationPolicy,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.TeamID,
+		arg.RepeatInterval,
+		arg.RepeatLimit,
+		arg.HandoffTargetType,
+		arg.HandoffTargetID,
+		arg.ToImport,
+	)
+	return err
+}
+
+const insertExtEscalationPolicyStep = `-- name: InsertExtEscalationPolicyStep :exec
+INSERT INTO ext_escalation_policy_steps (id, escalation_policy_id, position, timeout)
+VALUES (?, ?, ?, ?)
+`
+
+type InsertExtEscalationPolicyStepParams struct {
+	ID                 string `json:"id"`
+	EscalationPolicyID string `json:"escalation_policy_id"`
+	Position           int64  `json:"position"`
+	Timeout            string `json:"timeout"`
+}
+
+func (q *Queries) InsertExtEscalationPolicyStep(ctx context.Context, arg InsertExtEscalationPolicyStepParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtEscalationPolicyStep,
+		arg.ID,
+		arg.EscalationPolicyID,
+		arg.Position,
+		arg.Timeout,
+	)
+	return err
+}
+
+const insertExtEscalationPolicyStepTarget = `-- name: InsertExtEscalationPolicyStepTarget :exec
+INSERT INTO ext_escalation_policy_step_targets (escalation_policy_step_id, target_type, target_id)
+VALUES (?, ?, ?)
+`
+
+type InsertExtEscalationPolicyStepTargetParams struct {
+	EscalationPolicyStepID string `json:"escalation_policy_step_id"`
+	TargetType             string `json:"target_type"`
+	TargetID               string `json:"target_id"`
+}
+
+func (q *Queries) InsertExtEscalationPolicyStepTarget(ctx context.Context, arg InsertExtEscalationPolicyStepTargetParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtEscalationPolicyStepTarget, arg.EscalationPolicyStepID, arg.TargetType, arg.TargetID)
+	return err
 }
 
 const insertExtMembership = `-- name: InsertExtMembership :exec
@@ -47,7 +183,8 @@ func (q *Queries) InsertExtMembership(ctx context.Context, arg InsertExtMembersh
 }
 
 const insertExtSchedule = `-- name: InsertExtSchedule :exec
-INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type InsertExtScheduleParams struct {
@@ -78,7 +215,8 @@ func (q *Queries) InsertExtSchedule(ctx context.Context, arg InsertExtSchedulePa
 }
 
 const insertExtScheduleMember = `-- name: InsertExtScheduleMember :exec
-INSERT INTO ext_schedule_members (schedule_id, user_id) VALUES (?, ?)
+INSERT INTO ext_schedule_members (schedule_id, user_id)
+VALUES (?, ?)
 `
 
 type InsertExtScheduleMemberParams struct {
@@ -92,7 +230,8 @@ func (q *Queries) InsertExtScheduleMember(ctx context.Context, arg InsertExtSche
 }
 
 const insertExtScheduleRestriction = `-- name: InsertExtScheduleRestriction :exec
-INSERT INTO ext_schedule_restrictions (schedule_id, restriction_index, start_time, start_day, end_time, end_day) VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO ext_schedule_restrictions (schedule_id, restriction_index, start_time, start_day, end_time, end_day)
+VALUES (?, ?, ?, ?, ?, ?)
 `
 
 type InsertExtScheduleRestrictionParams struct {
@@ -117,7 +256,8 @@ func (q *Queries) InsertExtScheduleRestriction(ctx context.Context, arg InsertEx
 }
 
 const insertExtScheduleTeam = `-- name: InsertExtScheduleTeam :exec
-INSERT INTO ext_schedule_teams (schedule_id, team_id) VALUES (?, ?)
+INSERT INTO ext_schedule_teams (schedule_id, team_id)
+VALUES (?, ?)
 `
 
 type InsertExtScheduleTeamParams struct {
@@ -228,6 +368,105 @@ type LinkExtUserParams struct {
 func (q *Queries) LinkExtUser(ctx context.Context, arg LinkExtUserParams) error {
 	_, err := q.db.ExecContext(ctx, linkExtUser, arg.FhUserID, arg.ID)
 	return err
+}
+
+const listExtEscalationPolicies = `-- name: ListExtEscalationPolicies :many
+SELECT id, name, description, team_id, repeat_limit, repeat_interval, handoff_target_type, handoff_target_id, to_import FROM ext_escalation_policies
+`
+
+func (q *Queries) ListExtEscalationPolicies(ctx context.Context) ([]ExtEscalationPolicy, error) {
+	rows, err := q.db.QueryContext(ctx, listExtEscalationPolicies)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtEscalationPolicy
+	for rows.Next() {
+		var i ExtEscalationPolicy
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.TeamID,
+			&i.RepeatLimit,
+			&i.RepeatInterval,
+			&i.HandoffTargetType,
+			&i.HandoffTargetID,
+			&i.ToImport,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtEscalationPolicyStepTargets = `-- name: ListExtEscalationPolicyStepTargets :many
+SELECT escalation_policy_step_id, target_type, target_id FROM ext_escalation_policy_step_targets
+WHERE escalation_policy_step_id = ?
+`
+
+func (q *Queries) ListExtEscalationPolicyStepTargets(ctx context.Context, escalationPolicyStepID string) ([]ExtEscalationPolicyStepTarget, error) {
+	rows, err := q.db.QueryContext(ctx, listExtEscalationPolicyStepTargets, escalationPolicyStepID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtEscalationPolicyStepTarget
+	for rows.Next() {
+		var i ExtEscalationPolicyStepTarget
+		if err := rows.Scan(&i.EscalationPolicyStepID, &i.TargetType, &i.TargetID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtEscalationPolicySteps = `-- name: ListExtEscalationPolicySteps :many
+SELECT id, escalation_policy_id, position, timeout FROM ext_escalation_policy_steps
+WHERE escalation_policy_id = ?
+ORDER BY position ASC
+`
+
+func (q *Queries) ListExtEscalationPolicySteps(ctx context.Context, escalationPolicyID string) ([]ExtEscalationPolicyStep, error) {
+	rows, err := q.db.QueryContext(ctx, listExtEscalationPolicySteps, escalationPolicyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtEscalationPolicyStep
+	for rows.Next() {
+		var i ExtEscalationPolicyStep
+		if err := rows.Scan(
+			&i.ID,
+			&i.EscalationPolicyID,
+			&i.Position,
+			&i.Timeout,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listExtScheduleRestrictionsByExtScheduleID = `-- name: ListExtScheduleRestrictionsByExtScheduleID :many
@@ -505,4 +744,22 @@ func (q *Queries) ListFhUsers(ctx context.Context) ([]FhUser, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const markAllExtEscalationPolicyToImport = `-- name: MarkAllExtEscalationPolicyToImport :exec
+UPDATE ext_escalation_policies SET to_import = 1
+`
+
+func (q *Queries) MarkAllExtEscalationPolicyToImport(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, markAllExtEscalationPolicyToImport)
+	return err
+}
+
+const markExtEscalationPolicyToImport = `-- name: MarkExtEscalationPolicyToImport :exec
+UPDATE ext_escalation_policies SET to_import = 1 WHERE id = ?
+`
+
+func (q *Queries) MarkExtEscalationPolicyToImport(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, markExtEscalationPolicyToImport, id)
+	return err
 }

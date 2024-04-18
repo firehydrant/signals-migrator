@@ -42,6 +42,12 @@ func (o *Opsgenie) LoadSchedules(ctx context.Context) error {
 	return nil
 }
 
+func (o *Opsgenie) LoadEscalationPolicies(ctx context.Context) error {
+	// TODO: implement
+	console.Warnf("opsgenie.LoadEscalationPolicies is not currently supported.")
+	return nil
+}
+
 func (p *Opsgenie) PopulateTeamMembers(ctx context.Context, t *Team) error {
 	members := []*User{}
 

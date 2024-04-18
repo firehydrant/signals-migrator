@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -90,6 +91,7 @@ func (r *TFRender) Write(ctx context.Context) error {
 		r.DataFireHydrantUsers,
 		r.ResourceFireHydrantTeams,
 		r.ResourceFireHydrantOnCallSchedule,
+		r.ResourceFireHydrantEscalationPolicy,
 	}
 
 	for _, w := range toWrite {
@@ -102,6 +104,105 @@ func (r *TFRender) Write(ctx context.Context) error {
 		return fmt.Errorf("writing file: %w", err)
 	}
 
+	return nil
+}
+
+func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) error {
+	policies, err := store.UseQueries(ctx).ListExtEscalationPolicies(ctx)
+	if err != nil {
+		return fmt.Errorf("querying escalation policies: %w", err)
+	}
+	for _, p := range policies {
+		r.root.AppendNewline()
+
+		b := r.root.AppendNewBlock("resource", []string{
+			"firehydrant_escalation_policy",
+			p.TFSlug(),
+		}).Body()
+		b.SetAttributeValue("name", cty.StringVal(p.Name))
+		if p.Description != "" {
+			b.SetAttributeValue("description", cty.StringVal(p.Description))
+		}
+
+		var currentTeam *store.LinkedTeam
+		if p.TeamID.Valid && p.TeamID.String != "" {
+			t, err := store.UseQueries(ctx).GetTeamByExtID(ctx, p.TeamID.String)
+			if err != nil {
+				return fmt.Errorf("querying team '%s' for policy '%s': %w", p.TeamID.String, p.Name, err)
+			}
+			currentTeam = &t
+			b.SetAttributeTraversal("team_id", hcl.Traversal{
+				hcl.TraverseRoot{Name: "firehydrant_team"},
+				hcl.TraverseAttr{Name: t.TFSlug()},
+				hcl.TraverseAttr{Name: "id"},
+			})
+		}
+
+		steps, err := store.UseQueries(ctx).ListExtEscalationPolicySteps(ctx, p.ID)
+		if err != nil {
+			return fmt.Errorf("querying steps for policy '%s': %w", p.Name, err)
+		}
+
+		for _, s := range steps {
+			b.AppendNewline()
+			step := b.AppendNewBlock("steps", nil).Body()
+			step.SetAttributeValue("timeout", cty.StringVal(s.Timeout))
+
+			targets, err := store.UseQueries(ctx).ListExtEscalationPolicyStepTargets(ctx, s.ID)
+			if err != nil {
+				return fmt.Errorf("querying targets for step %d of %s: %w", s.Position, p.Name, err)
+			}
+
+			for _, t := range targets {
+				var idTraversal *hcl.Traversal
+
+				switch t.TargetType {
+				case store.TARGET_TYPE_USER:
+					u, err := store.UseQueries(ctx).GetUserByExtID(ctx, t.TargetID)
+					if err != nil {
+						console.Errorf("querying user '%s' for step %d of %s: %s\n", t.TargetID, s.Position, p.Name, err.Error())
+						continue
+					}
+					idTraversal = &hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+						hcl.TraverseRoot{Name: "data"},
+						hcl.TraverseAttr{Name: "firehydrant_user"},
+						hcl.TraverseAttr{Name: u.TFSlug()},
+						hcl.TraverseAttr{Name: "id"},
+					}
+				case store.TARGET_TYPE_SCHEDULE:
+					schedule, err := store.UseQueries(ctx).GetExtSchedule(ctx, t.TargetID)
+					if err != nil {
+						console.Errorf("querying schedule '%s' for step %d of %s: %s\n", t.TargetID, s.Position, p.Name, err.Error())
+						continue
+					}
+					slug := schedule.TFSlug()
+					if currentTeam != nil {
+						slug = fmt.Sprintf("%s_%s", currentTeam.TFSlug(), slug)
+					}
+					idTraversal = &hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+						hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
+						hcl.TraverseAttr{Name: slug},
+						hcl.TraverseAttr{Name: "id"},
+					}
+				default:
+					console.Errorf("unknown target type '%s' for step %d of %s\n", t.TargetType, s.Position, p.Name)
+					continue
+				}
+
+				if idTraversal != nil { //nolint:staticcheck // Safeguard in case the switch-case above is changed.
+					step.AppendNewline()
+					target := step.AppendNewBlock("targets", nil).Body()
+					target.SetAttributeValue("type", cty.StringVal(t.TargetType))
+					target.SetAttributeTraversal("id", *idTraversal)
+				}
+			}
+		}
+
+		b.AppendNewline()
+		b.SetAttributeValue("repetitions", cty.NumberIntVal(p.RepeatLimit))
+
+		// TODO: add policy handoff
+	}
 	return nil
 }
 
@@ -128,8 +229,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 				b.SetAttributeValue("description", cty.StringVal(s.Description))
 			}
 			b.SetAttributeTraversal("team_id", hcl.Traversal{
-				hcl.TraverseRoot{Name: "resource"},
-				hcl.TraverseAttr{Name: "firehydrant_team"},
+				hcl.TraverseRoot{Name: "firehydrant_team"},
 				hcl.TraverseAttr{Name: t.TFSlug()},
 				hcl.TraverseAttr{Name: "id"},
 			})
