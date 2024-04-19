@@ -36,6 +36,9 @@ func TestRenderPagerDuty(t *testing.T) {
 		golden.Assert(t, string(content), filepath.Join(filepath.Dir(t.Name()), goldenFile(tfr.Filename())))
 	}
 
+	// Render Terraform configuration for slightly complex teams (with memberships) and schedules.
 	t.Run("TeamWithSchedules", assert)
+
+	// Render Terraform configuration for a base case for escalation policy.
 	t.Run("EscalationPolicy", assert)
 }
