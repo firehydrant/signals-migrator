@@ -12,7 +12,7 @@ import (
 
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/gosimple/slug"
-	"gotest.tools/golden"
+	"gotest.tools/v3/golden"
 )
 
 func withTestDB(t *testing.T) context.Context {
@@ -51,6 +51,7 @@ func pagerProviderHttpServer(t *testing.T) *httptest.Server {
 	return s
 }
 
+// WARNING: `got` must be refer to struct or slice. Go's builtin map is not order-deterministic, thus it might produce inconsistent JSON.
 func assertJSON(t *testing.T, got any) {
 	t.Helper()
 

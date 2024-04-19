@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/firehydrant/signals-migrator/store"
-	"gotest.tools/golden"
+	"gotest.tools/v3/golden"
 )
 
 func TestRenderPagerDuty(t *testing.T) {

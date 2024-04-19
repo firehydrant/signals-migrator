@@ -11,7 +11,7 @@ import (
 
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/firehydrant/signals-migrator/tfrender"
-	"gotest.tools/golden"
+	"gotest.tools/v3/golden"
 )
 
 func tfrInit(t *testing.T) (context.Context, *tfrender.TFRender) {
