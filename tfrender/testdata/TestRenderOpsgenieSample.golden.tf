@@ -218,7 +218,7 @@ resource "firehydrant_team" "krista_test_team" {
 resource "firehydrant_on_call_schedule" "customer_success_customer_success_schedule_rot1" {
   name        = "Customer Success_schedule - Rot1"
   description = "(Rot1)"
-  team_id     = resource.firehydrant_team.customer_success.id
+  team_id     = firehydrant_team.customer_success.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.cweber.id]
@@ -233,7 +233,7 @@ resource "firehydrant_on_call_schedule" "customer_success_customer_success_sched
 resource "firehydrant_on_call_schedule" "chris_test_team_chris_test_team_schedule_rot1" {
   name        = "Chris Test Team_schedule - Rot1"
   description = "(Rot1)"
-  team_id     = resource.firehydrant_team.chris_test_team.id
+  team_id     = firehydrant_team.chris_test_team.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.cweber.id]
@@ -248,7 +248,7 @@ resource "firehydrant_on_call_schedule" "chris_test_team_chris_test_team_schedul
 resource "firehydrant_on_call_schedule" "vinny_test_team_vinny_test_team_schedule_first" {
   name        = "Vinny Test Team_schedule - First"
   description = "(First)"
-  team_id     = resource.firehydrant_team.vinny_test_team.id
+  team_id     = firehydrant_team.vinny_test_team.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.vthanh.id]
@@ -262,7 +262,7 @@ resource "firehydrant_on_call_schedule" "vinny_test_team_vinny_test_team_schedul
 resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_daytime_rotation" {
   name        = "AJ Team_schedule - Daytime rotation"
   description = "(Daytime rotation)"
-  team_id     = resource.firehydrant_team.aj_team.id
+  team_id     = firehydrant_team.aj_team.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.ajasso.id, data.firehydrant_user.abakhtiari.id, data.firehydrant_user.cweber.id, data.firehydrant_user.akoenigbautista.id]
@@ -312,7 +312,7 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_daytime_rotati
 resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_nighttime_rotation" {
   name        = "AJ Team_schedule - Nighttime rotation"
   description = "(Nighttime rotation)"
-  team_id     = resource.firehydrant_team.aj_team.id
+  team_id     = firehydrant_team.aj_team.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.ajasso.id, data.firehydrant_user.abakhtiari.id, data.firehydrant_user.cweber.id, data.firehydrant_user.akoenigbautista.id]
@@ -375,7 +375,7 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_nighttime_rota
 resource "firehydrant_on_call_schedule" "noodlebrigade_noodlebrigade_schedule_rot1" {
   name        = "noodlebrigade_schedule - Rot1"
   description = "(Rot1)"
-  team_id     = resource.firehydrant_team.noodlebrigade.id
+  team_id     = firehydrant_team.noodlebrigade.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.breese.id]
@@ -390,7 +390,7 @@ resource "firehydrant_on_call_schedule" "noodlebrigade_noodlebrigade_schedule_ro
 resource "firehydrant_on_call_schedule" "krista_test_team_krista_test_team_schedule_rot1" {
   name        = "krista-test-team_schedule - Rot1"
   description = "(Rot1)"
-  team_id     = resource.firehydrant_team.krista_test_team.id
+  team_id     = firehydrant_team.krista_test_team.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.abakhtiari.id]
