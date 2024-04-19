@@ -123,14 +123,19 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 	ogsHandoffTime := r.StartDate.Format(time.TimeOnly)
 	ogsHandoffDay := strings.ToLower(r.StartDate.Weekday().String())
 
-	var ogsStrategy string
+	var ogsStrategy, ogsDuration string
 	switch r.Type {
 	case og.Daily:
 		ogsStrategy = "daily"
+		ogsDuration = ""
 	case og.Weekly:
 		ogsStrategy = "weekly"
-	default:
+		ogsDuration = ""
+	case og.Hourly:
 		ogsStrategy = "custom"
+		ogsDuration = fmt.Sprintf("PT%dH", r.Length)
+	default:
+		return fmt.Errorf("unexpected schedule strategy %s.  skipping rotation %s of schedule %s", ogsStrategy, r.Id, s.Id)
 	}
 
 	ogsParams := store.InsertExtScheduleParams{
@@ -141,7 +146,7 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 		HandoffTime:   ogsHandoffTime,
 		HandoffDay:    ogsHandoffDay,
 		Strategy:      ogsStrategy,
-		ShiftDuration: "",
+		ShiftDuration: ogsDuration,
 	}
 
 	q := store.UseQueries(ctx)
@@ -188,11 +193,16 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 	// it at all and I had to guess at this behavior from testing before digging into the source to confirm which, as it turns out,
 	// is exactly how I wanted to spend my morning so thanks for that.
 	if r.TimeRestriction != nil {
+		loc, err := time.LoadLocation(s.Timezone)
+		if err != nil {
+			console.Warnf("unable to parse location %s.  using UTC instead", s.Timezone)
+			loc = time.UTC
+		}
 		switch r.TimeRestriction.Type {
 		case og.WeekdayAndTimeOfDay:
 			for i, tr := range r.TimeRestriction.RestrictionList {
-				startTime := time.Date(0, time.January, 1, int(*tr.StartHour), int(*tr.StartMin), 0, 0, time.UTC)
-				endTime := time.Date(0, time.January, 1, int(*tr.EndHour), int(*tr.EndMin), 0, 0, time.UTC)
+				startTime := time.Date(0, time.January, 1, int(*tr.StartHour), int(*tr.StartMin), 0, 0, loc)
+				endTime := time.Date(0, time.January, 1, int(*tr.EndHour), int(*tr.EndMin), 0, 0, loc)
 
 				ogsRestrictionsParams := store.InsertExtScheduleRestrictionParams{
 					ScheduleID:       ogsParams.ID,
@@ -210,8 +220,8 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 			for i := range 7 {
 				tr := r.TimeRestriction.Restriction
 				startDayStr := strings.ToLower(time.Weekday(i).String())
-				startTime := time.Date(0, time.January, 1, int(*tr.StartHour), int(*tr.StartMin), 0, 0, time.UTC)
-				endTime := time.Date(0, time.January, 1, int(*tr.EndHour), int(*tr.EndMin), 0, 0, time.UTC)
+				startTime := time.Date(0, time.January, 1, int(*tr.StartHour), int(*tr.StartMin), 0, 0, loc)
+				endTime := time.Date(0, time.January, 1, int(*tr.EndHour), int(*tr.EndMin), 0, 0, loc)
 				var endDayStr string
 				if endTime.Before(startTime) {
 					day := (i + 1) % 7
