@@ -1,0 +1,13 @@
+[
+  {
+    "id": "3fee43f2-02da-49be-ab50-c88ed13aecc3-b1b5f7f6-728b-47bd-af02-c3e1c33bf219",
+    "name": "Customer Success_schedule - Rot1",
+    "description": "(Rot1)",
+    "timezone": "America/Los_Angeles",
+    "strategy": "weekly",
+    "shift_duration": "",
+    "start_time": "",
+    "handoff_time": "04:45:32",
+    "handoff_day": "tuesday"
+  }
+]
