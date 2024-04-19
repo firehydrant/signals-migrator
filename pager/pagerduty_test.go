@@ -8,19 +8,26 @@ import (
 	"github.com/firehydrant/signals-migrator/store"
 )
 
-func pagerDutyTestClient(t *testing.T, apiURL string) (context.Context, *pager.PagerDuty) {
-	t.Helper()
-
-	ctx := withTestDB(t)
-	pd := pager.NewPagerDutyWithURL("api-key-very-secret", apiURL)
-	return ctx, pd
-}
-
 func TestPagerDuty(t *testing.T) {
-	ts := pagerProviderHttpServer(t)
-	ctx, pd := pagerDutyTestClient(t, ts.URL)
+	// What we're testing here is whether we manage to produce expected data in SQLite for the given API responses.
+	// In other words, given responses within ./testdata/TestPagerDuty/apiserver, we expect the data transformed by
+	// our implementation to be stored in the database to be consistent.
+	// Asserting the content of database is a little tricky. As such, we encode the data into JSON and compare it
+	// with the expected JSON in ./testdata/TestPagerDuty/[TestName].golden.json for each test case.
+
+	// Avoid sharing setup code between tests to prevent test pollution in parallel execution.
+	setup := func(t *testing.T) (context.Context, pager.Pager) {
+		t.Parallel()
+
+		ctx := withTestDB(t)
+		ts := pagerProviderHttpServer(t)
+		pd := pager.NewPagerDutyWithURL("api-key-very-secret", ts.URL)
+		return ctx, pd
+	}
 
 	t.Run("ListUsers", func(t *testing.T) {
+		ctx, pd := setup(t)
+
 		u, err := pd.ListUsers(ctx)
 		if err != nil {
 			t.Fatalf("error loading users: %s", err)
@@ -30,6 +37,8 @@ func TestPagerDuty(t *testing.T) {
 	})
 
 	t.Run("LoadSchedules", func(t *testing.T) {
+		ctx, pd := setup(t)
+
 		if err := pd.LoadSchedules(ctx); err != nil {
 			t.Fatalf("error loading schedules: %s", err)
 		}
