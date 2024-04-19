@@ -11,9 +11,6 @@ run *args='': generate
 test: generate
   go test -v ./...
 
-update-golden: generate
-  go test -v ./pager ./tfrender -update
-
 mod: 
   go mod tidy
 
