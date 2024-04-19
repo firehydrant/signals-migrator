@@ -1,4 +1,4 @@
-PRAGMA main.auto_vacuum = 1;
+PRAGMA main.auto_vacuum=1;
 PRAGMA foreign_keys=ON;
 
 CREATE TABLE IF NOT EXISTS fh_users (
@@ -28,7 +28,9 @@ CREATE TABLE IF NOT EXISTS ext_teams (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   slug TEXT NOT NULL,
-  fh_team_id TEXT REFERENCES fh_teams(id)
+  fh_team_id TEXT REFERENCES fh_teams(id),
+  metadata TEXT NOT NULL DEFAULT '{}',
+  to_import INTEGER NOT NULL DEFAULT 0
 ) STRICT;
 
 CREATE VIEW IF NOT EXISTS linked_teams AS
@@ -91,7 +93,7 @@ CREATE TABLE IF NOT EXISTS ext_escalation_policies (
   repeat_interval TEXT,
   handoff_target_type TEXT NOT NULL,
   handoff_target_id TEXT NOT NULL,
-  to_import INTEGER NOT NULL
+  to_import INTEGER NOT NULL DEFAULT 0
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_escalation_policy_steps (

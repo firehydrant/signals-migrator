@@ -63,7 +63,7 @@ func (q *Queries) GetFhUserByEmail(ctx context.Context, email string) (FhUser, e
 }
 
 const getTeamByExtID = `-- name: GetTeamByExtID :one
-SELECT id, name, slug, fh_team_id, fh_name, fh_slug FROM linked_teams WHERE id = ?
+SELECT id, name, slug, fh_team_id, metadata, to_import, fh_name, fh_slug FROM linked_teams WHERE id = ?
 `
 
 func (q *Queries) GetTeamByExtID(ctx context.Context, id string) (LinkedTeam, error) {
@@ -74,6 +74,8 @@ func (q *Queries) GetTeamByExtID(ctx context.Context, id string) (LinkedTeam, er
 		&i.Name,
 		&i.Slug,
 		&i.FhTeamID,
+		&i.Metadata,
+		&i.ToImport,
 		&i.FhName,
 		&i.FhSlug,
 	)
@@ -657,7 +659,7 @@ func (q *Queries) ListFhUsers(ctx context.Context) ([]FhUser, error) {
 }
 
 const listTeams = `-- name: ListTeams :many
-SELECT id, name, slug, fh_team_id, fh_name, fh_slug from linked_teams
+SELECT id, name, slug, fh_team_id, metadata, to_import, fh_name, fh_slug from linked_teams
 `
 
 func (q *Queries) ListTeams(ctx context.Context) ([]LinkedTeam, error) {
@@ -674,6 +676,8 @@ func (q *Queries) ListTeams(ctx context.Context) ([]LinkedTeam, error) {
 			&i.Name,
 			&i.Slug,
 			&i.FhTeamID,
+			&i.Metadata,
+			&i.ToImport,
 			&i.FhName,
 			&i.FhSlug,
 		); err != nil {
@@ -691,7 +695,7 @@ func (q *Queries) ListTeams(ctx context.Context) ([]LinkedTeam, error) {
 }
 
 const listTeamsByExtScheduleID = `-- name: ListTeamsByExtScheduleID :many
-SELECT linked_teams.id, linked_teams.name, linked_teams.slug, linked_teams.fh_team_id, linked_teams.fh_name, linked_teams.fh_slug FROM linked_teams
+SELECT linked_teams.id, linked_teams.name, linked_teams.slug, linked_teams.fh_team_id, linked_teams.metadata, linked_teams.to_import, linked_teams.fh_name, linked_teams.fh_slug FROM linked_teams
   JOIN ext_schedule_teams ON linked_teams.id = ext_schedule_teams.team_id
 WHERE ext_schedule_teams.schedule_id = ?
 `
@@ -710,6 +714,8 @@ func (q *Queries) ListTeamsByExtScheduleID(ctx context.Context, scheduleID strin
 			&i.Name,
 			&i.Slug,
 			&i.FhTeamID,
+			&i.Metadata,
+			&i.ToImport,
 			&i.FhName,
 			&i.FhSlug,
 		); err != nil {

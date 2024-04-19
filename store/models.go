@@ -70,10 +70,12 @@ type ExtScheduleTeam struct {
 }
 
 type ExtTeam struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
+	ID       string           `json:"id"`
+	Name     string           `json:"name"`
+	Slug     string           `json:"slug"`
+	FhTeamID sql.NullString   `json:"fh_team_id"`
+	Metadata *ExtTeamMetadata `json:"metadata"`
+	ToImport int64            `json:"to_import"`
 }
 
 type ExtUser struct {
@@ -96,12 +98,14 @@ type FhUser struct {
 }
 
 type LinkedTeam struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
-	FhName   sql.NullString `json:"fh_name"`
-	FhSlug   sql.NullString `json:"fh_slug"`
+	ID       string           `json:"id"`
+	Name     string           `json:"name"`
+	Slug     string           `json:"slug"`
+	FhTeamID sql.NullString   `json:"fh_team_id"`
+	Metadata *ExtTeamMetadata `json:"metadata"`
+	ToImport int64            `json:"to_import"`
+	FhName   sql.NullString   `json:"fh_name"`
+	FhSlug   sql.NullString   `json:"fh_slug"`
 }
 
 type LinkedUser struct {
