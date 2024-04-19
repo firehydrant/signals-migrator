@@ -3,6 +3,7 @@ package pager
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,12 @@ type PagerDuty struct {
 	client *pagerduty.Client
 }
 
+var (
+	pdTeamInterface string
+
+	pdTeamInterfaces = []string{"team", "service"}
+)
+
 func NewPagerDuty(apiKey string) *PagerDuty {
 	return &PagerDuty{
 		client: pagerduty.NewClient(apiKey),
@@ -30,7 +37,107 @@ func NewPagerDutyWithURL(apiKey, url string) *PagerDuty {
 }
 
 func (p *PagerDuty) Kind() string {
-	return "pagerduty"
+	return "PagerDuty"
+}
+
+func (p *PagerDuty) TeamInterfaces() []string {
+	return pdTeamInterfaces
+}
+
+func (p *PagerDuty) UseTeamInterface(interfaceName string) error {
+	if slices.Contains(pdTeamInterfaces, interfaceName) {
+		pdTeamInterface = interfaceName
+		return nil
+	}
+	return fmt.Errorf("unknown team interface '%s'", interfaceName)
+}
+
+func (p *PagerDuty) LoadTeams(ctx context.Context) error {
+	switch pdTeamInterface {
+	case "team":
+		return p.loadTeams(ctx)
+	case "service":
+		return p.loadServices(ctx)
+	case "":
+		return fmt.Errorf("team interface not set")
+	default:
+		return fmt.Errorf("unknown team interface '%s'", pdTeamInterface)
+	}
+}
+
+func (p *PagerDuty) loadTeams(ctx context.Context) error {
+	opts := pagerduty.ListTeamOptions{
+		Offset: 0,
+	}
+
+	for {
+		resp, err := p.client.ListTeamsWithContext(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("listing teams: %w", err)
+		}
+
+		for _, team := range resp.Teams {
+			if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+				ID:   team.ID,
+				Name: team.Name,
+				// PagerDuty does not expose "Slug", so we can safely generate one.
+				Slug: slug.Make(team.Name),
+			}); err != nil {
+				return fmt.Errorf("saving team to db: %w", err)
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Teams))
+	}
+
+	return nil
+}
+
+func (p *PagerDuty) loadServices(ctx context.Context) error {
+	opts := pagerduty.ListServiceOptions{
+		Includes: []string{"teams"},
+		Offset:   0,
+	}
+
+	for {
+		resp, err := p.client.ListServicesWithContext(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("listing services: %w", err)
+		}
+
+		for _, service := range resp.Services {
+			if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+				ID:   service.ID,
+				Name: service.Name,
+				// PagerDuty does not expose "Slug", so we can safely generate one.
+				Slug: slug.Make(service.Name),
+			}); err != nil {
+				return fmt.Errorf("saving team to db: %w", err)
+			}
+			for _, team := range service.Teams {
+				if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+					ID:   team.ID,
+					Name: team.Name,
+					// PagerDuty does not expose "Slug", so we can safely generate one.
+					Slug:     slug.Make(team.Name),
+					Metadata: &store.ExtTeamMetadata{PagerDutyProxyFor: service.ID},
+				}); err != nil {
+					return fmt.Errorf("saving team to db: %w", err)
+				}
+			}
+		}
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Services))
+	}
+
+	return nil
 }
 
 func (p *PagerDuty) LoadSchedules(ctx context.Context) error {

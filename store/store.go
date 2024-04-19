@@ -32,7 +32,19 @@ func (s *Store) Close() error {
 }
 
 func WithContext(ctx context.Context) context.Context {
-	s := NewStore()
+	s := NewMemoryStore()
+
+	pragmaCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	if _, err := s.conn.ExecContext(pragmaCtx, schema); err != nil {
+		panic(err)
+	}
+
+	return context.WithValue(ctx, queryContextKey, s)
+}
+
+func WithContextAndDSN(ctx context.Context, dsn string) context.Context {
+	s := NewStore(dsn)
 
 	pragmaCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

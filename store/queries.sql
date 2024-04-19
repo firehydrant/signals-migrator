@@ -25,11 +25,11 @@ SELECT * FROM linked_teams WHERE id = ?;
 -- name: ListTeams :many
 SELECT * from linked_teams;
 
--- name: CheckExtTeamExists :one
-SELECT COUNT(*) > 0 FROM ext_teams WHERE id = ?;
+-- name: ListExtTeams :many
+SELECT * FROM ext_teams;
 
 -- name: InsertExtTeam :exec
-INSERT INTO ext_teams (id, name, slug, fh_team_id) VALUES (?, ?, ?, ?);
+INSERT INTO ext_teams (id, name, slug, fh_team_id, metadata) VALUES (?, ?, ?, ?, ?);
 
 -- name: LinkExtUser :exec
 UPDATE ext_users SET fh_user_id = ? WHERE id = ?;

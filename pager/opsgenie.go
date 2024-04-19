@@ -71,7 +71,21 @@ func NewOpsgenieWithURL(apiKey, url string) *Opsgenie {
 }
 
 func (p *Opsgenie) Kind() string {
-	return "opsgenie"
+	return "Opsgenie"
+}
+
+func (o *Opsgenie) TeamInterfaces() []string {
+	return []string{"team"}
+}
+
+func (o *Opsgenie) UseTeamInterface(string) error {
+	return nil
+}
+
+func (o *Opsgenie) LoadTeams(ctx context.Context) error {
+	// TODO: implement
+	console.Warnf("opsgenie.LoadTeams is not currently supported.")
+	return nil
 }
 
 func (o *Opsgenie) LoadSchedules(ctx context.Context) error {

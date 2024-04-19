@@ -19,7 +19,21 @@ func NewVictorOps(apiKey string, appId string) *VictorOps {
 }
 
 func (v *VictorOps) Kind() string {
-	return "victorops"
+	return "VictorOps"
+}
+
+func (v *VictorOps) TeamInterfaces() []string {
+	return []string{"team"}
+}
+
+func (v *VictorOps) UseTeamInterface(string) error {
+	return nil
+}
+
+func (v *VictorOps) LoadTeams(ctx context.Context) error {
+	// TODO: implement
+	console.Warnf("victorops.LoadTeams is not currently supported.")
+	return nil
 }
 
 func (v *VictorOps) LoadSchedules(ctx context.Context) error {

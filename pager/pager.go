@@ -16,6 +16,12 @@ type Pager interface {
 	ListUsers(ctx context.Context) ([]*User, error)
 	ListTeams(ctx context.Context) ([]*Team, error)
 
+	Kind() string
+	TeamInterfaces() []string
+	UseTeamInterface(interfaceName string) error
+
+	// LoadUsers(ctx context.Context) error
+	LoadTeams(ctx context.Context) error
 	LoadSchedules(ctx context.Context) error
 	LoadEscalationPolicies(ctx context.Context) error
 

@@ -31,7 +31,11 @@ type ExtTeamMetadata struct {
 }
 
 func (e *ExtTeamMetadata) Value() (driver.Value, error) {
-	return json.Marshal(e)
+	v, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+	return string(v), nil
 }
 
 func (e *ExtTeamMetadata) Scan(src any) error {

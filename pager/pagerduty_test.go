@@ -17,8 +17,6 @@ func TestPagerDuty(t *testing.T) {
 
 	// Avoid sharing setup code between tests to prevent test pollution in parallel execution.
 	setup := func(t *testing.T) (context.Context, pager.Pager) {
-		t.Parallel()
-
 		ctx := withTestDB(t)
 		ts := pagerProviderHttpServer(t)
 		pd := pager.NewPagerDutyWithURL("api-key-very-secret", ts.URL)
@@ -26,6 +24,7 @@ func TestPagerDuty(t *testing.T) {
 	}
 
 	t.Run("ListUsers", func(t *testing.T) {
+		t.Parallel()
 		ctx, pd := setup(t)
 
 		u, err := pd.ListUsers(ctx)
@@ -36,7 +35,46 @@ func TestPagerDuty(t *testing.T) {
 		assertJSON(t, u)
 	})
 
+	// LoadTeams has 2 variants: one for literal teams and another for importing services as teams.
+	// The "state" is maintained globally and as such should not be run in parallel.
+	t.Run("LoadTeams", func(t *testing.T) {
+		t.Run("loadTeams", func(t *testing.T) {
+			ctx, pd := setup(t)
+
+			if err := pd.UseTeamInterface("team"); err != nil {
+				t.Fatalf("error setting team interface: %s", err)
+			}
+			if err := pd.LoadTeams(ctx); err != nil {
+				t.Fatalf("error loading teams: %s", err)
+			}
+			teams, err := store.UseQueries(ctx).ListExtTeams(ctx)
+			if err != nil {
+				t.Fatalf("error loading teams: %s", err)
+			}
+			t.Logf("found %d teams", len(teams))
+			assertJSON(t, teams)
+		})
+
+		t.Run("loadServices", func(t *testing.T) {
+			ctx, pd := setup(t)
+
+			if err := pd.UseTeamInterface("service"); err != nil {
+				t.Fatalf("error setting team interface: %s", err)
+			}
+			if err := pd.LoadTeams(ctx); err != nil {
+				t.Fatalf("error loading teams: %s", err)
+			}
+			teams, err := store.UseQueries(ctx).ListExtTeams(ctx)
+			if err != nil {
+				t.Fatalf("error loading teams: %s", err)
+			}
+			t.Logf("found %d teams, including services", len(teams))
+			assertJSON(t, teams)
+		})
+	})
+
 	t.Run("LoadSchedules", func(t *testing.T) {
+		t.Parallel()
 		ctx, pd := setup(t)
 
 		if err := pd.LoadSchedules(ctx); err != nil {

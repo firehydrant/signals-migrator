@@ -145,6 +145,29 @@ func importEscalationPolicies(ctx context.Context, provider pager.Pager, fh *pag
 }
 
 func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
+	// Some providers made their users adopt an alternate concept of teams.
+	//
+	// For example, PagerDuty has "Teams" and "Services". In vacuum, they intuitively refer to
+	// "people" and "computers", respectively. However, their implementation for on call schedule
+	// is tied to "Services". As such, many users of PagerDuty never really defined "Teams" in
+	// their instance and use "Services" in practice for grouping on call "Teams".
+	//
+	// Now, all of that is imported as "Teams" in FireHydrant. As such, we prompt user to select
+	// their logical representation of "Teams" when a provider has multiple options.
+	// There may be a case where users may want to import both to FireHydrant. It is not currently
+	// supported, but can be a reasonable future enhancement.
+	if choices := provider.TeamInterfaces(); len(choices) > 1 {
+		_, ti, err := console.Selectf(choices, func(s string) string {
+			return fmt.Sprintf("%s %s", provider.Kind(), s)
+		}, "Let's fill out your teams in FireHydrant. Which team interface would you like to use?")
+		if err != nil {
+			return fmt.Errorf("selecting team interface: %w", err)
+		}
+		if err := provider.UseTeamInterface(ti); err != nil {
+			return fmt.Errorf("setting team interface: %w", err)
+		}
+	}
+
 	// Get all of the teams registered from Pager Provider (e.g. PagerDuty)
 	var err error
 	var providerTeams []*pager.Team

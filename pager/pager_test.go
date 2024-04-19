@@ -17,7 +17,11 @@ import (
 
 func withTestDB(t *testing.T) context.Context {
 	t.Helper()
-	ctx := store.WithContext(context.Background())
+
+	f := filepath.Join(t.TempDir(), slug.Make(t.Name())+".db")
+	_ = os.Remove(f)
+
+	ctx := store.WithContextAndDSN(context.Background(), "file:"+f)
 	t.Cleanup(func() {
 		if err := store.FromContext(ctx).Close(); err != nil {
 			t.Fatalf("error closing db: %s", err)
@@ -35,7 +39,11 @@ func pagerProviderHttpServer(t *testing.T) *httptest.Server {
 		for b := filepath.Dir(baseTestDir); b != "."; b = filepath.Dir(b) {
 			baseTestDir = b
 		}
-		filename, err := url.JoinPath("testdata", baseTestDir, "apiserver", slug.Make(r.URL.Path)+".json")
+		urlPath := r.URL.Path
+		if r.URL.RawQuery != "" {
+			urlPath += "?" + r.URL.RawQuery
+		}
+		filename, err := url.JoinPath("testdata", baseTestDir, "apiserver", slug.Make(urlPath)+".json")
 		if err != nil {
 			t.Fatalf("error joining path for expected response: %s", err)
 		}

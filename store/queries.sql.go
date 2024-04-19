@@ -10,17 +10,6 @@ import (
 	"database/sql"
 )
 
-const checkExtTeamExists = `-- name: CheckExtTeamExists :one
-SELECT COUNT(*) > 0 FROM ext_teams WHERE id = ?
-`
-
-func (q *Queries) CheckExtTeamExists(ctx context.Context, id string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, checkExtTeamExists, id)
-	var column_1 bool
-	err := row.Scan(&column_1)
-	return column_1, err
-}
-
 const deleteExtEscalationPolicyUnimported = `-- name: DeleteExtEscalationPolicyUnimported :exec
 DELETE FROM ext_escalation_policies WHERE to_import = 0
 `
@@ -273,14 +262,15 @@ func (q *Queries) InsertExtScheduleTeam(ctx context.Context, arg InsertExtSchedu
 }
 
 const insertExtTeam = `-- name: InsertExtTeam :exec
-INSERT INTO ext_teams (id, name, slug, fh_team_id) VALUES (?, ?, ?, ?)
+INSERT INTO ext_teams (id, name, slug, fh_team_id, metadata) VALUES (?, ?, ?, ?, ?)
 `
 
 type InsertExtTeamParams struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
+	ID       string           `json:"id"`
+	Name     string           `json:"name"`
+	Slug     string           `json:"slug"`
+	FhTeamID sql.NullString   `json:"fh_team_id"`
+	Metadata *ExtTeamMetadata `json:"metadata"`
 }
 
 func (q *Queries) InsertExtTeam(ctx context.Context, arg InsertExtTeamParams) error {
@@ -289,6 +279,7 @@ func (q *Queries) InsertExtTeam(ctx context.Context, arg InsertExtTeamParams) er
 		arg.Name,
 		arg.Slug,
 		arg.FhTeamID,
+		arg.Metadata,
 	)
 	return err
 }
@@ -528,6 +519,40 @@ func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
 			&i.StartTime,
 			&i.HandoffTime,
 			&i.HandoffDay,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtTeams = `-- name: ListExtTeams :many
+SELECT id, name, slug, fh_team_id, metadata, to_import FROM ext_teams
+`
+
+func (q *Queries) ListExtTeams(ctx context.Context) ([]ExtTeam, error) {
+	rows, err := q.db.QueryContext(ctx, listExtTeams)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtTeam
+	for rows.Next() {
+		var i ExtTeam
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.FhTeamID,
+			&i.Metadata,
+			&i.ToImport,
 		); err != nil {
 			return nil, err
 		}
