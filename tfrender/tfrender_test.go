@@ -28,9 +28,8 @@ func tfrInit(t *testing.T) (context.Context, *tfrender.TFRender) {
 }
 
 func goldenFile(name string) string {
-	base := filepath.Base(name)
 	ext := filepath.Ext(name)
-	return fmt.Sprintf("%s.golden%s", base[:len(base)-len(ext)], ext)
+	return fmt.Sprintf("%s.golden%s", name[:len(name)-len(ext)], ext)
 }
 
 func createUsers(t *testing.T, ctx context.Context, variant string) {
