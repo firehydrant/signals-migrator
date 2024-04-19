@@ -20,7 +20,7 @@ func tfrInit(t *testing.T) (context.Context, *tfrender.TFRender) {
 	ctx := store.WithContext(context.Background())
 	t.Cleanup(func() { store.FromContext(ctx).Close() })
 
-	tfr, err := tfrender.New(t.TempDir(), t.Name()+".tf")
+	tfr, err := tfrender.New(filepath.Join(t.TempDir(), t.Name()+".tf"))
 	if err != nil {
 		t.Fatal(err)
 	}

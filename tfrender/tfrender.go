@@ -50,9 +50,8 @@ func fhProviderVersion() string {
 	return ">= 0.8.0"
 }
 
-func New(dir string, name string) (*TFRender, error) {
-	fullPath := filepath.Join(dir, name)
-	baseDir := filepath.Dir(fullPath)
+func New(name string) (*TFRender, error) {
+	baseDir := filepath.Dir(name)
 	if err := os.MkdirAll(baseDir, 0755); err != nil {
 		return nil, fmt.Errorf("preparing output directory: %w", err)
 	}
