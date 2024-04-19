@@ -1,4 +1,5 @@
 .env
+.tool-versions
 output/
 
 # Tools / binary dependencies

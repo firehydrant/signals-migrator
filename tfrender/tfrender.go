@@ -30,7 +30,7 @@ type TFRender struct {
 func fhProviderVersion() string {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return ">= 0.7.1"
+		return ">= 0.8.0"
 	}
 
 	// Recommend version which is used in the migration tool
@@ -47,7 +47,7 @@ func fhProviderVersion() string {
 		}
 	}
 
-	return ">= 0.7.1"
+	return ">= 0.8.0"
 }
 
 func New(dir string, name string) (*TFRender, error) {

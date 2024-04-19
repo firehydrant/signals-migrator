@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "id": "3fee43f2-02da-49be-ab50-c88ed13aecc3",
+      "name": "Customer Success_schedule",
+      "description": "",
+      "timezone": "America/Los_Angeles",
+      "enabled": true,
+      "ownerTeam": {
+        "id": "b7acbc33-9853-4150-8a4b-10156d9408c8",
+        "name": "Customer Success"
+      },
+      "rotations": []
+    }
+  ],
+  "expandable": [
+    "rotation"
+  ],
+  "took": 0.087,
+  "requestId": "7fc91399-2baf-4c26-a156-3e77c29507ef"
+}
