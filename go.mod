@@ -14,9 +14,10 @@ require (
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.14.4
-	gotest.tools v2.2.0+incompatible
 	modernc.org/sqlite v1.29.6
 )
+
+require gotest.tools/v3 v3.5.1
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect

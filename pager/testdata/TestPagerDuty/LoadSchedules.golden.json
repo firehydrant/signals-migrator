@@ -1,0 +1,57 @@
+[
+  {
+    "id": "P3D7DLW-PC1DX4O",
+    "name": "Jen - primary - Layer 2",
+    "description": "(Layer 2)",
+    "timezone": "America/Los_Angeles",
+    "strategy": "weekly",
+    "shift_duration": "",
+    "start_time": "",
+    "handoff_time": "16:00:00",
+    "handoff_day": "monday"
+  },
+  {
+    "id": "P3D7DLW-PSQ0VRL",
+    "name": "Jen - primary - Layer 1",
+    "description": "(Layer 1)",
+    "timezone": "America/Los_Angeles",
+    "strategy": "weekly",
+    "shift_duration": "",
+    "start_time": "",
+    "handoff_time": "16:00:00",
+    "handoff_day": "friday"
+  },
+  {
+    "id": "PVJMUIC-P3BRVNT",
+    "name": "CS-on-call - Layer 1",
+    "description": "(Layer 1)",
+    "timezone": "America/Los_Angeles",
+    "strategy": "daily",
+    "shift_duration": "",
+    "start_time": "",
+    "handoff_time": "10:00:00",
+    "handoff_day": "tuesday"
+  },
+  {
+    "id": "P85QTXZ-PE2BA4Y",
+    "name": "Jack On-Call Schedule - Layer 1",
+    "description": "(Layer 1)",
+    "timezone": "America/Los_Angeles",
+    "strategy": "weekly",
+    "shift_duration": "",
+    "start_time": "",
+    "handoff_time": "14:00:00",
+    "handoff_day": "friday"
+  },
+  {
+    "id": "PGR96WL-PR3J6XJ",
+    "name": "🐴 is always on call - Layer 1",
+    "description": "Always 😭 (Layer 1)",
+    "timezone": "America/Los_Angeles",
+    "strategy": "weekly",
+    "shift_duration": "",
+    "start_time": "",
+    "handoff_time": "12:00:00",
+    "handoff_day": "friday"
+  }
+]

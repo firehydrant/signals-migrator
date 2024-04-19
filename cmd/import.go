@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/firehydrant/signals-migrator/console"
@@ -81,10 +82,10 @@ func importAction(cliCtx *cli.Context) error {
 	}
 	console.Infof("Imported escalation policies from %s.\n", providerName)
 
-	tfr, err := tfrender.New(
+	tfr, err := tfrender.New(filepath.Join(
 		cliCtx.String("output-dir"),
 		fmt.Sprintf("%s_to_fh_signals.tf", strings.ToLower(providerName)),
-	)
+	))
 	if err != nil {
 		return fmt.Errorf("initializing Terraform render space: %w", err)
 	}

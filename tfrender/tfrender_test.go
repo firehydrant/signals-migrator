@@ -7,11 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/firehydrant/signals-migrator/tfrender"
-	"gotest.tools/golden"
+	"gotest.tools/v3/golden"
 )
 
 func tfrInit(t *testing.T) (context.Context, *tfrender.TFRender) {
@@ -20,7 +21,7 @@ func tfrInit(t *testing.T) (context.Context, *tfrender.TFRender) {
 	ctx := store.WithContext(context.Background())
 	t.Cleanup(func() { store.FromContext(ctx).Close() })
 
-	tfr, err := tfrender.New(t.TempDir(), t.Name()+".tf")
+	tfr, err := tfrender.New(filepath.Join(t.TempDir(), t.Name()+".tf"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,9 +29,32 @@ func tfrInit(t *testing.T) (context.Context, *tfrender.TFRender) {
 }
 
 func goldenFile(name string) string {
-	base := filepath.Base(name)
 	ext := filepath.Ext(name)
-	return fmt.Sprintf("%s.golden%s", base[:len(base)-len(ext)], ext)
+	return fmt.Sprintf("%s.golden%s", name[:len(name)-len(ext)], ext)
+}
+
+func assertRenderPager(t *testing.T) {
+	seedFile := fmt.Sprintf("%s_seed.sql", t.Name())
+	seed, err := os.ReadFile(filepath.Join("testdata", seedFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx, tfr := tfrInit(t)
+	sql := strings.TrimSpace(string(seed))
+	if _, err := store.FromContext(ctx).ExecContext(ctx, sql); err != nil {
+		t.Fatal(err)
+	}
+	if err := tfr.Write(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(tfr.Filepath())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	golden.Assert(t, string(content), filepath.Join(filepath.Dir(t.Name()), goldenFile(tfr.Filename())))
 }
 
 func createUsers(t *testing.T, ctx context.Context, variant string) {

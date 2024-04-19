@@ -50,10 +50,12 @@ func fhProviderVersion() string {
 	return ">= 0.8.0"
 }
 
-func New(dir string, name string) (*TFRender, error) {
-	if err := os.MkdirAll(dir, 0755); err != nil {
+func New(name string) (*TFRender, error) {
+	baseDir := filepath.Dir(name)
+	if err := os.MkdirAll(baseDir, 0755); err != nil {
 		return nil, fmt.Errorf("preparing output directory: %w", err)
 	}
+	baseName := filepath.Base(name)
 
 	f := hclwrite.NewEmptyFile()
 	root := f.Body()
@@ -67,8 +69,8 @@ func New(dir string, name string) (*TFRender, error) {
 		f:        f,
 		provider: provider,
 		root:     root,
-		dir:      dir,
-		filename: name,
+		dir:      baseDir,
+		filename: baseName,
 	}, nil
 }
 
