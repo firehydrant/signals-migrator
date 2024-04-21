@@ -2,22 +2,22 @@
   "services": [
     {
       "id": "P3IIAF1",
-      "name": "GooglePDService",
+      "name": "Server under Jack's desk",
       "description": "Demo Service",
       "created_at": "2023-01-04T11:56:38-08:00",
       "updated_at": "2023-01-04T11:56:38-08:00",
       "status": "active",
       "teams": [
         {
-          "id": "PO34CI9",
-          "name": "CS-Team-Test",
-          "description": null,
-          "type": "team",
-          "summary": "CS-Team-Test",
-          "self": "https://api.pagerduty.com/teams/PO34CI9",
-          "html_url": "https://firehydrant-eng.pagerduty.com/teams/PO34CI9",
           "default_role": "manager",
-          "parent": null
+          "description": null,
+          "html_url": "https://acme-inc.pagerduty.com/teams/PD2F80U",
+          "id": "PD2F80U",
+          "name": "Jack Team",
+          "parent": null,
+          "self": "https://api.pagerduty.com/teams/PD2F80U",
+          "summary": "Jack Team",
+          "type": "team"
         }
       ],
       "alert_creation": "create_alerts_and_incidents",

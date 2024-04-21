@@ -33,39 +33,6 @@
     "to_import": 0
   },
   {
-    "id": "PEGBTKE",
-    "name": "CS-Test-Alerting",
-    "slug": "cs-test-alerting",
-    "fh_team_id": {
-      "String": "",
-      "Valid": false
-    },
-    "metadata": {},
-    "to_import": 0
-  },
-  {
-    "id": "P7E9UET",
-    "name": "caroline-team-test",
-    "slug": "caroline-team-test",
-    "fh_team_id": {
-      "String": "",
-      "Valid": false
-    },
-    "metadata": {},
-    "to_import": 0
-  },
-  {
-    "id": "P7A9Q6H",
-    "name": "operational-team-test",
-    "slug": "operational-team-test",
-    "fh_team_id": {
-      "String": "",
-      "Valid": false
-    },
-    "metadata": {},
-    "to_import": 0
-  },
-  {
     "id": "P5PH8KY",
     "name": "Page Responder Team",
     "slug": "page-responder-team",

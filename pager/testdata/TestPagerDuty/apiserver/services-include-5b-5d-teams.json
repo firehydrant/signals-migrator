@@ -15,7 +15,7 @@
           "type": "team",
           "summary": "Page Responder Team",
           "self": "https://api.pagerduty.com/teams/P5PH8KY",
-          "html_url": "https://firehydrant-eng.pagerduty.com/teams/P5PH8KY",
+          "html_url": "https://acme-inc.pagerduty.com/teams/P5PH8KY",
           "default_role": "manager",
           "parent": null
         }
