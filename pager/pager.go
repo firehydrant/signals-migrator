@@ -13,18 +13,21 @@ var (
 )
 
 type Pager interface {
-	ListUsers(ctx context.Context) ([]*User, error)
-	ListTeams(ctx context.Context) ([]*Team, error)
-
 	Kind() string
 	TeamInterfaces() []string
 	UseTeamInterface(interfaceName string) error
 
-	// LoadUsers(ctx context.Context) error
+	LoadUsers(ctx context.Context) error
 	LoadTeams(ctx context.Context) error
+	LoadTeamMembers(ctx context.Context) error
 	LoadSchedules(ctx context.Context) error
 	LoadEscalationPolicies(ctx context.Context) error
 
+	// Deprecated: use LoadUsers instead
+	ListUsers(ctx context.Context) ([]*User, error)
+	// Deprecated: use LoadTeams instead
+	ListTeams(ctx context.Context) ([]*Team, error)
+	// Deprecated: use LoadTeamMembers instead
 	PopulateTeamMembers(ctx context.Context, team *Team) error
 }
 

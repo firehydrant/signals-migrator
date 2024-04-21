@@ -160,6 +160,8 @@ func (q *Queries) InsertExtEscalationPolicyStepTarget(ctx context.Context, arg I
 }
 
 const insertExtMembership = `-- name: InsertExtMembership :exec
+;
+
 INSERT INTO ext_memberships (user_id, team_id) VALUES (?, ?)
 `
 
@@ -448,6 +450,51 @@ func (q *Queries) ListExtEscalationPolicySteps(ctx context.Context, escalationPo
 			&i.EscalationPolicyID,
 			&i.Position,
 			&i.Timeout,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtMemberships = `-- name: ListExtMemberships :many
+SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.metadata, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id FROM ext_memberships
+  JOIN ext_teams ON ext_teams.id = ext_memberships.team_id
+  JOIN ext_users ON ext_users.id = ext_memberships.user_id
+`
+
+type ListExtMembershipsRow struct {
+	ExtTeam ExtTeam `json:"ext_team"`
+	ExtUser ExtUser `json:"ext_user"`
+}
+
+func (q *Queries) ListExtMemberships(ctx context.Context) ([]ListExtMembershipsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listExtMemberships)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListExtMembershipsRow
+	for rows.Next() {
+		var i ListExtMembershipsRow
+		if err := rows.Scan(
+			&i.ExtTeam.ID,
+			&i.ExtTeam.Name,
+			&i.ExtTeam.Slug,
+			&i.ExtTeam.FhTeamID,
+			&i.ExtTeam.Metadata,
+			&i.ExtTeam.ToImport,
+			&i.ExtUser.ID,
+			&i.ExtUser.Name,
+			&i.ExtUser.Email,
+			&i.ExtUser.FhUserID,
 		); err != nil {
 			return nil, err
 		}

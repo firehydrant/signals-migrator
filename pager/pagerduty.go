@@ -52,6 +52,37 @@ func (p *PagerDuty) UseTeamInterface(interfaceName string) error {
 	return fmt.Errorf("unknown team interface '%s'", interfaceName)
 }
 
+func (p *PagerDuty) LoadUsers(ctx context.Context) error {
+	opts := pagerduty.ListUsersOptions{
+		Offset: 0,
+	}
+
+	for {
+		resp, err := p.client.ListUsersWithContext(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("listing users: %w", err)
+		}
+
+		for _, user := range resp.Users {
+			if err := store.UseQueries(ctx).InsertExtUser(ctx, store.InsertExtUserParams{
+				ID:    user.ID,
+				Name:  user.Name,
+				Email: user.Email,
+			}); err != nil {
+				return fmt.Errorf("saving user to db: %w", err)
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Users))
+	}
+
+	return nil
+}
+
 func (p *PagerDuty) LoadTeams(ctx context.Context) error {
 	switch pdTeamInterface {
 	case "team":
@@ -137,6 +168,96 @@ func (p *PagerDuty) loadServices(ctx context.Context) error {
 		opts.Offset += uint(len(resp.Services))
 	}
 
+	return nil
+}
+
+func (p *PagerDuty) LoadTeamMembers(ctx context.Context) error {
+	switch pdTeamInterface {
+	case "team":
+		return p.loadTeamMembers(ctx)
+	case "service":
+		return p.loadServiceTeamMembers(ctx)
+	case "":
+		return fmt.Errorf("team interface not set")
+	default:
+		return fmt.Errorf("unknown team interface '%s'", pdTeamInterface)
+	}
+}
+
+func (p *PagerDuty) loadTeamMembers(ctx context.Context) error {
+	teams, err := store.UseQueries(ctx).ListTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("listing teams: %w", err)
+	}
+
+	for _, team := range teams {
+		if err := p.loadMembers(ctx, team.ID, team.ID); err != nil {
+			return fmt.Errorf("loading team members: %w", err)
+		}
+	}
+	return nil
+}
+
+func (p *PagerDuty) loadServiceTeamMembers(ctx context.Context) error {
+	teams, err := store.UseQueries(ctx).ListTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("listing teams: %w", err)
+	}
+
+	for _, team := range teams {
+		if team.Metadata == nil || team.Metadata.PagerDutyProxyFor == "" {
+			// TODO: remove this or downgrade to debug / dev-only log.
+			console.Warnf("Team %s is a service, skipping...\n", team.ID)
+			continue
+		}
+		if err := p.loadMembers(ctx, team.ID, team.Metadata.PagerDutyProxyFor); err != nil {
+			return fmt.Errorf("loading service team members: %w", err)
+		}
+	}
+	return nil
+}
+
+// loadMembers loads members of a team from PagerDuty API and saves them to the database.
+// teamID is the team ID which will be used in HTTP query to PagerDuty API, while memberOfTeamID is the
+// reference which will be used in database.
+//
+// When pdTeamInterface is "team", the value of teamID and memberofTeamID will be the same.
+// When pdTeamInterface is "service", the value of teamID will be the team ID and memberOfTeamID will be the service ID.
+func (p *PagerDuty) loadMembers(ctx context.Context, teamID string, memberOfTeamID string) error {
+	// PagerDuty REST API technically supports `includes[]=user` but it's not exposed in Go SDK.
+	// As such, we currently assume the user is already present in the database and only save the relationship.
+	opts := pagerduty.ListTeamMembersOptions{
+		Offset: 0,
+	}
+	q := store.UseQueries(ctx)
+
+	for {
+		resp, err := p.client.ListTeamMembers(ctx, teamID, opts)
+		if err != nil {
+			return err
+		}
+
+		for _, member := range resp.Members {
+			if err := q.InsertExtMembership(ctx, store.InsertExtMembershipParams{
+				TeamID: memberOfTeamID,
+				UserID: member.User.ID,
+			}); err != nil {
+				if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
+					console.Warnf("User %s not found for team %s, skipping...\n", member.User.ID, memberOfTeamID)
+				} else if strings.Contains(err.Error(), "UNIQUE constraint") {
+					console.Warnf("User %s already exists for team %s, skipping duplicate...\n", member.User.ID, memberOfTeamID)
+				} else {
+					return fmt.Errorf("saving team member: %w", err)
+				}
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Members))
+	}
 	return nil
 }
 

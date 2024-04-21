@@ -1,0 +1,46 @@
+[
+  {
+    "ext_team": {
+      "id": "P4XMRL3",
+      "name": "Endeavour",
+      "slug": "endeavour",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "PXI6XNI",
+      "name": "Acme Engineering",
+      "email": "acme-eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  },
+  {
+    "ext_team": {
+      "id": "P3IIAF1",
+      "name": "Server under Jack's desk",
+      "slug": "server-under-jacks-desk",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "P4CMCAU",
+      "name": "Jack T.",
+      "email": "jack+eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  }
+]

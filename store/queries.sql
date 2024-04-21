@@ -37,6 +37,12 @@ UPDATE ext_users SET fh_user_id = ? WHERE id = ?;
 -- name: LinkExtTeam :exec
 UPDATE ext_teams SET fh_team_id = ? WHERE id = ?;
 
+-- name: ListExtMemberships :many
+SELECT sqlc.embed(ext_teams), sqlc.embed(ext_users) FROM ext_memberships
+  JOIN ext_teams ON ext_teams.id = ext_memberships.team_id
+  JOIN ext_users ON ext_users.id = ext_memberships.user_id;
+;
+
 -- name: InsertExtMembership :exec
 INSERT INTO ext_memberships (user_id, team_id) VALUES (?, ?);
 

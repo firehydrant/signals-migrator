@@ -50,7 +50,11 @@ var ImportCommand = &cli.Command{
 
 func importAction(cliCtx *cli.Context) error {
 	providerName := cliCtx.String("provider")
-	provider, err := pager.NewPager(providerName, cliCtx.String("provider-api-key"), cliCtx.String("provider-app-id"))
+	provider, err := pager.NewPager(
+		providerName,
+		cliCtx.String("provider-api-key"),
+		cliCtx.String("provider-app-id"),
+	)
 	if err != nil {
 		return fmt.Errorf("initializing pager provider: %w", err)
 	}

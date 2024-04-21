@@ -1,0 +1,156 @@
+[
+  {
+    "ext_team": {
+      "id": "PT54U20",
+      "name": "Jen",
+      "slug": "jen",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "PXI6XNI",
+      "name": "Acme Engineering",
+      "email": "acme-eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  },
+  {
+    "ext_team": {
+      "id": "PT54U20",
+      "name": "Jen",
+      "slug": "jen",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "P2C9LBA",
+      "name": "Wong",
+      "email": "acme-success+eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  },
+  {
+    "ext_team": {
+      "id": "PO34CI9",
+      "name": "CS-Team-Test",
+      "slug": "cs-team-test",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "PXI6XNI",
+      "name": "Acme Engineering",
+      "email": "acme-eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  },
+  {
+    "ext_team": {
+      "id": "P5PH8KY",
+      "name": "Page Responder Team",
+      "slug": "page-responder-team",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "PXI6XNI",
+      "name": "Acme Engineering",
+      "email": "acme-eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  },
+  {
+    "ext_team": {
+      "id": "PV9JOXL",
+      "name": "Service Catalog Team",
+      "slug": "service-catalog-team",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "PRXEEQ8",
+      "name": "Horse",
+      "email": "horse+eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  },
+  {
+    "ext_team": {
+      "id": "PV9JOXL",
+      "name": "Service Catalog Team",
+      "slug": "service-catalog-team",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "PXI6XNI",
+      "name": "Acme Engineering",
+      "email": "acme-eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  },
+  {
+    "ext_team": {
+      "id": "PD2F80U",
+      "name": "Jack Team",
+      "slug": "jack-team",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "metadata": {},
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "P4CMCAU",
+      "name": "Jack T.",
+      "email": "jack+eng@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  }
+]

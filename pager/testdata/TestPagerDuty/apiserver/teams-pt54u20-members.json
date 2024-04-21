@@ -1,0 +1,28 @@
+{
+  "members": [
+    {
+      "user": {
+        "id": "PXI6XNI",
+        "type": "user_reference",
+        "summary": "Acme Engineering",
+        "self": "https://api.pagerduty.com/users/PXI6XNI",
+        "html_url": "https://acme-eng.pagerduty.com/users/PXI6XNI"
+      },
+      "role": "manager"
+    },
+    {
+      "user": {
+        "id": "P2C9LBA",
+        "type": "user_reference",
+        "summary": "This user exists, technically",
+        "self": "https://api.pagerduty.com/users/P2C9LBA",
+        "html_url": "https://acme-eng.pagerduty.com/users/P2C9LBA"
+      },
+      "role": "manager"
+    }
+  ],
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null
+}

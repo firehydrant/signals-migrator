@@ -82,9 +82,19 @@ func (o *Opsgenie) UseTeamInterface(string) error {
 	return nil
 }
 
+func (o *Opsgenie) LoadUsers(ctx context.Context) error {
+	console.Warnf("opsgenie.LoadUsers is not currently supported.")
+	return nil
+}
+
 func (o *Opsgenie) LoadTeams(ctx context.Context) error {
 	// TODO: implement
 	console.Warnf("opsgenie.LoadTeams is not currently supported.")
+	return nil
+}
+
+func (o *Opsgenie) LoadTeamMembers(ctx context.Context) error {
+	console.Warnf("opsgenie.LoadTeamMembers is not currently supported.")
 	return nil
 }
 

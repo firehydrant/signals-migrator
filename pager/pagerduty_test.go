@@ -69,7 +69,59 @@ func TestPagerDuty(t *testing.T) {
 				t.Fatalf("error loading teams: %s", err)
 			}
 			t.Logf("found %d teams, including services", len(teams))
+
+			// We have 2 services:
+			// - Endeavour, which has a team: Page Responder Team
+			// - Server under Jack's desk, which has a team: Jack's team
+			// We expect the membership association to link the users with the services, not their immediate team.
 			assertJSON(t, teams)
+		})
+	})
+
+	t.Run("LoadTeamMembers", func(t *testing.T) {
+		t.Run("loadTeamMembers", func(t *testing.T) {
+			ctx, pd := setup(t)
+
+			if err := pd.UseTeamInterface("team"); err != nil {
+				t.Fatalf("error setting team interface: %s", err)
+			}
+			if err := pd.LoadUsers(ctx); err != nil {
+				t.Fatalf("error loading users: %s", err)
+			}
+			if err := pd.LoadTeams(ctx); err != nil {
+				t.Fatalf("error loading teams: %s", err)
+			}
+			if err := pd.LoadTeamMembers(ctx); err != nil {
+				t.Fatalf("error loading team members: %s", err)
+			}
+			members, err := store.UseQueries(ctx).ListExtMemberships(ctx)
+			if err != nil {
+				t.Fatalf("error loading team members: %s", err)
+			}
+			t.Logf("found %d team members", len(members))
+			assertJSON(t, members)
+		})
+		t.Run("loadServiceMembers", func(t *testing.T) {
+			ctx, pd := setup(t)
+
+			if err := pd.UseTeamInterface("service"); err != nil {
+				t.Fatalf("error setting team interface: %s", err)
+			}
+			if err := pd.LoadUsers(ctx); err != nil {
+				t.Fatalf("error loading users: %s", err)
+			}
+			if err := pd.LoadTeams(ctx); err != nil {
+				t.Fatalf("error loading teams: %s", err)
+			}
+			if err := pd.LoadTeamMembers(ctx); err != nil {
+				t.Fatalf("error loading team members: %s", err)
+			}
+			members, err := store.UseQueries(ctx).ListExtMemberships(ctx)
+			if err != nil {
+				t.Fatalf("error loading team members: %s", err)
+			}
+			t.Logf("found %d team members, including services", len(members))
+			assertJSON(t, members)
 		})
 	})
 

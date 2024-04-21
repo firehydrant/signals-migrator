@@ -30,9 +30,19 @@ func (v *VictorOps) UseTeamInterface(string) error {
 	return nil
 }
 
+func (v *VictorOps) LoadUsers(ctx context.Context) error {
+	console.Warnf("victorops.LoadUsers is not currently supported.")
+	return nil
+}
+
 func (v *VictorOps) LoadTeams(ctx context.Context) error {
 	// TODO: implement
 	console.Warnf("victorops.LoadTeams is not currently supported.")
+	return nil
+}
+
+func (v *VictorOps) LoadTeamMembers(ctx context.Context) error {
+	console.Warnf("victorops.LoadTeamMembers is not currently supported.")
 	return nil
 }
 
