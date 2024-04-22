@@ -1,0 +1,46 @@
+[
+  {
+    "id": "P4XMRL3",
+    "name": "Endeavour",
+    "slug": "endeavour",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 1,
+    "to_import": 0
+  },
+  {
+    "id": "P5PH8KY",
+    "name": "Page Responder Team",
+    "slug": "page-responder-team",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  },
+  {
+    "id": "P3IIAF1",
+    "name": "Server under Jack's desk",
+    "slug": "server-under-jacks-desk",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 1,
+    "to_import": 0
+  },
+  {
+    "id": "PD2F80U",
+    "name": "Jack Team",
+    "slug": "jack-team",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  }
+]

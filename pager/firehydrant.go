@@ -138,26 +138,29 @@ func (f *FireHydrant) toUser(user firehydrant.User) *User {
 
 // MatchUsers attempts to pair users in the parameter with its FireHydrant User counterpart.
 // Returns: a list of users which were not successfully matched.
-func (f *FireHydrant) MatchUsers(ctx context.Context, users []*User) ([]*User, error) {
+func (f *FireHydrant) MatchUsers(ctx context.Context) error {
+	q := store.UseQueries(ctx)
+
 	// Calling ListUsers just to make sure DB store exists.
 	_, err := f.ListUsers(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("fetching FireHydrant users: %w", err)
+		return fmt.Errorf("fetching FireHydrant users: %w", err)
 	}
 
-	unmatchedUsers := []*User{}
+	users, err := q.ListUsersJoinByEmail(ctx)
+	if err != nil {
+		return fmt.Errorf("listing external users: %w", err)
+	}
+
 	for _, user := range users {
-		fhUser, err := store.UseQueries(ctx).GetFhUserByEmail(ctx, user.Email)
-		if err == nil {
-			if err := f.PairUsers(ctx, fhUser.ID, user.ID); err != nil {
-				return nil, fmt.Errorf("pairing users: %w", err)
+		if user.FhUser.ID != "" {
+			if err := f.PairUsers(ctx, user.FhUser.ID, user.ExtUser.ID); err != nil {
+				return fmt.Errorf("pairing users: %w", err)
 			}
-		} else {
-			unmatchedUsers = append(unmatchedUsers, user)
 		}
 	}
 
-	return unmatchedUsers, nil
+	return nil
 }
 
 func (f *FireHydrant) PairUsers(ctx context.Context, fhUserID string, extUserID string) error {

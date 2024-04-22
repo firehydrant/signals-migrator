@@ -24,45 +24,28 @@ type Opsgenie struct {
 }
 
 func NewOpsgenie(apiKey string) *Opsgenie {
-
-	// Create a new userClient
-	var userClient, _ = user.NewClient(&client.Config{
-		ApiKey: apiKey,
-	})
-
-	var teamClient, _ = team.NewClient(&client.Config{
-		ApiKey: apiKey,
-	})
-
-	var scheduleClient, _ = schedule.NewClient(&client.Config{
-		ApiKey: apiKey,
-	})
-
-	return &Opsgenie{
-		userClient:     userClient,
-		teamClient:     teamClient,
-		scheduleClient: scheduleClient,
-	}
+	conf := &client.Config{ApiKey: apiKey}
+	return NewOpsgenieWithConfig(conf)
 }
 
 func NewOpsgenieWithURL(apiKey, url string) *Opsgenie {
+	conf := &client.Config{ApiKey: apiKey, OpsGenieAPIURL: client.ApiUrl(url)}
+	return NewOpsgenieWithConfig(conf)
+}
 
-	// Create a new userClient
-	var userClient, _ = user.NewClient(&client.Config{
-		ApiKey:         apiKey,
-		OpsGenieAPIURL: client.ApiUrl(url),
-	})
-
-	var teamClient, _ = team.NewClient(&client.Config{
-		ApiKey:         apiKey,
-		OpsGenieAPIURL: client.ApiUrl(url),
-	})
-
-	var scheduleClient, _ = schedule.NewClient(&client.Config{
-		ApiKey:         apiKey,
-		OpsGenieAPIURL: client.ApiUrl(url),
-	})
-
+func NewOpsgenieWithConfig(conf *client.Config) *Opsgenie {
+	userClient, err := user.NewClient(conf)
+	if err != nil {
+		panic(fmt.Sprintf("creating opsgenie user client: %v", err))
+	}
+	teamClient, err := team.NewClient(conf)
+	if err != nil {
+		panic(fmt.Sprintf("creating opsgenie team client: %v", err))
+	}
+	scheduleClient, err := schedule.NewClient(conf)
+	if err != nil {
+		panic(fmt.Sprintf("creating opsgenie schedule client: %v", err))
+	}
 	return &Opsgenie{
 		userClient:     userClient,
 		teamClient:     teamClient,
@@ -71,7 +54,95 @@ func NewOpsgenieWithURL(apiKey, url string) *Opsgenie {
 }
 
 func (p *Opsgenie) Kind() string {
-	return "opsgenie"
+	return "Opsgenie"
+}
+
+func (o *Opsgenie) TeamInterfaces() []string {
+	return []string{"team"}
+}
+
+func (o *Opsgenie) UseTeamInterface(string) error {
+	return nil
+}
+
+func (o *Opsgenie) Teams(ctx context.Context) ([]store.ExtTeam, error) {
+	return store.UseQueries(ctx).ListExtTeams(ctx)
+}
+
+func (o *Opsgenie) LoadUsers(ctx context.Context) error {
+	opts := user.ListRequest{}
+
+	for {
+		resp, err := o.userClient.List(ctx, &opts)
+		if err != nil {
+			return fmt.Errorf("listing users: %w", err)
+		}
+
+		for _, user := range resp.Users {
+			if err := store.UseQueries(ctx).InsertExtUser(ctx, store.InsertExtUserParams{
+				ID:    user.Id,
+				Name:  user.FullName,
+				Email: user.Username,
+			}); err != nil {
+				return fmt.Errorf("saving user to db: %w", err)
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if resp.Paging.Next == "" {
+			break
+		}
+		opts.Offset += len(resp.Users)
+	}
+	return nil
+}
+
+func (o *Opsgenie) LoadTeams(ctx context.Context) error {
+	opts := &team.ListTeamRequest{}
+
+	resp, err := o.teamClient.List(ctx, opts)
+	if err != nil {
+		return fmt.Errorf("listing teams: %w", err)
+	}
+
+	for _, t := range resp.Teams {
+		if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+			ID:   t.Id,
+			Name: t.Name,
+			// Opsgenie does not expose a slug, so generate one.
+			Slug: slug.Make(t.Name),
+		}); err != nil {
+			return fmt.Errorf("saving team to db: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (o *Opsgenie) LoadTeamMembers(ctx context.Context) error {
+	teams, err := store.UseQueries(ctx).ListTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("listing teams: %w", err)
+	}
+	for _, t := range teams {
+		resp, err := o.teamClient.Get(ctx, &team.GetTeamRequest{
+			IdentifierType:  team.Id,
+			IdentifierValue: t.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("getting team members: %w", err)
+		}
+
+		for _, m := range resp.Members {
+			if err := store.UseQueries(ctx).InsertExtMembership(ctx, store.InsertExtMembershipParams{
+				TeamID: t.ID,
+				UserID: m.User.ID,
+			}); err != nil {
+				return fmt.Errorf("saving team member to db: %w", err)
+			}
+		}
+	}
+	return nil
 }
 
 func (o *Opsgenie) LoadSchedules(ctx context.Context) error {
@@ -87,7 +158,7 @@ func (o *Opsgenie) LoadSchedules(ctx context.Context) error {
 	for _, schedule := range resp.Schedule {
 		// To decide: check enabled field and don't create if false?
 		if err := o.saveScheduleToDB(ctx, schedule); err != nil {
-			return fmt.Errorf("error saving schedule to db: %w", err)
+			return fmt.Errorf("saving schedule to db: %w", err)
 		}
 	}
 
@@ -109,7 +180,7 @@ func (o *Opsgenie) saveScheduleToDB(ctx context.Context, s schedule.Schedule) er
 
 	for _, rotation := range resp.Schedule.Rotations {
 		if err := o.saveRotationToDB(ctx, s, rotation); err != nil {
-			return fmt.Errorf("error saving schedule to db: %w", err)
+			return fmt.Errorf("saving schedule to db: %w", err)
 		}
 	}
 	return nil
@@ -151,7 +222,7 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 
 	q := store.UseQueries(ctx)
 	if err := q.InsertExtSchedule(ctx, ogsParams); err != nil {
-		return fmt.Errorf("error saving schedule: %w", err)
+		return fmt.Errorf("saving schedule: %w", err)
 	}
 
 	// ExtScheduleTeam
@@ -163,7 +234,7 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
 				console.Warnf("Team %s not found for schedule %s, skipping...\n", s.OwnerTeam.Id, ogsParams.ID)
 			} else {
-				return fmt.Errorf("error saving schedule team: %w", err)
+				return fmt.Errorf("saving schedule team: %w", err)
 			}
 		}
 	} else {
@@ -181,7 +252,7 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
 				console.Warnf("User %s already exists for schedule %s, skipping duplicate...\n", p.Id, ogsParams.ID)
 			} else {
-				return fmt.Errorf("error saving schedule user: %w", err)
+				return fmt.Errorf("saving schedule user: %w", err)
 			}
 		}
 	}
@@ -213,7 +284,7 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 					EndTime:          endTime.Format(time.TimeOnly),
 				}
 				if err := q.InsertExtScheduleRestriction(ctx, ogsRestrictionsParams); err != nil {
-					return fmt.Errorf("error saving time of day restriction: %w", err)
+					return fmt.Errorf("saving time of day restriction: %w", err)
 				}
 			}
 		case og.TimeOfDay:
@@ -239,7 +310,7 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 					EndTime:          endTime.Format(time.TimeOnly),
 				}
 				if err := q.InsertExtScheduleRestriction(ctx, ogsRestrictionsParams); err != nil {
-					return fmt.Errorf("error saving time of day restriction: %w", err)
+					return fmt.Errorf("saving time of day restriction: %w", err)
 				}
 			}
 		default:
@@ -254,85 +325,4 @@ func (o *Opsgenie) LoadEscalationPolicies(ctx context.Context) error {
 	// TODO: implement
 	console.Warnf("opsgenie.LoadEscalationPolicies is not currently supported.")
 	return nil
-}
-
-func (p *Opsgenie) PopulateTeamMembers(ctx context.Context, t *Team) error {
-	members := []*User{}
-
-	resp, err := p.teamClient.Get(ctx, &team.GetTeamRequest{
-		IdentifierType:  team.Name,
-		IdentifierValue: t.Name,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	for _, member := range resp.Members {
-		members = append(members, &User{Resource: Resource{ID: member.User.ID}})
-	}
-
-	t.Members = members
-
-	return nil
-}
-
-func (p *Opsgenie) ListTeams(ctx context.Context) ([]*Team, error) {
-	teams := []*Team{}
-	opts := team.ListTeamRequest{}
-
-	resp, err := p.teamClient.List(ctx, &opts)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, team := range resp.Teams {
-		teams = append(teams, p.toTeam(team))
-	}
-
-	return teams, nil
-}
-
-func (p *Opsgenie) toTeam(team team.ListedTeams) *Team {
-	return &Team{
-		// Opsgenie does not expose a slug, so generate one.
-		Slug: slug.Make(team.Name),
-		Resource: Resource{
-			ID:   team.Id,
-			Name: team.Name,
-		},
-	}
-}
-
-func (p *Opsgenie) ListUsers(ctx context.Context) ([]*User, error) {
-	users := []*User{}
-	opts := user.ListRequest{}
-
-	for {
-		resp, err := p.userClient.List(ctx, &opts)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, user := range resp.Users {
-			users = append(users, p.toUser(user))
-		}
-
-		// Results are paginated, so break if we're on the last page.
-		if resp.Paging.Next == "" {
-			break
-		}
-		opts.Offset += len(resp.Users)
-	}
-	return users, nil
-}
-
-func (p *Opsgenie) toUser(user user.User) *User {
-	return &User{
-		Email: user.Username,
-		Resource: Resource{
-			ID:   user.Id,
-			Name: user.FullName,
-		},
-	}
 }

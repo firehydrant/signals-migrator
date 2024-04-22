@@ -3,6 +3,7 @@ package pager
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,12 @@ type PagerDuty struct {
 	client *pagerduty.Client
 }
 
+var (
+	pdTeamInterface string
+
+	pdTeamInterfaces = []string{"team", "service"}
+)
+
 func NewPagerDuty(apiKey string) *PagerDuty {
 	return &PagerDuty{
 		client: pagerduty.NewClient(apiKey),
@@ -30,7 +37,256 @@ func NewPagerDutyWithURL(apiKey, url string) *PagerDuty {
 }
 
 func (p *PagerDuty) Kind() string {
-	return "pagerduty"
+	return "PagerDuty"
+}
+
+// TeamInterfaces defines the available abstraction of a team from PagerDuty.
+// When "team" is selected, the team is fetched from PagerDuty and imported as-is.
+// When "service" is selected, a "service team" will be created as a proxy team, linked to regular PagerDuty teams,
+// via ext_team_groups table. When populating user members, the service team will query all the linked teams for
+// all their user members.
+func (p *PagerDuty) TeamInterfaces() []string {
+	return pdTeamInterfaces
+}
+
+func (p *PagerDuty) UseTeamInterface(interfaceName string) error {
+	if slices.Contains(pdTeamInterfaces, interfaceName) {
+		pdTeamInterface = interfaceName
+		return nil
+	}
+	return fmt.Errorf("unknown team interface '%s'", interfaceName)
+}
+
+func (p *PagerDuty) Teams(ctx context.Context) ([]store.ExtTeam, error) {
+	switch pdTeamInterface {
+	case "team":
+		return store.UseQueries(ctx).ListNonGroupExtTeams(ctx)
+	case "service":
+		return store.UseQueries(ctx).ListGroupExtTeams(ctx)
+	case "":
+		return nil, fmt.Errorf("team interface not set")
+	default:
+		return nil, fmt.Errorf("unknown team interface '%s'", pdTeamInterface)
+	}
+}
+
+func (p *PagerDuty) LoadUsers(ctx context.Context) error {
+	opts := pagerduty.ListUsersOptions{
+		Offset: 0,
+	}
+
+	for {
+		resp, err := p.client.ListUsersWithContext(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("listing users: %w", err)
+		}
+
+		for _, user := range resp.Users {
+			if err := store.UseQueries(ctx).InsertExtUser(ctx, store.InsertExtUserParams{
+				ID:    user.ID,
+				Name:  user.Name,
+				Email: user.Email,
+			}); err != nil {
+				return fmt.Errorf("saving user to db: %w", err)
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Users))
+	}
+
+	return nil
+}
+
+func (p *PagerDuty) LoadTeams(ctx context.Context) error {
+	switch pdTeamInterface {
+	case "team":
+		return p.loadTeams(ctx)
+	case "service":
+		return p.loadServices(ctx)
+	case "":
+		return fmt.Errorf("team interface not set")
+	default:
+		return fmt.Errorf("unknown team interface '%s'", pdTeamInterface)
+	}
+}
+
+func (p *PagerDuty) loadTeams(ctx context.Context) error {
+	opts := pagerduty.ListTeamOptions{
+		Offset: 0,
+	}
+
+	for {
+		resp, err := p.client.ListTeamsWithContext(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("listing teams: %w", err)
+		}
+
+		for _, team := range resp.Teams {
+			if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+				ID:   team.ID,
+				Name: team.Name,
+				// PagerDuty does not expose slug, so we can safely generate one.
+				Slug: slug.Make(team.Name),
+			}); err != nil {
+				return fmt.Errorf("saving team '%s (%s)' to db: %w", team.Name, team.ID, err)
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Teams))
+	}
+
+	return nil
+}
+
+func (p *PagerDuty) loadServices(ctx context.Context) error {
+	opts := pagerduty.ListServiceOptions{
+		Includes: []string{"teams"},
+		Offset:   0,
+	}
+
+	q := store.UseQueries(ctx)
+
+	for {
+		resp, err := p.client.ListServicesWithContext(ctx, opts)
+		if err != nil {
+			return fmt.Errorf("listing services: %w", err)
+		}
+
+		for _, service := range resp.Services {
+			if err := q.InsertExtTeam(ctx, store.InsertExtTeamParams{
+				ID:   service.ID,
+				Name: service.Name,
+				// PagerDuty does not expose "Slug", so we can safely generate one.
+				Slug:    slug.Make(service.Name),
+				IsGroup: 1,
+			}); err != nil {
+				return fmt.Errorf("saving service '%s (%s)' as team to db: %w", service.Name, service.ID, err)
+			}
+			for _, team := range service.Teams {
+				if err := q.InsertExtTeam(ctx, store.InsertExtTeamParams{
+					ID:   team.ID,
+					Name: team.Name,
+					// PagerDuty does not expose "Slug", so we can safely generate one.
+					Slug: slug.Make(team.Name),
+				}); err != nil {
+					if strings.Contains(err.Error(), "UNIQUE constraint") {
+						// Assume that team was already imported from another service.
+						console.Warnf("Team %s has been imported, skipping duplicate...\n", service.ID, team.ID)
+					} else {
+						return fmt.Errorf("saving team '%s (%s)' to db: %w", team.Name, team.ID, err)
+					}
+				}
+				if err := q.InsertExtTeamGroup(ctx, store.InsertExtTeamGroupParams{
+					GroupTeamID:  service.ID,
+					MemberTeamID: team.ID,
+				}); err != nil {
+					if strings.Contains(err.Error(), "UNIQUE constraint") {
+						// This should never happen, unless it's on a dirty database. Warn users anyway.
+						console.Warnf("Service %s already has team %s, skipping duplicate...\n", service.ID, team.ID)
+					} else {
+						return fmt.Errorf("saving '%s (%s)' team as proxy for '%s (%s)' service: %w", team.Name, team.ID, service.Name, service.ID, err)
+					}
+				}
+			}
+		}
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Services))
+	}
+
+	return nil
+}
+
+func (p *PagerDuty) LoadTeamMembers(ctx context.Context) error {
+	switch pdTeamInterface {
+	case "team":
+		return p.loadTeamMembers(ctx)
+	case "service":
+		return p.loadServiceTeamMembers(ctx)
+	case "":
+		return fmt.Errorf("team interface not set")
+	default:
+		return fmt.Errorf("unknown team interface '%s'", pdTeamInterface)
+	}
+}
+
+func (p *PagerDuty) loadTeamMembers(ctx context.Context) error {
+	teams, err := store.UseQueries(ctx).ListTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("listing teams: %w", err)
+	}
+
+	for _, team := range teams {
+		if err := p.loadMembers(ctx, team.ID); err != nil {
+			return fmt.Errorf("loading team members: %w", err)
+		}
+	}
+	return nil
+}
+
+func (p *PagerDuty) loadServiceTeamMembers(ctx context.Context) error {
+	teams, err := store.UseQueries(ctx).ListNonGroupExtTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("listing teams: %w", err)
+	}
+
+	for _, team := range teams {
+		if err := p.loadMembers(ctx, team.ID); err != nil {
+			return fmt.Errorf("loading service team members: %w", err)
+		}
+	}
+	return nil
+}
+
+// loadMembers loads members of a team from PagerDuty API and saves them to the database.
+// teamID is the team ID which will be used in HTTP query to PagerDuty API, while memberOfTeamID is the
+// reference which will be used in database.
+func (p *PagerDuty) loadMembers(ctx context.Context, teamID string) error {
+	// PagerDuty REST API technically supports `includes[]=user` but it's not exposed in Go SDK.
+	// As such, we currently assume the user is already present in the database and only save the relationship.
+	opts := pagerduty.ListTeamMembersOptions{
+		Offset: 0,
+	}
+	q := store.UseQueries(ctx)
+
+	for {
+		resp, err := p.client.ListTeamMembers(ctx, teamID, opts)
+		if err != nil {
+			return err
+		}
+
+		for _, member := range resp.Members {
+			if err := q.InsertExtMembership(ctx, store.InsertExtMembershipParams{
+				TeamID: teamID,
+				UserID: member.User.ID,
+			}); err != nil {
+				if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
+					console.Warnf("User %s not found for team %s, skipping...\n", member.User.ID, teamID)
+				} else if strings.Contains(err.Error(), "UNIQUE constraint") {
+					console.Warnf("User %s already exists for team %s, skipping duplicate...\n", member.User.ID, teamID)
+				} else {
+					return fmt.Errorf("saving team member: %w", err)
+				}
+			}
+		}
+
+		// Results are paginated, so break if we're on the last page.
+		if !resp.More {
+			break
+		}
+		opts.Offset += uint(len(resp.Members))
+	}
+	return nil
 }
 
 func (p *PagerDuty) LoadSchedules(ctx context.Context) error {
@@ -290,101 +546,4 @@ func (p *PagerDuty) saveEscalationPolicyStepTargetToDB(
 		return fmt.Errorf("saving escalation policy step target: %w", err)
 	}
 	return nil
-}
-
-func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
-	members := []*User{}
-	opts := pagerduty.ListTeamMembersOptions{
-		Offset: 0,
-	}
-
-	for {
-		resp, err := p.client.ListTeamMembers(ctx, team.ID, opts)
-		if err != nil {
-			return err
-		}
-
-		for _, member := range resp.Members {
-			members = append(members, &User{Resource: Resource{ID: member.User.ID}})
-		}
-
-		// Results are paginated, so break if we're on the last page.
-		if !resp.More {
-			break
-		}
-		opts.Offset += uint(len(resp.Members))
-	}
-	team.Members = members
-	return nil
-}
-
-func (p *PagerDuty) ListTeams(ctx context.Context) ([]*Team, error) {
-	teams := []*Team{}
-	opts := pagerduty.ListTeamOptions{
-		Offset: 0,
-	}
-
-	for {
-		resp, err := p.client.ListTeamsWithContext(ctx, opts)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, team := range resp.Teams {
-			teams = append(teams, p.toTeam(team))
-		}
-
-		// Results are paginated, so break if we're on the last page.
-		if !resp.More {
-			break
-		}
-		opts.Offset += uint(len(resp.Teams))
-	}
-	return teams, nil
-}
-
-func (p *PagerDuty) toTeam(team pagerduty.Team) *Team {
-	return &Team{
-		// PagerDuty does not expose a slug, so generate one.
-		Slug: slug.Make(team.Name),
-		Resource: Resource{
-			ID:   team.ID,
-			Name: team.Name,
-		},
-	}
-}
-
-func (p *PagerDuty) ListUsers(ctx context.Context) ([]*User, error) {
-	users := []*User{}
-	opts := pagerduty.ListUsersOptions{
-		Offset: 0,
-	}
-
-	for {
-		resp, err := p.client.ListUsersWithContext(ctx, opts)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, user := range resp.Users {
-			users = append(users, p.toUser(user))
-		}
-
-		// Results are paginated, so break if we're on the last page.
-		if !resp.More {
-			break
-		}
-		opts.Offset += uint(len(resp.Users))
-	}
-	return users, nil
-}
-
-func (p *PagerDuty) toUser(user pagerduty.User) *User {
-	return &User{
-		Email: user.Email,
-		Resource: Resource{
-			ID:   user.ID,
-			Name: user.Name,
-		},
-	}
 }

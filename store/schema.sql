@@ -1,4 +1,4 @@
-PRAGMA main.auto_vacuum = 1;
+PRAGMA main.auto_vacuum=1;
 PRAGMA foreign_keys=ON;
 
 CREATE TABLE IF NOT EXISTS fh_users (
@@ -28,7 +28,17 @@ CREATE TABLE IF NOT EXISTS ext_teams (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   slug TEXT NOT NULL,
-  fh_team_id TEXT REFERENCES fh_teams(id)
+  fh_team_id TEXT REFERENCES fh_teams(id),
+  is_group INTEGER NOT NULL DEFAULT 0,
+  to_import INTEGER NOT NULL DEFAULT 0
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_team_groups (
+  group_team_id TEXT NOT NULL,
+  member_team_id TEXT NOT NULL,
+  PRIMARY KEY (group_team_id, member_team_id),
+  FOREIGN KEY (group_team_id) REFERENCES ext_teams(id) ON DELETE CASCADE,
+  FOREIGN KEY (member_team_id) REFERENCES ext_teams(id) ON DELETE CASCADE
 ) STRICT;
 
 CREATE VIEW IF NOT EXISTS linked_teams AS
@@ -39,8 +49,8 @@ CREATE TABLE IF NOT EXISTS ext_memberships (
   user_id TEXT NOT NULL,
   team_id TEXT NOT NULL,
   PRIMARY KEY (user_id, team_id),
-  FOREIGN KEY (user_id) REFERENCES ext_users(id),
-  FOREIGN KEY (team_id) REFERENCES ext_teams(id)
+  FOREIGN KEY (user_id) REFERENCES ext_users(id) ON DELETE CASCADE,
+  FOREIGN KEY (team_id) REFERENCES ext_teams(id) ON DELETE CASCADE
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_schedules (
@@ -91,7 +101,7 @@ CREATE TABLE IF NOT EXISTS ext_escalation_policies (
   repeat_interval TEXT,
   handoff_target_type TEXT NOT NULL,
   handoff_target_id TEXT NOT NULL,
-  to_import INTEGER NOT NULL
+  to_import INTEGER NOT NULL DEFAULT 0
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_escalation_policy_steps (

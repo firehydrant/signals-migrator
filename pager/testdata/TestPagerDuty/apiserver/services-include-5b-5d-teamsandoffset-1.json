@@ -1,0 +1,62 @@
+{
+  "services": [
+    {
+      "id": "P3IIAF1",
+      "name": "Server under Jack's desk",
+      "description": "Demo Service",
+      "created_at": "2023-01-04T11:56:38-08:00",
+      "updated_at": "2023-01-04T11:56:38-08:00",
+      "status": "active",
+      "teams": [
+        {
+          "default_role": "manager",
+          "description": null,
+          "html_url": "https://acme-inc.pagerduty.com/teams/PD2F80U",
+          "id": "PD2F80U",
+          "name": "Jack Team",
+          "parent": null,
+          "self": "https://api.pagerduty.com/teams/PD2F80U",
+          "summary": "Jack Team",
+          "type": "team"
+        }
+      ],
+      "alert_creation": "create_alerts_and_incidents",
+      "addons": [],
+      "scheduled_actions": [],
+      "support_hours": null,
+      "last_incident_timestamp": "2023-01-04T19:57:38Z",
+      "escalation_policy": {
+        "id": "PT25XJK",
+        "type": "escalation_policy_reference",
+        "summary": "GooglePDService-ep",
+        "self": "https://api.pagerduty.com/escalation_policies/PT25XJK",
+        "html_url": "https://pdt-apidocs.pagerduty.com/escalation_policies/PT25XJK"
+      },
+      "incident_urgency_rule": {
+        "type": "constant",
+        "urgency": "high"
+      },
+      "acknowledgement_timeout": null,
+      "auto_resolve_timeout": null,
+      "alert_grouping": "intelligent",
+      "alert_grouping_timeout": null,
+      "alert_grouping_parameters": {
+        "type": "intelligent",
+        "config": {
+          "time_window": 300,
+          "recommended_time_window": 300
+        }
+      },
+      "integrations": [],
+      "response_play": null,
+      "type": "service",
+      "summary": "GooglePDService",
+      "self": "https://api.pagerduty.com/services/PU1BXAX",
+      "html_url": "https://pdt-apidocs.pagerduty.com/service-directory/PU1BXAX"
+    }
+  ],
+  "limit": 25,
+  "offset": 0,
+  "total": null,
+  "more": false
+}

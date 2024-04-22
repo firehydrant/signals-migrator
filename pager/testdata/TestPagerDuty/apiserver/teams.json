@@ -39,39 +39,6 @@
     {
       "default_role": "manager",
       "description": null,
-      "html_url": "https://acme-inc.pagerduty.com/teams/PEGBTKE",
-      "id": "PEGBTKE",
-      "name": "CS-Test-Alerting",
-      "parent": null,
-      "self": "https://api.pagerduty.com/teams/PEGBTKE",
-      "summary": "CS-Test-Alerting",
-      "type": "team"
-    },
-    {
-      "default_role": "manager",
-      "description": null,
-      "html_url": "https://acme-inc.pagerduty.com/teams/P7E9UET",
-      "id": "P7E9UET",
-      "name": "caroline-team-test",
-      "parent": null,
-      "self": "https://api.pagerduty.com/teams/P7E9UET",
-      "summary": "caroline-team-test",
-      "type": "team"
-    },
-    {
-      "default_role": "manager",
-      "description": null,
-      "html_url": "https://acme-inc.pagerduty.com/teams/P7A9Q6H",
-      "id": "P7A9Q6H",
-      "name": "operational-team-test",
-      "parent": null,
-      "self": "https://api.pagerduty.com/teams/P7A9Q6H",
-      "summary": "operational-team-test",
-      "type": "team"
-    },
-    {
-      "default_role": "manager",
-      "description": null,
       "html_url": "https://acme-inc.pagerduty.com/teams/P5PH8KY",
       "id": "P5PH8KY",
       "name": "Page Responder Team",

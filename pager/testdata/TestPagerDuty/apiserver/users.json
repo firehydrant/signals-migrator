@@ -257,13 +257,6 @@
       "summary": "Wong",
       "teams": [
         {
-          "html_url": "https://acme-inc.pagerduty.com/teams/PEGBTKE",
-          "id": "PEGBTKE",
-          "self": "https://api.pagerduty.com/teams/PEGBTKE",
-          "summary": "CS-Test-Alerting",
-          "type": "team_reference"
-        },
-        {
           "html_url": "https://acme-inc.pagerduty.com/teams/PT54U20",
           "id": "PT54U20",
           "self": "https://api.pagerduty.com/teams/PT54U20",

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/firehydrant/signals-migrator/store"
 )
 
 var (
@@ -13,13 +15,17 @@ var (
 )
 
 type Pager interface {
-	ListUsers(ctx context.Context) ([]*User, error)
-	ListTeams(ctx context.Context) ([]*Team, error)
+	Kind() string
+	TeamInterfaces() []string
+	UseTeamInterface(interfaceName string) error
 
+	LoadUsers(ctx context.Context) error
+	LoadTeams(ctx context.Context) error
+	LoadTeamMembers(ctx context.Context) error
 	LoadSchedules(ctx context.Context) error
 	LoadEscalationPolicies(ctx context.Context) error
 
-	PopulateTeamMembers(ctx context.Context, team *Team) error
+	Teams(context.Context) ([]store.ExtTeam, error)
 }
 
 func NewPager(kind string, apiKey string, appId string) (Pager, error) {

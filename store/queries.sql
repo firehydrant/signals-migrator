@@ -16,6 +16,17 @@ SELECT * FROM fh_teams;
 -- name: InsertFhTeam :exec
 INSERT INTO fh_teams (id, name, slug) VALUES (?, ?, ?);
 
+-- name: ListUsersJoinByEmail :many
+SELECT sqlc.embed(ext_users), sqlc.embed(fh_users) FROM ext_users
+  JOIN fh_users ON fh_users.email = ext_users.email;
+
+-- name: ListExtUsers :many
+SELECT * FROM ext_users;
+
+-- name: ListUnmatchedExtUsers :many
+SELECT * FROM ext_users
+WHERE fh_user_id IS NULL;
+
 -- name: InsertExtUser :exec
 INSERT INTO ext_users (id, name, email, fh_user_id) VALUES (?, ?, ?, ?);
 
@@ -25,17 +36,53 @@ SELECT * FROM linked_teams WHERE id = ?;
 -- name: ListTeams :many
 SELECT * from linked_teams;
 
--- name: CheckExtTeamExists :one
-SELECT COUNT(*) > 0 FROM ext_teams WHERE id = ?;
+-- name: ListTeamsToImport :many
+SELECT * from linked_teams WHERE to_import = 1;
+
+-- name: ListExtTeams :many
+SELECT * FROM ext_teams;
 
 -- name: InsertExtTeam :exec
-INSERT INTO ext_teams (id, name, slug, fh_team_id) VALUES (?, ?, ?, ?);
+INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id) VALUES (?, ?, ?, ?, ?);
+
+-- name: MarkExtTeamToImport :exec
+UPDATE ext_teams SET to_import = 1 WHERE id = ?;
+
+-- name: ListGroupExtTeams :many
+SELECT * FROM ext_teams
+WHERE is_group = 1;
+
+-- name: ListNonGroupExtTeams :many
+SELECT * FROM ext_teams
+WHERE is_group = 0;
+
+-- name: ListMemberExtTeams :many
+SELECT * FROM ext_teams
+WHERE id IN (
+  SELECT DISTINCT member_team_id FROM ext_team_groups
+  WHERE group_team_id = ?
+);
+
+-- name: InsertExtTeamGroup :exec
+INSERT INTO ext_team_groups (group_team_id, member_team_id) VALUES (?, ?);
 
 -- name: LinkExtUser :exec
 UPDATE ext_users SET fh_user_id = ? WHERE id = ?;
 
 -- name: LinkExtTeam :exec
 UPDATE ext_teams SET fh_team_id = ? WHERE id = ?;
+
+-- name: ListExtTeamMemberships :many
+SELECT sqlc.embed(ext_teams), sqlc.embed(ext_users) FROM ext_memberships
+  JOIN ext_teams ON ext_teams.id = ext_memberships.team_id
+  JOIN ext_users ON ext_users.id = ext_memberships.user_id;
+
+-- name: ListGroupExtTeamMemberships :many
+SELECT sqlc.embed(ext_teams), sqlc.embed(ext_users) FROM ext_teams
+  JOIN ext_team_groups ON ext_team_groups.group_team_id = ext_teams.id
+  JOIN ext_teams AS member_team ON member_team.id = ext_team_groups.member_team_id
+  JOIN ext_memberships ON ext_memberships.team_id = member_team.id
+  JOIN ext_users ON ext_users.id = ext_memberships.user_id;
 
 -- name: InsertExtMembership :exec
 INSERT INTO ext_memberships (user_id, team_id) VALUES (?, ?);

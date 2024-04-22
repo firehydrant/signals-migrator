@@ -1,0 +1,59 @@
+{
+  "services": [
+    {
+      "id": "P4XMRL3",
+      "name": "Endeavour",
+      "description": null,
+      "created_at": "2021-01-07T08:34:46-08:00",
+      "updated_at": "2021-01-07T08:34:46-08:00",
+      "status": "active",
+      "teams": [
+        {
+          "id": "P5PH8KY",
+          "name": "Page Responder Team",
+          "description": null,
+          "type": "team",
+          "summary": "Page Responder Team",
+          "self": "https://api.pagerduty.com/teams/P5PH8KY",
+          "html_url": "https://acme-inc.pagerduty.com/teams/P5PH8KY",
+          "default_role": "manager",
+          "parent": null
+        }
+      ],
+      "alert_creation": "create_alerts_and_incidents",
+      "addons": [],
+      "scheduled_actions": [],
+      "support_hours": null,
+      "last_incident_timestamp": null,
+      "escalation_policy": {
+        "id": "P6F7EI2",
+        "type": "escalation_policy_reference",
+        "summary": "Endeavour",
+        "self": "https://api.pagerduty.com/escalation_policies/P6F7EI2",
+        "html_url": "https://pdt-apidocs.pagerduty.com/escalation_policies/P6F7EI2"
+      },
+      "incident_urgency_rule": {
+        "type": "constant",
+        "urgency": "high"
+      },
+      "acknowledgement_timeout": null,
+      "auto_resolve_timeout": null,
+      "alert_grouping": null,
+      "alert_grouping_timeout": null,
+      "alert_grouping_parameters": {
+        "type": null,
+        "config": null
+      },
+      "integrations": [],
+      "response_play": null,
+      "type": "service",
+      "summary": "Endeavour",
+      "self": "https://api.pagerduty.com/services/P18JCJH",
+      "html_url": "https://pdt-apidocs.pagerduty.com/service-directory/P18JCJH"
+    }
+  ],
+  "limit": 25,
+  "offset": 0,
+  "total": null,
+  "more": true
+}

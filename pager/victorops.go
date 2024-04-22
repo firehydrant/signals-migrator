@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/firehydrant/signals-migrator/console"
+	"github.com/firehydrant/signals-migrator/store"
 	"github.com/gosimple/slug"
 	"github.com/victorops/go-victorops/victorops"
 )
@@ -19,7 +20,35 @@ func NewVictorOps(apiKey string, appId string) *VictorOps {
 }
 
 func (v *VictorOps) Kind() string {
-	return "victorops"
+	return "VictorOps"
+}
+
+func (v *VictorOps) TeamInterfaces() []string {
+	return []string{"team"}
+}
+
+func (v *VictorOps) UseTeamInterface(string) error {
+	return nil
+}
+
+func (v *VictorOps) Teams(ctx context.Context) ([]store.ExtTeam, error) {
+	return store.UseQueries(ctx).ListExtTeams(ctx)
+}
+
+func (v *VictorOps) LoadUsers(ctx context.Context) error {
+	console.Warnf("victorops.LoadUsers is not currently supported.")
+	return nil
+}
+
+func (v *VictorOps) LoadTeams(ctx context.Context) error {
+	// TODO: implement
+	console.Warnf("victorops.LoadTeams is not currently supported.")
+	return nil
+}
+
+func (v *VictorOps) LoadTeamMembers(ctx context.Context) error {
+	console.Warnf("victorops.LoadTeamMembers is not currently supported.")
+	return nil
 }
 
 func (v *VictorOps) LoadSchedules(ctx context.Context) error {

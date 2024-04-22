@@ -16,15 +16,19 @@ import (
 	"github.com/fatih/color"
 )
 
-func NewStore() *Store {
-	f := filepath.Join(os.TempDir(), "signals-migrator.db")
-	log.Printf("using db file: %s", f)
-
-	db, err := sql.Open("sqlite", f)
+func NewStore(dsn string) *Store {
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		panic(err)
 	}
 	return &Store{conn: db}
+}
+
+func NewMemoryStore() *Store {
+	f := filepath.Join(os.TempDir(), "signals-migrator.db")
+	log.Printf("using db file: %s", f)
+
+	return NewStore(f)
 }
 
 func (s *Store) log(t time.Duration, queryStr string) {

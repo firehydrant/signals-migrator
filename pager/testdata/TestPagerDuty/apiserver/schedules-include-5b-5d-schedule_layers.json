@@ -89,11 +89,11 @@
       "summary": "Jen - primary",
       "teams": [
         {
-          "html_url": "https://acme-inc.pagerduty.com/teams/PT54U20",
-          "id": "PT54U20",
-          "self": "https://api.pagerduty.com/teams/PT54U20",
-          "summary": "Jen",
-          "type": "team_reference"
+          "id": "P5PH8KY",
+          "summary": "Page Responder Team",
+          "type": "team_reference",
+          "self": "https://api.pagerduty.com/teams/P5PH8KY",
+          "html_url": "https://acme-inc.pagerduty.com/teams/P5PH8KY"
         }
       ],
       "time_zone": "America/Los_Angeles",

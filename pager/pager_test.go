@@ -17,7 +17,11 @@ import (
 
 func withTestDB(t *testing.T) context.Context {
 	t.Helper()
-	ctx := store.WithContext(context.Background())
+
+	f := filepath.Join(t.TempDir(), slug.Make(t.Name())+".db")
+	_ = os.Remove(f)
+
+	ctx := store.WithContextAndDSN(context.Background(), "file:"+f)
 	t.Cleanup(func() {
 		if err := store.FromContext(ctx).Close(); err != nil {
 			t.Fatalf("error closing db: %s", err)
@@ -35,7 +39,11 @@ func pagerProviderHttpServer(t *testing.T) *httptest.Server {
 		for b := filepath.Dir(baseTestDir); b != "."; b = filepath.Dir(b) {
 			baseTestDir = b
 		}
-		filename, err := url.JoinPath("testdata", baseTestDir, "apiserver", slug.Make(r.URL.Path)+".json")
+		urlPath := r.URL.Path
+		if r.URL.RawQuery != "" {
+			urlPath += "?" + r.URL.RawQuery
+		}
+		filename, err := url.JoinPath("testdata", baseTestDir, "apiserver", slug.Make(urlPath)+".json")
 		if err != nil {
 			t.Fatalf("error joining path for expected response: %s", err)
 		}
@@ -52,6 +60,7 @@ func pagerProviderHttpServer(t *testing.T) *httptest.Server {
 }
 
 // assertJSON compares the JSON representation of `got` with the golden file.
+// The golden file is named conventionally after the full test name with `.golden.json` suffix.
 //
 // WARNING: `got` must not refer to data with non-deterministic order.
 // For example, Go's builtin map is not order-deterministic, thus it might produce inconsistent JSON comparison in this method.
@@ -70,5 +79,6 @@ func assertJSON(t *testing.T, got any) {
 	}
 
 	goldenFile := t.Name() + ".golden.json"
+	t.Logf("using %s\n", goldenFile)
 	golden.Assert(t, string(b), goldenFile)
 }

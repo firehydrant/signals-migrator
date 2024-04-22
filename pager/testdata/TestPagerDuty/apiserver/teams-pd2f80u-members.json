@@ -1,0 +1,18 @@
+{
+  "members": [
+    {
+      "user": {
+        "id": "P4CMCAU",
+        "type": "user_reference",
+        "summary": "Jack T",
+        "self": "https://api.pagerduty.com/users/P4CMCAU",
+        "html_url": "https://acme-eng.pagerduty.com/users/P4CMCAU"
+      },
+      "role": "manager"
+    }
+  ],
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null
+}

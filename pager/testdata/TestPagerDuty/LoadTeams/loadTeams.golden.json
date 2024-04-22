@@ -1,0 +1,68 @@
+[
+  {
+    "id": "PT54U20",
+    "name": "Jen",
+    "slug": "jen",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  },
+  {
+    "id": "PO206TE",
+    "name": "canary-team",
+    "slug": "canary-team",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  },
+  {
+    "id": "PO34CI9",
+    "name": "CS-Team-Test",
+    "slug": "cs-team-test",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  },
+  {
+    "id": "P5PH8KY",
+    "name": "Page Responder Team",
+    "slug": "page-responder-team",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  },
+  {
+    "id": "PV9JOXL",
+    "name": "Service Catalog Team",
+    "slug": "service-catalog-team",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  },
+  {
+    "id": "PD2F80U",
+    "name": "Jack Team",
+    "slug": "jack-team",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  }
+]

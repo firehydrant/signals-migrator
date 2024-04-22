@@ -26,14 +26,17 @@ func TestOpsgenie(t *testing.T) {
 		return ctx, og
 	}
 
-	t.Run("ListUsers", func(t *testing.T) {
+	t.Run("LoadUsers", func(t *testing.T) {
 		ctx, og := setup(t)
 
-		u, err := og.ListUsers(ctx)
+		if err := og.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+
+		u, err := store.UseQueries(ctx).ListExtUsers(ctx)
 		if err != nil {
 			t.Fatalf("error loading users: %s", err)
 		}
-		t.Logf("found %d users", len(u))
 		assertJSON(t, u)
 	})
 

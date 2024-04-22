@@ -9,12 +9,16 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func NewStore() *Store {
-	db, err := sql.Open("sqlite", "file::memory:?cache=shared")
+func NewStore(dsn string) *Store {
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		panic(err)
 	}
 	return &Store{conn: db}
+}
+
+func NewMemoryStore() *Store {
+	return NewStore("file::memory:?cache=shared")
 }
 
 func (s *Store) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
