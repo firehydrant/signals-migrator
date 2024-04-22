@@ -23,15 +23,18 @@ func TestPagerDuty(t *testing.T) {
 		return ctx, pd
 	}
 
-	t.Run("ListUsers", func(t *testing.T) {
+	t.Run("LoadUsers", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)
 
-		u, err := pd.ListUsers(ctx)
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+
+		u, err := store.UseQueries(ctx).ListExtUsers(ctx)
 		if err != nil {
 			t.Fatalf("error loading users: %s", err)
 		}
-		t.Logf("found %d users", len(u))
 		assertJSON(t, u)
 	})
 

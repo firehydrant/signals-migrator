@@ -57,6 +57,19 @@ func (p *PagerDuty) UseTeamInterface(interfaceName string) error {
 	return fmt.Errorf("unknown team interface '%s'", interfaceName)
 }
 
+func (p *PagerDuty) Teams(ctx context.Context) ([]store.ExtTeam, error) {
+	switch pdTeamInterface {
+	case "team":
+		return store.UseQueries(ctx).ListNonGroupExtTeams(ctx)
+	case "service":
+		return store.UseQueries(ctx).ListGroupExtTeams(ctx)
+	case "":
+		return nil, fmt.Errorf("team interface not set")
+	default:
+		return nil, fmt.Errorf("unknown team interface '%s'", pdTeamInterface)
+	}
+}
+
 func (p *PagerDuty) LoadUsers(ctx context.Context) error {
 	opts := pagerduty.ListUsersOptions{
 		Offset: 0,
@@ -152,7 +165,7 @@ func (p *PagerDuty) loadServices(ctx context.Context) error {
 				ID:   service.ID,
 				Name: service.Name,
 				// PagerDuty does not expose "Slug", so we can safely generate one.
-				Slug: slug.Make(service.Name),
+				Slug:    slug.Make(service.Name),
 				IsGroup: 1,
 			}); err != nil {
 				return fmt.Errorf("saving service '%s (%s)' as team to db: %w", service.Name, service.ID, err)
@@ -533,101 +546,4 @@ func (p *PagerDuty) saveEscalationPolicyStepTargetToDB(
 		return fmt.Errorf("saving escalation policy step target: %w", err)
 	}
 	return nil
-}
-
-func (p *PagerDuty) PopulateTeamMembers(ctx context.Context, team *Team) error {
-	members := []*User{}
-	opts := pagerduty.ListTeamMembersOptions{
-		Offset: 0,
-	}
-
-	for {
-		resp, err := p.client.ListTeamMembers(ctx, team.ID, opts)
-		if err != nil {
-			return err
-		}
-
-		for _, member := range resp.Members {
-			members = append(members, &User{Resource: Resource{ID: member.User.ID}})
-		}
-
-		// Results are paginated, so break if we're on the last page.
-		if !resp.More {
-			break
-		}
-		opts.Offset += uint(len(resp.Members))
-	}
-	team.Members = members
-	return nil
-}
-
-func (p *PagerDuty) ListTeams(ctx context.Context) ([]*Team, error) {
-	teams := []*Team{}
-	opts := pagerduty.ListTeamOptions{
-		Offset: 0,
-	}
-
-	for {
-		resp, err := p.client.ListTeamsWithContext(ctx, opts)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, team := range resp.Teams {
-			teams = append(teams, p.toTeam(team))
-		}
-
-		// Results are paginated, so break if we're on the last page.
-		if !resp.More {
-			break
-		}
-		opts.Offset += uint(len(resp.Teams))
-	}
-	return teams, nil
-}
-
-func (p *PagerDuty) toTeam(team pagerduty.Team) *Team {
-	return &Team{
-		// PagerDuty does not expose a slug, so generate one.
-		Slug: slug.Make(team.Name),
-		Resource: Resource{
-			ID:   team.ID,
-			Name: team.Name,
-		},
-	}
-}
-
-func (p *PagerDuty) ListUsers(ctx context.Context) ([]*User, error) {
-	users := []*User{}
-	opts := pagerduty.ListUsersOptions{
-		Offset: 0,
-	}
-
-	for {
-		resp, err := p.client.ListUsersWithContext(ctx, opts)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, user := range resp.Users {
-			users = append(users, p.toUser(user))
-		}
-
-		// Results are paginated, so break if we're on the last page.
-		if !resp.More {
-			break
-		}
-		opts.Offset += uint(len(resp.Users))
-	}
-	return users, nil
-}
-
-func (p *PagerDuty) toUser(user pagerduty.User) *User {
-	return &User{
-		Email: user.Email,
-		Resource: Resource{
-			ID:   user.ID,
-			Name: user.Name,
-		},
-	}
 }

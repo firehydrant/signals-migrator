@@ -103,6 +103,9 @@ func createTeams(t *testing.T, ctx context.Context, variant string, withFhTeam b
 	}); err != nil {
 		t.Fatal(err)
 	}
+	if err := store.UseQueries(ctx).MarkExtTeamToImport(ctx, extID); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestRenderDataUser(t *testing.T) {

@@ -7,7 +7,7 @@ INSERT INTO ext_users VALUES('PXI6XNI','Engineering Shared Account','eng@example
 
 INSERT INTO fh_teams VALUES('f159b173-1ffd-41ac-9254-ce8ec1142267','🐴 Cowboy Coders','cowboy-coders');
 
-INSERT INTO ext_teams VALUES('PV9JOXL','team-rocket','team-rocket','f159b173-1ffd-41ac-9254-ce8ec1142267',0,0);
+INSERT INTO ext_teams VALUES('PV9JOXL','team-rocket','team-rocket','f159b173-1ffd-41ac-9254-ce8ec1142267',0,1);
 
 INSERT INTO ext_memberships VALUES('PRXEEQ8','PV9JOXL');
 INSERT INTO ext_memberships VALUES('PXI6XNI','PV9JOXL');

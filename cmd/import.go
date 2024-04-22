@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -191,14 +192,49 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 	}
 	console.Successf("Found %d teams on FireHydrant.\n", len(fhTeams))
 
-	// TODO: implement matching.
-	// Now, for every team we found in Pager provider, we prompt console for one of three choices:
-	// 1. Create a new team in FireHydrant
-	// 2. Match with an existing team in FireHydrant
-	// 3. Skip / ignore the team entirely
-
 	if err := provider.LoadTeamMembers(ctx); err != nil {
 		return fmt.Errorf("unable to populate team members: %w", err)
+	}
+
+	// First, we prompt users which teams to import to FireHydrant from the external provider.
+	// We will mark the selected teams to import, then ask for user to match existing teams in FireHydrant (or create new).
+	teams, err := provider.Teams(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to list teams: %w", err)
+	}
+	console.Warnf("Please select which teams to migrate to FireHydrant.\n")
+	_, toImport, err := console.MultiSelectf(teams, func(t store.ExtTeam) string {
+		return fmt.Sprintf("%s %s", t.ID, t.Name)
+	}, "Which teams should be migrated to FireHydrant?")
+	if err != nil {
+		return fmt.Errorf("selecting teams: %w", err)
+	}
+	for _, t := range toImport {
+		if err := store.UseQueries(ctx).MarkExtTeamToImport(ctx, t.ID); err != nil {
+			return fmt.Errorf("unable to mark team '%s' for import: %w", t.Name, err)
+		}
+	}
+
+	// Now, we prompt users to match the teams that we are importing to FireHydrant.
+	options := []*pager.Team{{Resource: pager.Resource{ID: "[+] CREATE NEW"}}}
+	options = append(options, fhTeams...)
+	for _, t := range toImport {
+		selected, fhTeam, err := console.Selectf(options, func(t *pager.Team) string {
+			return fmt.Sprintf("%s %s", t.ID, t.Name)
+		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", t.Name))
+		if err != nil {
+			return fmt.Errorf("selecting FireHydrant team for '%s': %w", t.Name, err)
+		}
+		if selected == 0 {
+			console.Infof("[+] Team '%s' will be created as new team in FireHydrant.\n", t.Name)
+			continue
+		}
+		if err := store.UseQueries(ctx).LinkExtTeam(ctx, store.LinkExtTeamParams{
+			ID:       t.ID,
+			FhTeamID: sql.NullString{String: fhTeam.ID, Valid: true},
+		}); err != nil {
+			return fmt.Errorf("linking team '%s' to FireHydrant: %w", t.Name, err)
+		}
 	}
 	return nil
 }
@@ -212,14 +248,48 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 	if err != nil {
 		return fmt.Errorf("unable to fetch users from provider: %w", err)
 	}
-	console.Successf("Loaded all users from provider.\n")
+	console.Successf("Loaded all users from %s.\n", provider.Kind())
 
 	// Find out which users do not already have a FireHydrant account
 	console.Spin(func() {
 		err = fh.MatchUsers(ctx)
-	}, "Matching users with existing FireHydrant users...")
+	}, "Matching users with existing FireHydrant users by email...")
 	if err != nil {
 		return fmt.Errorf("unable to match users to FireHydrant: %w", err)
+	}
+
+	// Manually link users which do not have matching email addresses
+	unmatched, err := store.UseQueries(ctx).ListUnmatchedExtUsers(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to list unmatched users: %w", err)
+	}
+	if len(unmatched) > 0 {
+		console.Warnf("Please match the following users to their FireHydrant account.\n")
+		fhUsers, err := fh.ListUsers(ctx)
+		if err != nil {
+			return fmt.Errorf("unable to list FireHydrant users: %w", err)
+		}
+		options := []*pager.User{{Resource: pager.Resource{Name: "[<] SKIP"}}}
+		options = append(options, fhUsers...)
+
+		for _, u := range unmatched {
+			selected, fhUser, err := console.Selectf(options, func(u *pager.User) string {
+				return fmt.Sprintf("%s %s", u.Name, u.Email)
+			}, fmt.Sprintf("Which FireHydrant user should '%s' be imported to?", u.Name))
+			if err != nil {
+				return fmt.Errorf("selecting FireHydrant user for '%s': %w", u.Name, err)
+			}
+			if selected == 0 {
+				console.Infof("[<] User '%s' will not be imported to FireHydrant.\n", u.Name)
+				continue
+			}
+			if err := store.UseQueries(ctx).LinkExtUser(ctx, store.LinkExtUserParams{
+				ID:       u.ID,
+				FhUserID: sql.NullString{String: fhUser.ID, Valid: true},
+			}); err != nil {
+				return fmt.Errorf("linking user '%s': %w", u.Name, err)
+			}
+		}
 	}
 	return nil
 }

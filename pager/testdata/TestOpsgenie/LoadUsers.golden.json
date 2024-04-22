@@ -1,0 +1,20 @@
+[
+  {
+    "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4",
+    "name": "john doe",
+    "email": "john.doe@opsgenie.com",
+    "fh_user_id": {
+      "String": "",
+      "Valid": false
+    }
+  },
+  {
+    "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc5",
+    "name": "jane doe",
+    "email": "jane.doe@opsgenie.com",
+    "fh_user_id": {
+      "String": "",
+      "Valid": false
+    }
+  }
+]

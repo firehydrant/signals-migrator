@@ -2,6 +2,8 @@ package tfrender
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -289,7 +291,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 }
 
 func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
-	extTeams, err := store.UseQueries(ctx).ListTeams(ctx)
+	extTeams, err := store.UseQueries(ctx).ListTeamsToImport(ctx)
 	if err != nil {
 		return fmt.Errorf("querying teams: %w", err)
 	}
@@ -310,25 +312,44 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 			fhTeamBlocks[name].SetAttributeValue("name", cty.StringVal(name))
 		}
 
-		members, err := store.UseQueries(ctx).ListFhMembersByExtTeamID(ctx, t.ExtTeam().ID)
+		// For a given t in extTeams, they may be a "group team" which contains "member team" entities.
+		// In those cases, the "member team" is merged into the "group team" in FireHydrant.
+		// As such, the user members will be consolidated to the "group team".
+		memberTeams, err := store.UseQueries(ctx).ListMemberExtTeams(ctx, t.ID)
 		if err != nil {
-			return fmt.Errorf("querying team members: %w", err)
-		}
-		for _, m := range members {
-			if importedMembership[tfSlug+m.TFSlug()] {
-				continue
+			if !errors.Is(err, sql.ErrNoRows) {
+				return fmt.Errorf("querying member teams: %w", err)
 			}
+		}
+		if memberTeams == nil {
+			memberTeams = []store.ExtTeam{}
+		}
+		teamIDs := []string{t.ID}
+		for _, mt := range memberTeams {
+			teamIDs = append(teamIDs, mt.ID)
+		}
 
-			b := fhTeamBlocks[name]
-			b.AppendNewline()
-			b.AppendNewBlock("memberships", []string{}).Body().
-				SetAttributeTraversal("user_id", hcl.Traversal{
-					hcl.TraverseRoot{Name: "data"},
-					hcl.TraverseAttr{Name: "firehydrant_user"},
-					hcl.TraverseAttr{Name: m.TFSlug()},
-					hcl.TraverseAttr{Name: "id"},
-				})
-			importedMembership[tfSlug+m.TFSlug()] = true
+		for _, teamID := range teamIDs {
+			members, err := store.UseQueries(ctx).ListFhMembersByExtTeamID(ctx, teamID)
+			if err != nil {
+				return fmt.Errorf("querying team members: %w", err)
+			}
+			for _, m := range members {
+				if importedMembership[tfSlug+m.TFSlug()] {
+					continue
+				}
+
+				b := fhTeamBlocks[name]
+				b.AppendNewline()
+				b.AppendNewBlock("memberships", []string{}).Body().
+					SetAttributeTraversal("user_id", hcl.Traversal{
+						hcl.TraverseRoot{Name: "data"},
+						hcl.TraverseAttr{Name: "firehydrant_user"},
+						hcl.TraverseAttr{Name: m.TFSlug()},
+						hcl.TraverseAttr{Name: "id"},
+					})
+				importedMembership[tfSlug+m.TFSlug()] = true
+			}
 		}
 
 		// If there is an existing FireHydrant team already, declare import to prevent duplication.

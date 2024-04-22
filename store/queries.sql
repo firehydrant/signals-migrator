@@ -20,6 +20,13 @@ INSERT INTO fh_teams (id, name, slug) VALUES (?, ?, ?);
 SELECT sqlc.embed(ext_users), sqlc.embed(fh_users) FROM ext_users
   JOIN fh_users ON fh_users.email = ext_users.email;
 
+-- name: ListExtUsers :many
+SELECT * FROM ext_users;
+
+-- name: ListUnmatchedExtUsers :many
+SELECT * FROM ext_users
+WHERE fh_user_id IS NULL;
+
 -- name: InsertExtUser :exec
 INSERT INTO ext_users (id, name, email, fh_user_id) VALUES (?, ?, ?, ?);
 
@@ -29,11 +36,17 @@ SELECT * FROM linked_teams WHERE id = ?;
 -- name: ListTeams :many
 SELECT * from linked_teams;
 
+-- name: ListTeamsToImport :many
+SELECT * from linked_teams WHERE to_import = 1;
+
 -- name: ListExtTeams :many
 SELECT * FROM ext_teams;
 
 -- name: InsertExtTeam :exec
 INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id) VALUES (?, ?, ?, ?, ?);
+
+-- name: MarkExtTeamToImport :exec
+UPDATE ext_teams SET to_import = 1 WHERE id = ?;
 
 -- name: ListGroupExtTeams :many
 SELECT * FROM ext_teams

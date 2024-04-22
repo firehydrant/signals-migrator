@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/firehydrant/signals-migrator/console"
+	"github.com/firehydrant/signals-migrator/store"
 	"github.com/gosimple/slug"
 	"github.com/victorops/go-victorops/victorops"
 )
@@ -28,6 +29,10 @@ func (v *VictorOps) TeamInterfaces() []string {
 
 func (v *VictorOps) UseTeamInterface(string) error {
 	return nil
+}
+
+func (v *VictorOps) Teams(ctx context.Context) ([]store.ExtTeam, error) {
+	return store.UseQueries(ctx).ListExtTeams(ctx)
 }
 
 func (v *VictorOps) LoadUsers(ctx context.Context) error {

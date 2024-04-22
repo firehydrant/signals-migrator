@@ -626,6 +626,38 @@ func (q *Queries) ListExtTeams(ctx context.Context) ([]ExtTeam, error) {
 	return items, nil
 }
 
+const listExtUsers = `-- name: ListExtUsers :many
+SELECT id, name, email, fh_user_id FROM ext_users
+`
+
+func (q *Queries) ListExtUsers(ctx context.Context) ([]ExtUser, error) {
+	rows, err := q.db.QueryContext(ctx, listExtUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtUser
+	for rows.Next() {
+		var i ExtUser
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.FhUserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listFhMembersByExtScheduleID = `-- name: ListFhMembersByExtScheduleID :many
 SELECT fh_users.id, fh_users.name, fh_users.email FROM ext_schedule_members
   JOIN ext_users ON ext_users.id = ext_schedule_members.user_id
@@ -971,6 +1003,75 @@ func (q *Queries) ListTeamsByExtScheduleID(ctx context.Context, scheduleID strin
 	return items, nil
 }
 
+const listTeamsToImport = `-- name: ListTeamsToImport :many
+SELECT id, name, slug, fh_team_id, is_group, to_import, fh_name, fh_slug from linked_teams WHERE to_import = 1
+`
+
+func (q *Queries) ListTeamsToImport(ctx context.Context) ([]LinkedTeam, error) {
+	rows, err := q.db.QueryContext(ctx, listTeamsToImport)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []LinkedTeam
+	for rows.Next() {
+		var i LinkedTeam
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.FhTeamID,
+			&i.IsGroup,
+			&i.ToImport,
+			&i.FhName,
+			&i.FhSlug,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUnmatchedExtUsers = `-- name: ListUnmatchedExtUsers :many
+SELECT id, name, email, fh_user_id FROM ext_users
+WHERE fh_user_id IS NULL
+`
+
+func (q *Queries) ListUnmatchedExtUsers(ctx context.Context) ([]ExtUser, error) {
+	rows, err := q.db.QueryContext(ctx, listUnmatchedExtUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtUser
+	for rows.Next() {
+		var i ExtUser
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.FhUserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsersJoinByEmail = `-- name: ListUsersJoinByEmail :many
 SELECT ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, fh_users.id, fh_users.name, fh_users.email FROM ext_users
   JOIN fh_users ON fh_users.email = ext_users.email
@@ -1027,5 +1128,14 @@ UPDATE ext_escalation_policies SET to_import = 1 WHERE id = ?
 
 func (q *Queries) MarkExtEscalationPolicyToImport(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, markExtEscalationPolicyToImport, id)
+	return err
+}
+
+const markExtTeamToImport = `-- name: MarkExtTeamToImport :exec
+UPDATE ext_teams SET to_import = 1 WHERE id = ?
+`
+
+func (q *Queries) MarkExtTeamToImport(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, markExtTeamToImport, id)
 	return err
 }
