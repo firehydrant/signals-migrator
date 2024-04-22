@@ -8,7 +8,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 1,
       "to_import": 0
     },
     "ext_user": {
@@ -30,7 +30,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 1,
       "to_import": 0
     },
     "ext_user": {

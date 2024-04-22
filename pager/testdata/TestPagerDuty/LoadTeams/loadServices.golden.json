@@ -7,7 +7,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 1,
     "to_import": 0
   },
   {
@@ -18,9 +18,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {
-      "pdProxyFor": "P4XMRL3"
-    },
+    "is_group": 0,
     "to_import": 0
   },
   {
@@ -31,7 +29,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 1,
     "to_import": 0
   },
   {
@@ -42,9 +40,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {
-      "pdProxyFor": "P3IIAF1"
-    },
+    "is_group": 0,
     "to_import": 0
   }
 ]

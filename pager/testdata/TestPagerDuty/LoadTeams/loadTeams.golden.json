@@ -7,7 +7,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 0,
     "to_import": 0
   },
   {
@@ -18,7 +18,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 0,
     "to_import": 0
   },
   {
@@ -29,7 +29,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 0,
     "to_import": 0
   },
   {
@@ -40,7 +40,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 0,
     "to_import": 0
   },
   {
@@ -51,7 +51,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 0,
     "to_import": 0
   },
   {
@@ -62,7 +62,7 @@
       "String": "",
       "Valid": false
     },
-    "metadata": {},
+    "is_group": 0,
     "to_import": 0
   }
 ]

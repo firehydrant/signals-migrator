@@ -40,6 +40,11 @@ func (p *PagerDuty) Kind() string {
 	return "PagerDuty"
 }
 
+// TeamInterfaces defines the available abstraction of a team from PagerDuty.
+// When "team" is selected, the team is fetched from PagerDuty and imported as-is.
+// When "service" is selected, a "service team" will be created as a proxy team, linked to regular PagerDuty teams,
+// via ext_team_groups table. When populating user members, the service team will query all the linked teams for
+// all their user members.
 func (p *PagerDuty) TeamInterfaces() []string {
 	return pdTeamInterfaces
 }
@@ -114,7 +119,7 @@ func (p *PagerDuty) loadTeams(ctx context.Context) error {
 				// PagerDuty does not expose slug, so we can safely generate one.
 				Slug: slug.Make(team.Name),
 			}); err != nil {
-				return fmt.Errorf("saving team to db: %w", err)
+				return fmt.Errorf("saving team '%s (%s)' to db: %w", team.Name, team.ID, err)
 			}
 		}
 
@@ -134,6 +139,8 @@ func (p *PagerDuty) loadServices(ctx context.Context) error {
 		Offset:   0,
 	}
 
+	q := store.UseQueries(ctx)
+
 	for {
 		resp, err := p.client.ListServicesWithContext(ctx, opts)
 		if err != nil {
@@ -141,23 +148,39 @@ func (p *PagerDuty) loadServices(ctx context.Context) error {
 		}
 
 		for _, service := range resp.Services {
-			if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+			if err := q.InsertExtTeam(ctx, store.InsertExtTeamParams{
 				ID:   service.ID,
 				Name: service.Name,
 				// PagerDuty does not expose "Slug", so we can safely generate one.
 				Slug: slug.Make(service.Name),
+				IsGroup: 1,
 			}); err != nil {
-				return fmt.Errorf("saving team to db: %w", err)
+				return fmt.Errorf("saving service '%s (%s)' as team to db: %w", service.Name, service.ID, err)
 			}
 			for _, team := range service.Teams {
-				if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+				if err := q.InsertExtTeam(ctx, store.InsertExtTeamParams{
 					ID:   team.ID,
 					Name: team.Name,
 					// PagerDuty does not expose "Slug", so we can safely generate one.
-					Slug:     slug.Make(team.Name),
-					Metadata: &store.ExtTeamMetadata{PagerDutyProxyFor: service.ID},
+					Slug: slug.Make(team.Name),
 				}); err != nil {
-					return fmt.Errorf("saving team to db: %w", err)
+					if strings.Contains(err.Error(), "UNIQUE constraint") {
+						// Assume that team was already imported from another service.
+						console.Warnf("Team %s has been imported, skipping duplicate...\n", service.ID, team.ID)
+					} else {
+						return fmt.Errorf("saving team '%s (%s)' to db: %w", team.Name, team.ID, err)
+					}
+				}
+				if err := q.InsertExtTeamGroup(ctx, store.InsertExtTeamGroupParams{
+					GroupTeamID:  service.ID,
+					MemberTeamID: team.ID,
+				}); err != nil {
+					if strings.Contains(err.Error(), "UNIQUE constraint") {
+						// This should never happen, unless it's on a dirty database. Warn users anyway.
+						console.Warnf("Service %s already has team %s, skipping duplicate...\n", service.ID, team.ID)
+					} else {
+						return fmt.Errorf("saving '%s (%s)' team as proxy for '%s (%s)' service: %w", team.Name, team.ID, service.Name, service.ID, err)
+					}
 				}
 			}
 		}
@@ -191,7 +214,7 @@ func (p *PagerDuty) loadTeamMembers(ctx context.Context) error {
 	}
 
 	for _, team := range teams {
-		if err := p.loadMembers(ctx, team.ID, team.ID); err != nil {
+		if err := p.loadMembers(ctx, team.ID); err != nil {
 			return fmt.Errorf("loading team members: %w", err)
 		}
 	}
@@ -199,18 +222,13 @@ func (p *PagerDuty) loadTeamMembers(ctx context.Context) error {
 }
 
 func (p *PagerDuty) loadServiceTeamMembers(ctx context.Context) error {
-	teams, err := store.UseQueries(ctx).ListTeams(ctx)
+	teams, err := store.UseQueries(ctx).ListNonGroupExtTeams(ctx)
 	if err != nil {
 		return fmt.Errorf("listing teams: %w", err)
 	}
 
 	for _, team := range teams {
-		if team.Metadata == nil || team.Metadata.PagerDutyProxyFor == "" {
-			// TODO: remove this or downgrade to debug / dev-only log.
-			console.Warnf("Team %s is a service, skipping...\n", team.ID)
-			continue
-		}
-		if err := p.loadMembers(ctx, team.ID, team.Metadata.PagerDutyProxyFor); err != nil {
+		if err := p.loadMembers(ctx, team.ID); err != nil {
 			return fmt.Errorf("loading service team members: %w", err)
 		}
 	}
@@ -220,10 +238,7 @@ func (p *PagerDuty) loadServiceTeamMembers(ctx context.Context) error {
 // loadMembers loads members of a team from PagerDuty API and saves them to the database.
 // teamID is the team ID which will be used in HTTP query to PagerDuty API, while memberOfTeamID is the
 // reference which will be used in database.
-//
-// When pdTeamInterface is "team", the value of teamID and memberofTeamID will be the same.
-// When pdTeamInterface is "service", the value of teamID will be the team ID and memberOfTeamID will be the service ID.
-func (p *PagerDuty) loadMembers(ctx context.Context, teamID string, memberOfTeamID string) error {
+func (p *PagerDuty) loadMembers(ctx context.Context, teamID string) error {
 	// PagerDuty REST API technically supports `includes[]=user` but it's not exposed in Go SDK.
 	// As such, we currently assume the user is already present in the database and only save the relationship.
 	opts := pagerduty.ListTeamMembersOptions{
@@ -239,13 +254,13 @@ func (p *PagerDuty) loadMembers(ctx context.Context, teamID string, memberOfTeam
 
 		for _, member := range resp.Members {
 			if err := q.InsertExtMembership(ctx, store.InsertExtMembershipParams{
-				TeamID: memberOfTeamID,
+				TeamID: teamID,
 				UserID: member.User.ID,
 			}); err != nil {
 				if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
-					console.Warnf("User %s not found for team %s, skipping...\n", member.User.ID, memberOfTeamID)
+					console.Warnf("User %s not found for team %s, skipping...\n", member.User.ID, teamID)
 				} else if strings.Contains(err.Error(), "UNIQUE constraint") {
-					console.Warnf("User %s already exists for team %s, skipping duplicate...\n", member.User.ID, memberOfTeamID)
+					console.Warnf("User %s already exists for team %s, skipping duplicate...\n", member.User.ID, teamID)
 				} else {
 					return fmt.Errorf("saving team member: %w", err)
 				}

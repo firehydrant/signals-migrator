@@ -29,8 +29,16 @@ CREATE TABLE IF NOT EXISTS ext_teams (
   name TEXT NOT NULL,
   slug TEXT NOT NULL,
   fh_team_id TEXT REFERENCES fh_teams(id),
-  metadata TEXT NOT NULL DEFAULT '{}',
+  is_group INTEGER NOT NULL DEFAULT 0,
   to_import INTEGER NOT NULL DEFAULT 0
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_team_groups (
+  group_team_id TEXT NOT NULL,
+  member_team_id TEXT NOT NULL,
+  PRIMARY KEY (group_team_id, member_team_id),
+  FOREIGN KEY (group_team_id) REFERENCES ext_teams(id) ON DELETE CASCADE,
+  FOREIGN KEY (member_team_id) REFERENCES ext_teams(id) ON DELETE CASCADE
 ) STRICT;
 
 CREATE VIEW IF NOT EXISTS linked_teams AS
@@ -41,8 +49,8 @@ CREATE TABLE IF NOT EXISTS ext_memberships (
   user_id TEXT NOT NULL,
   team_id TEXT NOT NULL,
   PRIMARY KEY (user_id, team_id),
-  FOREIGN KEY (user_id) REFERENCES ext_users(id),
-  FOREIGN KEY (team_id) REFERENCES ext_teams(id)
+  FOREIGN KEY (user_id) REFERENCES ext_users(id) ON DELETE CASCADE,
+  FOREIGN KEY (team_id) REFERENCES ext_teams(id) ON DELETE CASCADE
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_schedules (

@@ -8,7 +8,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 0,
       "to_import": 0
     },
     "ext_user": {
@@ -30,7 +30,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 0,
       "to_import": 0
     },
     "ext_user": {
@@ -52,7 +52,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 0,
       "to_import": 0
     },
     "ext_user": {
@@ -74,7 +74,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 0,
       "to_import": 0
     },
     "ext_user": {
@@ -96,7 +96,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 0,
       "to_import": 0
     },
     "ext_user": {
@@ -118,7 +118,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 0,
       "to_import": 0
     },
     "ext_user": {
@@ -140,7 +140,7 @@
         "String": "",
         "Valid": false
       },
-      "metadata": {},
+      "is_group": 0,
       "to_import": 0
     },
     "ext_user": {

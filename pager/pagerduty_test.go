@@ -94,7 +94,7 @@ func TestPagerDuty(t *testing.T) {
 			if err := pd.LoadTeamMembers(ctx); err != nil {
 				t.Fatalf("error loading team members: %s", err)
 			}
-			members, err := store.UseQueries(ctx).ListExtMemberships(ctx)
+			members, err := store.UseQueries(ctx).ListExtTeamMemberships(ctx)
 			if err != nil {
 				t.Fatalf("error loading team members: %s", err)
 			}
@@ -116,7 +116,7 @@ func TestPagerDuty(t *testing.T) {
 			if err := pd.LoadTeamMembers(ctx); err != nil {
 				t.Fatalf("error loading team members: %s", err)
 			}
-			members, err := store.UseQueries(ctx).ListExtMemberships(ctx)
+			members, err := store.UseQueries(ctx).ListGroupExtTeamMemberships(ctx)
 			if err != nil {
 				t.Fatalf("error loading team members: %s", err)
 			}
