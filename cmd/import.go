@@ -289,6 +289,7 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 			}); err != nil {
 				return fmt.Errorf("linking user '%s': %w", u.Name, err)
 			}
+			console.Successf("[=] User '%s' linked to FireHydrant user '%s'.\n", u.Email, fhUser.Email)
 		}
 	}
 	return nil
