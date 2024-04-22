@@ -60,6 +60,7 @@ func pagerProviderHttpServer(t *testing.T) *httptest.Server {
 }
 
 // assertJSON compares the JSON representation of `got` with the golden file.
+// The golden file is named conventionally after the full test name with `.golden.json` suffix.
 //
 // WARNING: `got` must not refer to data with non-deterministic order.
 // For example, Go's builtin map is not order-deterministic, thus it might produce inconsistent JSON comparison in this method.
@@ -78,5 +79,6 @@ func assertJSON(t *testing.T, got any) {
 	}
 
 	goldenFile := t.Name() + ".golden.json"
+	t.Logf("using %s\n", goldenFile)
 	golden.Assert(t, string(b), goldenFile)
 }

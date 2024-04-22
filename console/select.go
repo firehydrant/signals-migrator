@@ -48,7 +48,7 @@ func MultiSelectf[T any](options []T, toString func(T) string, title string, arg
 
 		values = slices.Clip(values)
 		if len(values) == 0 {
-			Warnf("You have not selected any options.")
+			Warnf("You have not selected any options.\n")
 			continue
 		}
 		Warnf("You have selected: \n")
