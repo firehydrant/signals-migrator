@@ -111,7 +111,7 @@ func (p *PagerDuty) loadTeams(ctx context.Context) error {
 			if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
 				ID:   team.ID,
 				Name: team.Name,
-				// PagerDuty does not expose "Slug", so we can safely generate one.
+				// PagerDuty does not expose slug, so we can safely generate one.
 				Slug: slug.Make(team.Name),
 			}); err != nil {
 				return fmt.Errorf("saving team to db: %w", err)
