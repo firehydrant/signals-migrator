@@ -2,7 +2,9 @@ package pager
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -11,6 +13,7 @@ import (
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/gosimple/slug"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
+	"github.com/opsgenie/opsgenie-go-sdk-v2/escalation"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/team"
@@ -18,9 +21,10 @@ import (
 )
 
 type Opsgenie struct {
-	userClient     *user.Client
-	teamClient     *team.Client
-	scheduleClient *schedule.Client
+	userClient       *user.Client
+	teamClient       *team.Client
+	scheduleClient   *schedule.Client
+	escalationClient *escalation.Client
 }
 
 func NewOpsgenie(apiKey string) *Opsgenie {
@@ -46,10 +50,15 @@ func NewOpsgenieWithConfig(conf *client.Config) *Opsgenie {
 	if err != nil {
 		panic(fmt.Sprintf("creating opsgenie schedule client: %v", err))
 	}
+	escalationClient, err := escalation.NewClient(conf)
+	if err != nil {
+		panic(fmt.Sprintf("creating opsgenie escalation client: %v", err))
+	}
 	return &Opsgenie{
-		userClient:     userClient,
-		teamClient:     teamClient,
-		scheduleClient: scheduleClient,
+		userClient:       userClient,
+		teamClient:       teamClient,
+		scheduleClient:   scheduleClient,
+		escalationClient: escalationClient,
 	}
 }
 
@@ -322,7 +331,170 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 }
 
 func (o *Opsgenie) LoadEscalationPolicies(ctx context.Context) error {
-	// TODO: implement
-	console.Warnf("opsgenie.LoadEscalationPolicies is not currently supported.")
+	resp, err := o.escalationClient.List(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, policy := range resp.Escalations {
+		if err := o.saveEscalationPolicyToDB(ctx, policy); err != nil {
+			return fmt.Errorf("saving escalation policy to db: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (o *Opsgenie) saveEscalationPolicyToDB(ctx context.Context, policy escalation.Escalation) error {
+	var repeatLimit int64
+	var repeatInterval sql.NullString
+	if policy.Repeat != nil {
+		repeatLimit = int64(policy.Repeat.Count)
+		repeatInterval.Valid = true
+		repeatInterval.String = fmt.Sprintf("PT%dM", policy.Repeat.WaitInterval)
+	}
+	ep := store.InsertExtEscalationPolicyParams{
+		ID:             policy.Id,
+		Name:           policy.Name,
+		Description:    policy.Description,
+		TeamID:         sql.NullString{Valid: true, String: policy.OwnerTeam.Id},
+		RepeatInterval: repeatInterval,
+		RepeatLimit:    repeatLimit,
+	}
+	if err := store.UseQueries(ctx).InsertExtEscalationPolicy(ctx, ep); err != nil {
+		return fmt.Errorf("saving escalation policy %s (%s): %w", ep.Name, ep.ID, err)
+	}
+
+	for i, rule := range policy.Rules {
+		timeout := calculateTimeout(policy, i)
+		if err := o.saveEscalationPolicyStepToDB(ctx, ep.ID, rule, int64(i), timeout); err != nil {
+			return fmt.Errorf("saving escalation rule to db: %w", err)
+		}
+	}
+	return nil
+}
+
+// regarding step.Timeout
+// Opsgenie has a delay property on each rule, indicating the total time delay before executing that step (where time zero is the start time of the escalation
+// policy).  On the FH side, we have a timeout value for each step, which represents the amount of time to wait *after* firing that step before moving to the
+// next step, with a minimum timeout of 1 minutes and a max of 60 min.  Opsgenie could have multiple steps with the same delay value, in which case all those
+// steps would fire simultaneously (this is not supported on the FH side).  Opsgenie also supports time intervals on the order of hours, days, weeks, or months
+// none of which FH supports, so we're locking the max time between steps to 1 hour (and so are only interested in a time unit of minutes).
+
+// To do a best approximation of this, we are assuming that the Opsgenie steps are delivered in order (they seem to be) and are setting the timeout to:
+// Max(1, Min(60, step.next[delay minutes] - step.current[delay minutes]))
+// with a special rule for the final step of:
+// Max(1, Min(60, policy.Repeat.WaitInterval minutes))
+
+func calculateTimeout(policy escalation.Escalation, position int) string {
+	timeout := "PT1M"
+	if position+1 == len(policy.Rules) {
+		if policy.Repeat != nil {
+			// WaitInterval is always in minutes, but delay amounts can be other units.
+			timeout = fmt.Sprintf("PT%dM", int(math.Max(1, math.Min(float64(policy.Repeat.WaitInterval), 60))))
+		}
+		// if the policy doesn't repeat, then it shouldn't matter what this value is.  We'll go with a default of 1 min.
+	} else {
+		currentDelayMin := uint32(60)
+		if policy.Rules[position].Delay.TimeUnit == og.Minutes {
+			currentDelayMin = policy.Rules[position].Delay.TimeAmount
+		}
+		nextDelayMin := uint32(60)
+		if policy.Rules[position+1].Delay.TimeUnit == og.Minutes {
+			nextDelayMin = policy.Rules[position+1].Delay.TimeAmount
+		}
+		// Warn the user that we're locking to min/max and give the actual value
+		if policy.Rules[position+1].Delay.TimeUnit != og.Minutes || policy.Rules[position+1].Delay.TimeAmount > 60 {
+			console.Warnf("Actual delay time for step %d is %d %s.  Locking to a max of 60 minutes.\n",
+				position+1,
+				policy.Rules[position+1].Delay.TimeAmount,
+				policy.Rules[position+1].Delay.TimeUnit)
+		}
+		if policy.Rules[position+1].Delay.TimeAmount == 0 {
+			console.Warnf("Actual delay time for step %d is 0.  Locking to a min of 1 minute.\n", position+1)
+		}
+
+		timeout = fmt.Sprintf("PT%dM", int(math.Max(1, math.Min(float64(nextDelayMin-currentDelayMin), 60))))
+	}
+	return timeout
+}
+
+func (o *Opsgenie) saveEscalationPolicyStepToDB(ctx context.Context, policyID string, rule escalation.Rule, position int64, timeout string) error {
+	stepID := fmt.Sprintf("%s-%d", policyID, position)
+	step := store.InsertExtEscalationPolicyStepParams{
+		ID:                 stepID,
+		EscalationPolicyID: policyID,
+		Position:           position,
+		Timeout:            timeout,
+	}
+
+	t := store.InsertExtEscalationPolicyStepTargetParams{
+		EscalationPolicyStepID: stepID,
+		TargetID:               rule.Recipient.Id,
+	}
+
+	// The actual target for a rule is a combination of rule.Recipient.Type and rule.NotifyType, with only some combinations being valid.
+	// A handy chart (because if I have to know this, so do you):
+	// RecipientType    NotifyType    Notes
+	// User             default       Just notify the user.
+	// Schedule         default       Notify the currently on-call person for this schedule
+	// Team             default       Notify the default escalation policy for a team.  We support this only as a handoff step, not in the middle of a policy
+	// Team             users         Notify all non-admin members of a team
+	// Team             admins        Notify all admin members of a team
+	// Team             all           Notify all members of a team
+	// Team             random        Notify a random?! member of the team (don't even get me started...)
+	// Schedule         next          Notify the person who will be on-call next in the given schedule
+	// Schedule         previous      Notify the person who was previously oncall in the given schedule
+	// We only support recepients of User or Schedule and only the 'default' NotifyType.  Anything else we're just logging and skipping.
+
+	if rule.NotifyType != og.Default {
+		console.Warnf("Escalation policy step target is '%s' notify type '%s' for policy '%s' step %d, skipping...\n",
+			rule.Recipient.Type,
+			rule.NotifyType,
+			policyID,
+			position)
+		return nil
+	}
+
+	switch rule.Recipient.Type {
+	case og.User:
+		t.TargetType = store.TARGET_TYPE_USER
+	case og.Schedule:
+		t.TargetType = store.TARGET_TYPE_SCHEDULE
+	default:
+		console.Warnf("Escalation policy step target is '%s' notify type '%s' for policy '%s' step %d, skipping...\n",
+			rule.Recipient.Type,
+			rule.NotifyType,
+			policyID,
+			position)
+		return nil
+	}
+
+	if err := store.UseQueries(ctx).InsertExtEscalationPolicyStep(ctx, step); err != nil {
+		return fmt.Errorf("saving escalation policy step: %w", err)
+	}
+
+	// For Opsgenie, the person(s) on-call for a schedule is the oncall person in all rotations for that schedule for the given time (rotations may overlap).
+	// We've saved each rotation as a separate FH schedule.  So, since we're not sure exactly what was intended by escalating to a Opsgenie schedule, we're
+	// adding all of the FH schedules corresponding to the Opsgenie rotations for that schedule as targets.  This should be viewed as an approximation and
+	// review should certainly be required here.
+
+	if t.TargetType == store.TARGET_TYPE_SCHEDULE {
+		schedules, err := store.UseQueries(ctx).ListExtSchedulesByPrefix(ctx, fmt.Sprintf(`%s%%`, rule.Recipient.Id))
+		if err != nil {
+			return fmt.Errorf("getting schedules starting with ID %s: %w", rule.Recipient.Id, err)
+		}
+		for _, schedule := range schedules {
+			t.TargetID = schedule.ID
+			if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, t); err != nil {
+				return fmt.Errorf("saving escalation policy step target: %w", err)
+			}
+		}
+	} else {
+		if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, t); err != nil {
+			return fmt.Errorf("saving escalation policy step target: %w", err)
+		}
+	}
+
 	return nil
 }
