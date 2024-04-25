@@ -101,6 +101,9 @@ SELECT * FROM ext_schedules WHERE id = ?;
 -- name: ListExtSchedules :many
 SELECT * FROM ext_schedules;
 
+-- name: ListExtSchedulesLikeID :many
+SELECT * FROM ext_schedules WHERE id LIKE ?;
+
 -- name: InsertExtSchedule :exec
 INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);

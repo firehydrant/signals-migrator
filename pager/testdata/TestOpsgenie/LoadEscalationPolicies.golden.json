@@ -1,0 +1,19 @@
+[
+  {
+    "id": "2a6feab7-936d-4829-800f-e781a96bdf1b",
+    "name": "Customer Success_escalation",
+    "description": "",
+    "team_id": {
+      "String": "b7acbc33-9853-4150-8a4b-10156d9408c8",
+      "Valid": true
+    },
+    "repeat_limit": 0,
+    "repeat_interval": {
+      "String": "",
+      "Valid": false
+    },
+    "handoff_target_type": "",
+    "handoff_target_id": "",
+    "to_import": 0
+  }
+]

@@ -40,6 +40,40 @@ func TestOpsgenie(t *testing.T) {
 		assertJSON(t, u)
 	})
 
+	t.Run("LoadTeams", func(t *testing.T) {
+		ctx, og := setup(t)
+
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+
+		u, err := store.UseQueries(ctx).ListExtTeams(ctx)
+		if err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		assertJSON(t, u)
+	})
+
+	t.Run("LoadTeamMembers", func(t *testing.T) {
+		ctx, og := setup(t)
+
+		if err := og.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := og.LoadTeamMembers(ctx); err != nil {
+			t.Fatalf("error loading team members: %s", err)
+		}
+
+		u, err := store.UseQueries(ctx).ListExtTeamMemberships(ctx)
+		if err != nil {
+			t.Fatalf("error loading team memberships: %s", err)
+		}
+		assertJSON(t, u)
+	})
+
 	t.Run("LoadSchedules", func(t *testing.T) {
 		ctx, og := setup(t)
 
@@ -52,6 +86,31 @@ func TestOpsgenie(t *testing.T) {
 			t.Fatalf("error loading schedules: %s", err)
 		}
 		t.Logf("found %d schedules", len(s))
+		assertJSON(t, s)
+	})
+
+	t.Run("LoadEscalationPolicies", func(t *testing.T) {
+		ctx, og := setup(t)
+
+		if err := og.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := og.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		if err := og.LoadEscalationPolicies(ctx); err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+
+		s, err := store.UseQueries(ctx).ListExtEscalationPolicies(ctx)
+		if err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+		t.Logf("found %d escalation policies", len(s))
 		assertJSON(t, s)
 	})
 }

@@ -547,6 +547,43 @@ func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
 	return items, nil
 }
 
+const listExtSchedulesLikeID = `-- name: ListExtSchedulesLikeID :many
+SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules WHERE id LIKE ?
+`
+
+func (q *Queries) ListExtSchedulesLikeID(ctx context.Context, id string) ([]ExtSchedule, error) {
+	rows, err := q.db.QueryContext(ctx, listExtSchedulesLikeID, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtSchedule
+	for rows.Next() {
+		var i ExtSchedule
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Timezone,
+			&i.Strategy,
+			&i.ShiftDuration,
+			&i.StartTime,
+			&i.HandoffTime,
+			&i.HandoffDay,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listExtTeamMemberships = `-- name: ListExtTeamMemberships :many
 SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id FROM ext_memberships
   JOIN ext_teams ON ext_teams.id = ext_memberships.team_id

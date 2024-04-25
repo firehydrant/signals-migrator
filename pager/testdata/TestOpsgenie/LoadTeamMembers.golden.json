@@ -1,0 +1,24 @@
+[
+  {
+    "ext_team": {
+      "id": "b7acbc33-9853-4150-8a4b-10156d9408c8",
+      "name": "Customer Success",
+      "slug": "customer-success",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "is_group": 0,
+      "to_import": 0
+    },
+    "ext_user": {
+      "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4",
+      "name": "john doe",
+      "email": "john.doe@opsgenie.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      }
+    }
+  }
+]

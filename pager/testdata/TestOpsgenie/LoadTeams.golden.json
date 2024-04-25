@@ -1,0 +1,13 @@
+[
+  {
+    "id": "b7acbc33-9853-4150-8a4b-10156d9408c8",
+    "name": "Customer Success",
+    "slug": "customer-success",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0
+  }
+]

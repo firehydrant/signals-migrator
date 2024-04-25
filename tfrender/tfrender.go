@@ -149,7 +149,7 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 
 		for _, s := range steps {
 			b.AppendNewline()
-			step := b.AppendNewBlock("steps", nil).Body()
+			step := b.AppendNewBlock("step", nil).Body()
 			step.SetAttributeValue("timeout", cty.StringVal(s.Timeout))
 
 			targets, err := store.UseQueries(ctx).ListExtEscalationPolicyStepTargets(ctx, s.ID)

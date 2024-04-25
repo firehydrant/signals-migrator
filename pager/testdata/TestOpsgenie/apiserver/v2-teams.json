@@ -1,0 +1,15 @@
+{
+  "data": [
+    {
+      "id": "b7acbc33-9853-4150-8a4b-10156d9408c8",
+      "name": "Customer Success",
+      "description": "",
+      "links": {
+        "web": "https://app.opsgenie.com/teams/dashboard/b7acbc33-9853-4150-8a4b-10156d9408c8/main",
+        "api": "https://api.opsgenie.com/v2/teams/b7acbc33-9853-4150-8a4b-10156d9408c8"
+      }
+    }
+  ],
+  "took": 0.009,
+  "requestId": "0fd19d50-632a-4f13-a357-b26d0065adc5"
+}
