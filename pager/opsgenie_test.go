@@ -57,6 +57,12 @@ func TestOpsgenie(t *testing.T) {
 	t.Run("LoadTeamMembers", func(t *testing.T) {
 		ctx, og := setup(t)
 
+		if err := og.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
 		if err := og.LoadTeamMembers(ctx); err != nil {
 			t.Fatalf("error loading team members: %s", err)
 		}

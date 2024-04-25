@@ -480,7 +480,7 @@ func (o *Opsgenie) saveEscalationPolicyStepToDB(ctx context.Context, policyID st
 	// review should certainly be required here.
 
 	if t.TargetType == store.TARGET_TYPE_SCHEDULE {
-		schedules, err := store.UseQueries(ctx).ListExtSchedulesByPrefix(ctx, fmt.Sprintf(`%s%%`, rule.Recipient.Id))
+		schedules, err := store.UseQueries(ctx).ListExtSchedulesLikeID(ctx, fmt.Sprintf(`%s%%`, rule.Recipient.Id))
 		if err != nil {
 			return fmt.Errorf("getting schedules starting with ID %s: %w", rule.Recipient.Id, err)
 		}

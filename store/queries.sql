@@ -101,7 +101,7 @@ SELECT * FROM ext_schedules WHERE id = ?;
 -- name: ListExtSchedules :many
 SELECT * FROM ext_schedules;
 
--- name: ListExtSchedulesByPrefix :many
+-- name: ListExtSchedulesLikeID :many
 SELECT * FROM ext_schedules WHERE id LIKE ?;
 
 -- name: InsertExtSchedule :exec

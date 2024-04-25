@@ -1,0 +1,22 @@
+{
+  "data": {
+    "id": "b7acbc33-9853-4150-8a4b-10156d9408c8",
+    "name": "Customer Success",
+    "description": "",
+    "members": [
+      {
+        "user": {
+          "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4",
+          "username": "john.doe@opsgenie.com"
+        },
+        "role": "admin"
+      }
+    ],
+    "links": {
+      "web": "https://app.opsgenie.com/teams/dashboard/b7acbc33-9853-4150-8a4b-10156d9408c8/main",
+      "api": "https://api.opsgenie.com/v2/teams/b7acbc33-9853-4150-8a4b-10156d9408c8"
+    }
+  },
+  "took": 0.029,
+  "requestId": "5a53826f-7864-4bf2-ada3-2979784d1e98"
+}

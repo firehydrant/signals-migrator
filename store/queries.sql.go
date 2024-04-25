@@ -547,12 +547,12 @@ func (q *Queries) ListExtSchedules(ctx context.Context) ([]ExtSchedule, error) {
 	return items, nil
 }
 
-const listExtSchedulesByPrefix = `-- name: ListExtSchedulesByPrefix :many
+const listExtSchedulesLikeID = `-- name: ListExtSchedulesLikeID :many
 SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules WHERE id LIKE ?
 `
 
-func (q *Queries) ListExtSchedulesByPrefix(ctx context.Context, id string) ([]ExtSchedule, error) {
-	rows, err := q.db.QueryContext(ctx, listExtSchedulesByPrefix, id)
+func (q *Queries) ListExtSchedulesLikeID(ctx context.Context, id string) ([]ExtSchedule, error) {
+	rows, err := q.db.QueryContext(ctx, listExtSchedulesLikeID, id)
 	if err != nil {
 		return nil, err
 	}
