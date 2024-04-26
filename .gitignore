@@ -5,3 +5,5 @@ output/
 # Tools / binary dependencies
 bin/*
 !bin/.keep
+
+dist/
