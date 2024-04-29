@@ -11,7 +11,7 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.20.1
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
-	github.com/urfave/cli/v2 v2.27.1
+	github.com/urfave/cli/v2 v2.27.2
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.14.4
 	modernc.org/sqlite v1.29.8
@@ -29,7 +29,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.0 // indirect
 	github.com/charmbracelet/lipgloss v0.10.0 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -58,7 +58,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
-	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
 	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
