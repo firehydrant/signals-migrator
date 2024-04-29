@@ -38,18 +38,16 @@ Afterwards, the tool will generate the mapping appropriately, handling de-duplic
 
 ## Feature roadmap
 
-| | PagerDuty | VictorOps | OpsGenie |
+| | PagerDuty | Opsgenie | VictorOps |
 | --- | --- | --- | --- |
 | Import users | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Import teams and members | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Import escalation policies | :x: | :x: | :x: |
-| Import scheduling strategy | :white_check_mark: | :x: | :x: |
+| Import escalation policies | :white_check_mark: | :white_check_mark: | :x: |
+| Import scheduling strategy | :white_check_mark: | :white_check_mark: | :x: |
 
 
 - [ ] Getting transposer URLs (e.g. Datadog) to the team data resource or a Signals ingest URL data resource
-- [ ] Support for importing escalation policies
 - [ ] Auto-run `terraform apply` for users who would not manage their organization with Terraform after importing
-- [ ] Build + publish Docker image to simplify usage down to `docker run firehydrant/signals-migrator import`
 
 ## Developing
 
