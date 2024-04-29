@@ -72,7 +72,7 @@ func (q *Queries) GetTeamByExtID(ctx context.Context, id string) (LinkedTeam, er
 }
 
 const getUserByExtID = `-- name: GetUserByExtID :one
-SELECT id, name, email, fh_user_id, fh_name, fh_email FROM linked_users WHERE id = ?
+SELECT id, name, email, fh_user_id, annotations, fh_name, fh_email FROM linked_users WHERE id = ?
 `
 
 func (q *Queries) GetUserByExtID(ctx context.Context, id string) (LinkedUser, error) {
@@ -83,6 +83,7 @@ func (q *Queries) GetUserByExtID(ctx context.Context, id string) (LinkedUser, er
 		&i.Name,
 		&i.Email,
 		&i.FhUserID,
+		&i.Annotations,
 		&i.FhName,
 		&i.FhEmail,
 	)
@@ -585,7 +586,7 @@ func (q *Queries) ListExtSchedulesLikeID(ctx context.Context, id string) ([]ExtS
 }
 
 const listExtTeamMemberships = `-- name: ListExtTeamMemberships :many
-SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id FROM ext_memberships
+SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations FROM ext_memberships
   JOIN ext_teams ON ext_teams.id = ext_memberships.team_id
   JOIN ext_users ON ext_users.id = ext_memberships.user_id
 `
@@ -615,6 +616,7 @@ func (q *Queries) ListExtTeamMemberships(ctx context.Context) ([]ListExtTeamMemb
 			&i.ExtUser.Name,
 			&i.ExtUser.Email,
 			&i.ExtUser.FhUserID,
+			&i.ExtUser.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -664,7 +666,7 @@ func (q *Queries) ListExtTeams(ctx context.Context) ([]ExtTeam, error) {
 }
 
 const listExtUsers = `-- name: ListExtUsers :many
-SELECT id, name, email, fh_user_id FROM ext_users
+SELECT id, name, email, fh_user_id, annotations FROM ext_users
 `
 
 func (q *Queries) ListExtUsers(ctx context.Context) ([]ExtUser, error) {
@@ -681,6 +683,7 @@ func (q *Queries) ListExtUsers(ctx context.Context) ([]ExtUser, error) {
 			&i.Name,
 			&i.Email,
 			&i.FhUserID,
+			&i.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -812,7 +815,7 @@ func (q *Queries) ListFhUsers(ctx context.Context) ([]FhUser, error) {
 }
 
 const listGroupExtTeamMemberships = `-- name: ListGroupExtTeamMemberships :many
-SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id FROM ext_teams
+SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations FROM ext_teams
   JOIN ext_team_groups ON ext_team_groups.group_team_id = ext_teams.id
   JOIN ext_teams AS member_team ON member_team.id = ext_team_groups.member_team_id
   JOIN ext_memberships ON ext_memberships.team_id = member_team.id
@@ -844,6 +847,7 @@ func (q *Queries) ListGroupExtTeamMemberships(ctx context.Context) ([]ListGroupE
 			&i.ExtUser.Name,
 			&i.ExtUser.Email,
 			&i.ExtUser.FhUserID,
+			&i.ExtUser.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -1077,7 +1081,7 @@ func (q *Queries) ListTeamsToImport(ctx context.Context) ([]LinkedTeam, error) {
 }
 
 const listUnmatchedExtUsers = `-- name: ListUnmatchedExtUsers :many
-SELECT id, name, email, fh_user_id FROM ext_users
+SELECT id, name, email, fh_user_id, annotations FROM ext_users
 WHERE fh_user_id IS NULL
 `
 
@@ -1095,6 +1099,7 @@ func (q *Queries) ListUnmatchedExtUsers(ctx context.Context) ([]ExtUser, error) 
 			&i.Name,
 			&i.Email,
 			&i.FhUserID,
+			&i.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -1110,7 +1115,7 @@ func (q *Queries) ListUnmatchedExtUsers(ctx context.Context) ([]ExtUser, error) 
 }
 
 const listUsersJoinByEmail = `-- name: ListUsersJoinByEmail :many
-SELECT ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, fh_users.id, fh_users.name, fh_users.email FROM ext_users
+SELECT ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations, fh_users.id, fh_users.name, fh_users.email FROM ext_users
   JOIN fh_users ON fh_users.email = ext_users.email
 `
 
@@ -1133,6 +1138,7 @@ func (q *Queries) ListUsersJoinByEmail(ctx context.Context) ([]ListUsersJoinByEm
 			&i.ExtUser.Name,
 			&i.ExtUser.Email,
 			&i.ExtUser.FhUserID,
+			&i.ExtUser.Annotations,
 			&i.FhUser.ID,
 			&i.FhUser.Name,
 			&i.FhUser.Email,

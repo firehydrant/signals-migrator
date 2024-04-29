@@ -84,10 +84,11 @@ type ExtTeamGroup struct {
 }
 
 type ExtUser struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Email    string         `json:"email"`
-	FhUserID sql.NullString `json:"fh_user_id"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Email       string         `json:"email"`
+	FhUserID    sql.NullString `json:"fh_user_id"`
+	Annotations sql.NullString `json:"annotations"`
 }
 
 type FhTeam struct {
@@ -114,10 +115,11 @@ type LinkedTeam struct {
 }
 
 type LinkedUser struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Email    string         `json:"email"`
-	FhUserID sql.NullString `json:"fh_user_id"`
-	FhName   sql.NullString `json:"fh_name"`
-	FhEmail  sql.NullString `json:"fh_email"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Email       string         `json:"email"`
+	FhUserID    sql.NullString `json:"fh_user_id"`
+	Annotations sql.NullString `json:"annotations"`
+	FhName      sql.NullString `json:"fh_name"`
+	FhEmail     sql.NullString `json:"fh_email"`
 }

@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS ext_users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
-  fh_user_id TEXT REFERENCES fh_users(id)
+  fh_user_id TEXT REFERENCES fh_users(id),
+  annotations TEXT NOT NULL DEFAULT ''
 ) STRICT;
 
 CREATE VIEW IF NOT EXISTS linked_users AS
