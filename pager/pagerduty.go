@@ -86,6 +86,8 @@ func (p *PagerDuty) LoadUsers(ctx context.Context) error {
 				ID:    user.ID,
 				Name:  user.Name,
 				Email: user.Email,
+
+				Annotations: user.HTMLURL,
 			}); err != nil {
 				return fmt.Errorf("saving user to db: %w", err)
 			}

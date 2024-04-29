@@ -300,14 +300,16 @@ func (q *Queries) InsertExtTeamGroup(ctx context.Context, arg InsertExtTeamGroup
 }
 
 const insertExtUser = `-- name: InsertExtUser :exec
-INSERT INTO ext_users (id, name, email, fh_user_id) VALUES (?, ?, ?, ?)
+INSERT INTO ext_users (id, name, email, fh_user_id, annotations)
+VALUES (?, ?, ?, ?, ?)
 `
 
 type InsertExtUserParams struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Email    string         `json:"email"`
-	FhUserID sql.NullString `json:"fh_user_id"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Email       string         `json:"email"`
+	FhUserID    sql.NullString `json:"fh_user_id"`
+	Annotations string         `json:"annotations"`
 }
 
 func (q *Queries) InsertExtUser(ctx context.Context, arg InsertExtUserParams) error {
@@ -316,6 +318,7 @@ func (q *Queries) InsertExtUser(ctx context.Context, arg InsertExtUserParams) er
 		arg.Name,
 		arg.Email,
 		arg.FhUserID,
+		arg.Annotations,
 	)
 	return err
 }
@@ -777,6 +780,33 @@ func (q *Queries) ListFhTeams(ctx context.Context) ([]FhTeam, error) {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFhUserAnnotations = `-- name: ListFhUserAnnotations :many
+SELECT annotations FROM linked_users WHERE fh_user_id = ?
+`
+
+func (q *Queries) ListFhUserAnnotations(ctx context.Context, fhUserID sql.NullString) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listFhUserAnnotations, fhUserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var annotations string
+		if err := rows.Scan(&annotations); err != nil {
+			return nil, err
+		}
+		items = append(items, annotations)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

@@ -88,7 +88,7 @@ type ExtUser struct {
 	Name        string         `json:"name"`
 	Email       string         `json:"email"`
 	FhUserID    sql.NullString `json:"fh_user_id"`
-	Annotations sql.NullString `json:"annotations"`
+	Annotations string         `json:"annotations"`
 }
 
 type FhTeam struct {
@@ -119,7 +119,7 @@ type LinkedUser struct {
 	Name        string         `json:"name"`
 	Email       string         `json:"email"`
 	FhUserID    sql.NullString `json:"fh_user_id"`
-	Annotations sql.NullString `json:"annotations"`
+	Annotations string         `json:"annotations"`
 	FhName      sql.NullString `json:"fh_name"`
 	FhEmail     sql.NullString `json:"fh_email"`
 }

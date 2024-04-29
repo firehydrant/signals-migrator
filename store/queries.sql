@@ -10,6 +10,9 @@ INSERT INTO fh_users (id, name, email) VALUES (?, ?, ?);
 -- name: GetUserByExtID :one
 SELECT * FROM linked_users WHERE id = ?;
 
+-- name: ListFhUserAnnotations :many
+SELECT annotations FROM linked_users WHERE fh_user_id = ?;
+
 -- name: ListFhTeams :many
 SELECT * FROM fh_teams;
 
@@ -28,7 +31,8 @@ SELECT * FROM ext_users
 WHERE fh_user_id IS NULL;
 
 -- name: InsertExtUser :exec
-INSERT INTO ext_users (id, name, email, fh_user_id) VALUES (?, ?, ?, ?);
+INSERT INTO ext_users (id, name, email, fh_user_id, annotations)
+VALUES (?, ?, ?, ?, ?);
 
 -- name: GetTeamByExtID :one
 SELECT * FROM linked_teams WHERE id = ?;

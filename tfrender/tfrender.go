@@ -13,6 +13,7 @@ import (
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -376,6 +377,36 @@ func (r *TFRender) DataFireHydrantUsers(ctx context.Context) error {
 		r.root.AppendNewline()
 		b := r.root.AppendNewBlock("data", []string{"firehydrant_user", u.TFSlug()}).Body()
 		b.SetAttributeValue("email", cty.StringVal(u.Email))
+
+		annotations, err := store.UseQueries(ctx).ListFhUserAnnotations(ctx, sql.NullString{String: u.ID, Valid: true})
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				continue
+			} else {
+				return fmt.Errorf("querying annotations for user '%s': %w", u.Email, err)
+			}
+		}
+		for _, a := range annotations {
+			str := strings.TrimSpace(a)
+			if str == "" {
+				continue
+			}
+			// If the body is multi-line, prefix the newline with comment tag.
+			str = strings.ReplaceAll(str, "\n", "\n# ")
+			// Then make sure to prepend first line with comment tag as well,
+			// and end with newline.
+			str = fmt.Sprintf("# %s\n", a)
+			b.AppendUnstructuredTokens(
+				hclwrite.Tokens{
+					&hclwrite.Token{
+						Type:  hclsyntax.TokenComment,
+						Bytes: []byte(str),
+
+						SpacesBefore: 2,
+					},
+				},
+			)
+		}
 	}
 	return nil
 }
