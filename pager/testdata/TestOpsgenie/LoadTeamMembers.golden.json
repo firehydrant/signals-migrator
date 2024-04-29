@@ -18,7 +18,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": ""
     }
   }
 ]

@@ -6,7 +6,8 @@
     "fh_user_id": {
       "String": "",
       "Valid": false
-    }
+    },
+    "annotations": ""
   },
   {
     "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc5",
@@ -15,6 +16,7 @@
     "fh_user_id": {
       "String": "",
       "Valid": false
-    }
+    },
+    "annotations": ""
   }
 ]

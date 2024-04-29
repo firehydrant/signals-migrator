@@ -5,12 +5,12 @@ INSERT INTO fh_users VALUES('35b5390f-d134-4bc6-966d-0b4048788b62','Horse','hors
 INSERT INTO fh_users VALUES('6c08bff2-98f6-4ee9-8de1-12202186d084','Jack T.','jack@example.com');
 INSERT INTO fh_users VALUES('032a1f07-987e-4f76-8273-136e08e50baa', 'Wong','wong@example.com');
 
-INSERT INTO ext_users VALUES('PXI6XNI','Admin','local@example.io','0946be55-ea20-4483-b9ab-617d5f0969e2');
-INSERT INTO ext_users VALUES('P5A1XH2','Mika','mika@example.io','e6009411-0015-43e3-815e-ca9db72f4088');
-INSERT INTO ext_users VALUES('P8ZZ1ZB','Kiran','kiran@example.io','4c3f28fa-b402-453c-9652-f014ecbe65a9');
-INSERT INTO ext_users VALUES('PRXEEQ8','Horse','horse@example.io','35b5390f-d134-4bc6-966d-0b4048788b62');
-INSERT INTO ext_users VALUES('P4CMCAU','Jack T.','jack@example.io','6c08bff2-98f6-4ee9-8de1-12202186d084');
-INSERT INTO ext_users VALUES('P2C9LBA','Wong','wong@example.io','032a1f07-987e-4f76-8273-136e08e50baa');
+INSERT INTO ext_users VALUES('PXI6XNI','Admin','local@example.io','0946be55-ea20-4483-b9ab-617d5f0969e2','');
+INSERT INTO ext_users VALUES('P5A1XH2','Mika','mika@example.io','e6009411-0015-43e3-815e-ca9db72f4088','');
+INSERT INTO ext_users VALUES('P8ZZ1ZB','Kiran','kiran@example.io','4c3f28fa-b402-453c-9652-f014ecbe65a9','');
+INSERT INTO ext_users VALUES('PRXEEQ8','Horse','horse@example.io','35b5390f-d134-4bc6-966d-0b4048788b62','');
+INSERT INTO ext_users VALUES('P4CMCAU','Jack T.','jack@example.io','6c08bff2-98f6-4ee9-8de1-12202186d084','');
+INSERT INTO ext_users VALUES('P2C9LBA','Wong','wong@example.io','032a1f07-987e-4f76-8273-136e08e50baa','');
 
 INSERT INTO fh_teams VALUES('47016143-6547-483a-b68a-5220b21681fd','AAAA IPv6 migration strategy','aaaa-ipv6-migration-strategy');
 INSERT INTO fh_teams VALUES('f159b173-1ffd-41ac-9254-ce8ec1142267','🐴 Cowboy Coders','cowboy-coders');

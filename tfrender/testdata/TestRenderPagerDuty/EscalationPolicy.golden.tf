@@ -9,6 +9,8 @@ terraform {
 
 data "firehydrant_user" "alice_bob" {
   email = "alice.bob@example.com"
+  # Insert PagerDuty URL here :)
+  # https://acme-eng.pagerduty.com/users/PUIDISU
 }
 
 resource "firehydrant_team" "cowboy_coders" {

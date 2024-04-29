@@ -2,8 +2,8 @@ BEGIN TRANSACTION;
 
 INSERT INTO fh_users VALUES('35b5390f-d134-4bc6-966d-0b4048788b62','Alice Bob','alice.bob@example.com');
 
-INSERT INTO ext_users VALUES('PRXEEQ8','Alice Bob','alice.bob@example.com','35b5390f-d134-4bc6-966d-0b4048788b62');
-INSERT INTO ext_users VALUES('PXI6XNI','Engineering Shared Account','eng@example.com','35b5390f-d134-4bc6-966d-0b4048788b62');
+INSERT INTO ext_users VALUES('PRXEEQ8','Alice Bob','alice.bob@example.com','35b5390f-d134-4bc6-966d-0b4048788b62', 'Insert PagerDuty URL here :)');
+INSERT INTO ext_users VALUES('PXI6XNI','Engineering Shared Account','eng@example.com','35b5390f-d134-4bc6-966d-0b4048788b62','https://acme-eng.pagerduty.com/users/PUIDISU');
 
 INSERT INTO fh_teams VALUES('f159b173-1ffd-41ac-9254-ce8ec1142267','🐴 Cowboy Coders','cowboy-coders');
 

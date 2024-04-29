@@ -5,10 +5,10 @@ INSERT INTO fh_users VALUES('90c17208-46b4-4e82-b9b8-b8f5d8215a05','FireHydrant 
 INSERT INTO fh_users VALUES('66506894-ecbc-4034-b8e6-30851dabf5f3','FireHydrant Eng','fh-eng@firehydrant.io');
 INSERT INTO fh_users VALUES('a8fc03aa-8443-4c76-819c-8b7242fec459','FireHydrant Success','fh-success@firehydrant.com');
 
-INSERT INTO ext_users VALUES('e0a51be7-3c7e-407f-8678-292ab421f55f','John Smith','jsmith@firehydrant.com','49ef2cda-ab4f-4599-852c-8cc2c8884523');
-INSERT INTO ext_users VALUES('1dc37638-ab52-44f3-848e-a16bcc584fb7','FireHydrant Demo','fh-demo@firehydrant.io','90c17208-46b4-4e82-b9b8-b8f5d8215a05');
-INSERT INTO ext_users VALUES('9253cf00-6195-4123-a9a6-f9f1e25718d8','FireHydrant Eng','fh-eng@firehydrant.io','66506894-ecbc-4034-b8e6-30851dabf5f3');
-INSERT INTO ext_users VALUES('e94e17aa-418c-44f7-8e47-1eaebf6b5343','FireHydrant Success','fh-success@firehydrant.com','a8fc03aa-8443-4c76-819c-8b7242fec459');
+INSERT INTO ext_users VALUES('e0a51be7-3c7e-407f-8678-292ab421f55f','John Smith','jsmith@firehydrant.com','49ef2cda-ab4f-4599-852c-8cc2c8884523', '');
+INSERT INTO ext_users VALUES('1dc37638-ab52-44f3-848e-a16bcc584fb7','FireHydrant Demo','fh-demo@firehydrant.io','90c17208-46b4-4e82-b9b8-b8f5d8215a05', '');
+INSERT INTO ext_users VALUES('9253cf00-6195-4123-a9a6-f9f1e25718d8','FireHydrant Eng','fh-eng@firehydrant.io','66506894-ecbc-4034-b8e6-30851dabf5f3', '');
+INSERT INTO ext_users VALUES('e94e17aa-418c-44f7-8e47-1eaebf6b5343','FireHydrant Success','fh-success@firehydrant.com','a8fc03aa-8443-4c76-819c-8b7242fec459', '');
 
 INSERT INTO fh_teams VALUES('8c465512-b0b4-47df-ba59-735574bc4dde','Alerting','alerting');
 INSERT INTO fh_teams VALUES('d98aa7e2-9b38-41a8-b5de-49743c3b9ac2','Assign Product On-call','on-call-gameday');

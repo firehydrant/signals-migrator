@@ -395,7 +395,7 @@ func (r *TFRender) DataFireHydrantUsers(ctx context.Context) error {
 			str = strings.ReplaceAll(str, "\n", "\n# ")
 			// Then make sure to prepend first line with comment tag as well,
 			// and end with newline.
-			str = fmt.Sprintf("# %s\n", a)
+			str = fmt.Sprintf("# %s\n", str)
 			b.AppendUnstructuredTokens(
 				hclwrite.Tokens{
 					&hclwrite.Token{

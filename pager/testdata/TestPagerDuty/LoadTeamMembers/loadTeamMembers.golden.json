@@ -18,7 +18,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "https://acme-inc.pagerduty.com/users/PXI6XNI"
     }
   },
   {
@@ -40,7 +41,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "https://acme-inc.pagerduty.com/users/P2C9LBA"
     }
   },
   {
@@ -62,7 +64,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "https://acme-inc.pagerduty.com/users/PXI6XNI"
     }
   },
   {
@@ -84,7 +87,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "https://acme-inc.pagerduty.com/users/PXI6XNI"
     }
   },
   {
@@ -106,7 +110,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "https://acme-inc.pagerduty.com/users/PRXEEQ8"
     }
   },
   {
@@ -128,7 +133,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "https://acme-inc.pagerduty.com/users/PXI6XNI"
     }
   },
   {
@@ -150,7 +156,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "https://acme-inc.pagerduty.com/users/P4CMCAU"
     }
   }
 ]
