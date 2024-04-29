@@ -22,7 +22,7 @@ func main() {
 			Name:  "version",
 			Usage: "Print the version",
 			Action: func(c *cli.Context) error {
-				fmt.Println("version: " + revision()) //nolint:forbidigo
+				fmt.Printf("signals-migrator version %s\n" + revision()) //nolint:forbidigo
 				return nil
 			},
 		},
@@ -34,16 +34,27 @@ func main() {
 	}
 }
 
+var version = "dev"
+
 func revision() string {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		panic("cannot retrieve buildinfo. is go go-ing?")
+		return version
+	}
+	if v := bi.Main.Version; v != "(devel)" {
+		// Installed via `go install`.
+		version = v
 	}
 
+	rev := ""
 	for _, i := range bi.Settings {
 		if i.Key == "vcs.revision" {
-			return i.Value
+			rev = i.Value
+			break
 		}
 	}
-	return "dev"
+	if rev != "" {
+		return fmt.Sprintf("%s-%s", version, rev)
+	}
+	return version
 }
