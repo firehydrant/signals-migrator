@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/firehydrant/signals-migrator/console"
+	"github.com/firehydrant/signals-migrator/internal/firehydrant"
 	"github.com/firehydrant/signals-migrator/pager"
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/firehydrant/signals-migrator/tfrender"
@@ -58,7 +59,7 @@ func importAction(cliCtx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("initializing pager provider: %w", err)
 	}
-	fh, err := pager.NewFireHydrant(cliCtx.String("firehydrant-api-key"), cliCtx.String("firehydrant-api-endpoint"))
+	fh, err := firehydrant.NewClient(cliCtx.String("firehydrant-api-key"), cliCtx.String("firehydrant-api-endpoint"))
 	if err != nil {
 		return fmt.Errorf("initializing FireHydrant client: %w", err)
 	}
@@ -101,7 +102,7 @@ func importAction(cliCtx *cli.Context) error {
 // which rows to import. We mark the selected rows from users in `to_import` field and delete
 // the ones that we will not import to FireHydrant. This is done to simplify the state management
 // between queries and filtering.
-func importEscalationPolicies(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
+func importEscalationPolicies(ctx context.Context, provider pager.Pager, fh *firehydrant.Client) error {
 	if err := provider.LoadEscalationPolicies(ctx); err != nil {
 		return fmt.Errorf("unable to load escalation policies: %w", err)
 	}
@@ -148,7 +149,7 @@ func importEscalationPolicies(ctx context.Context, provider pager.Pager, fh *pag
 	return nil
 }
 
-func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
+func importTeams(ctx context.Context, provider pager.Pager, fh *firehydrant.Client) error {
 	// Some providers made their users adopt an alternate concept of teams.
 	//
 	// For example, PagerDuty has "Teams" and "Services". In vacuum, they intuitively refer to
@@ -183,7 +184,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 	console.Successf("Loaded all teams from provider.\n")
 
 	// List out all of the teams from FireHydrant.
-	var fhTeams []*pager.Team
+	var fhTeams []store.FhTeam
 	console.Spin(func() {
 		fhTeams, err = fh.ListTeams(ctx)
 	}, "Fetching all teams from FireHydrant...")
@@ -216,10 +217,10 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 	}
 
 	// Now, we prompt users to match the teams that we are importing to FireHydrant.
-	options := []*pager.Team{{Resource: pager.Resource{ID: "[+] CREATE NEW"}}}
+	options := []store.FhTeam{{ID: "[+] CREATE NEW"}}
 	options = append(options, fhTeams...)
 	for _, t := range toImport {
-		selected, fhTeam, err := console.Selectf(options, func(t *pager.Team) string {
+		selected, fhTeam, err := console.Selectf(options, func(t store.FhTeam) string {
 			return fmt.Sprintf("%s %s", t.ID, t.Name)
 		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", t.Name))
 		if err != nil {
@@ -239,7 +240,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 	return nil
 }
 
-func importUsers(ctx context.Context, provider pager.Pager, fh *pager.FireHydrant) error {
+func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Client) error {
 	// Get all of the users registered from Pager Provider (e.g. PagerDuty)
 	var err error
 	console.Spin(func() {
@@ -269,11 +270,11 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *pager.FireHydran
 		if err != nil {
 			return fmt.Errorf("unable to list FireHydrant users: %w", err)
 		}
-		options := []*pager.User{{Resource: pager.Resource{Name: "[<] SKIP"}}}
+		options := []store.FhUser{{Name: "[<] SKIP"}}
 		options = append(options, fhUsers...)
 
 		for _, u := range unmatched {
-			selected, fhUser, err := console.Selectf(options, func(u *pager.User) string {
+			selected, fhUser, err := console.Selectf(options, func(u store.FhUser) string {
 				return fmt.Sprintf("%s %s", u.Name, u.Email)
 			}, fmt.Sprintf("Which FireHydrant user should '%s' be imported to?", u.Name))
 			if err != nil {
