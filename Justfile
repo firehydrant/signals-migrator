@@ -19,3 +19,6 @@ dependencies *args='':
 
 generate:
   go generate ./...
+
+build:
+  go build -o bin/signals-migrator .
