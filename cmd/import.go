@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 
@@ -50,9 +52,12 @@ var ImportCommand = &cli.Command{
 }
 
 func importAction(cliCtx *cli.Context) error {
+	ctx, cancel := signal.NotifyContext(cliCtx.Context, os.Interrupt)
+	defer cancel()
+
 	providerName := cliCtx.String("provider")
 	provider, err := pager.NewPager(
-		providerName,
+		ctx, providerName,
 		cliCtx.String("provider-api-key"),
 		cliCtx.String("provider-app-id"),
 	)
@@ -64,7 +69,7 @@ func importAction(cliCtx *cli.Context) error {
 		return fmt.Errorf("initializing FireHydrant client: %w", err)
 	}
 
-	ctx := store.WithContext(cliCtx.Context)
+	ctx = store.WithContext(ctx)
 	defer store.FromContext(ctx).Close()
 
 	if err := importUsers(ctx, provider, fh); err != nil {
