@@ -6,11 +6,11 @@ INSERT INTO fh_users VALUES('4c3f28fa-b402-453c-9652-f014ecbe65a9', 'Kiran','kir
 INSERT INTO fh_users VALUES('6c08bff2-98f6-4ee9-8de1-12202186d084','Jack T.','jack@example.com');
 INSERT INTO fh_users VALUES('032a1f07-987e-4f76-8273-136e08e50baa', 'Wong','wong@example.com');
 
-INSERT INTO ext_users VALUES('1dc37638-ab52-44f3-848e-a16bcc584fb7','Admin Account','admin@example.io','0946be55-ea20-4483-b9ab-617d5f0969e2','');
-INSERT INTO ext_users VALUES('9253cf00-6195-4123-a9a6-f9f1e25718d8','Mika','mika@example.io','e6009411-0015-43e3-815e-ca9db72f4088','');
-INSERT INTO ext_users VALUES('e94e17aa-418c-44f7-8e47-1eaebf6b5343','Kiran','kiran@example.com','4c3f28fa-b402-453c-9652-f014ecbe65a9','');
-INSERT INTO ext_users VALUES('d68757c4-5eec-4560-8c5b-91c463f87dd8','Jack T.','jack@example.com','6c08bff2-98f6-4ee9-8de1-12202186d084','');
-INSERT INTO ext_users VALUES('a13020ca-cb08-48e3-9403-bed181a22e72','Wong','wong@example.io','032a1f07-987e-4f76-8273-136e08e50baa','');
+INSERT INTO ext_users VALUES('1dc37638-ab52-44f3-848e-a16bcc584fb7','Admin Account','admin@example.io','0946be55-ea20-4483-b9ab-617d5f0969e2','[Opsgenie] 1dc37638-ab52-44f3-848e-a16bcc584fb7 admin@example.io');
+INSERT INTO ext_users VALUES('9253cf00-6195-4123-a9a6-f9f1e25718d8','Mika','mika@example.io','e6009411-0015-43e3-815e-ca9db72f4088','[Opsgenie] 9253cf00-6195-4123-a9a6-f9f1e25718d8 mika@example.io');
+INSERT INTO ext_users VALUES('e94e17aa-418c-44f7-8e47-1eaebf6b5343','Kiran','kiran@example.com','4c3f28fa-b402-453c-9652-f014ecbe65a9','[Opsgenie] e94e17aa-418c-44f7-8e47-1eaebf6b5343 kiran@example.com');
+INSERT INTO ext_users VALUES('d68757c4-5eec-4560-8c5b-91c463f87dd8','Jack T.','jack@example.com','6c08bff2-98f6-4ee9-8de1-12202186d084','[Opsgenie] d68757c4-5eec-4560-8c5b-91c463f87dd8 jack@example.com');
+INSERT INTO ext_users VALUES('a13020ca-cb08-48e3-9403-bed181a22e72','Wong','wong@example.io','032a1f07-987e-4f76-8273-136e08e50baa','[Opsgenie] a13020ca-cb08-48e3-9403-bed181a22e72 wong@example.io');
 
 INSERT INTO ext_teams VALUES('017e4326-abdf-4cd9-8cad-5f23bd7f4753','Wong Squad','wong-squad',NULL,0,1);
 INSERT INTO ext_teams VALUES('3dd6b50f-28ed-4660-b982-606bfa6c4cf2','Platform','platform',NULL,0,1);

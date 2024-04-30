@@ -7,7 +7,7 @@
       "String": "",
       "Valid": false
     },
-    "annotations": ""
+    "annotations": "[Opsgenie] b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4 john.doe@opsgenie.com"
   },
   {
     "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc5",
@@ -17,6 +17,6 @@
       "String": "",
       "Valid": false
     },
-    "annotations": ""
+    "annotations": "[Opsgenie] b5b92115-bfe7-43eb-8c2a-e467f2e5ddc5 jane.doe@opsgenie.com"
   }
 ]

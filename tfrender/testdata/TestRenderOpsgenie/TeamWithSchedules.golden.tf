@@ -9,22 +9,27 @@ terraform {
 
 data "firehydrant_user" "local" {
   email = "local@example.io"
+  # [Opsgenie] 1dc37638-ab52-44f3-848e-a16bcc584fb7 admin@example.io
 }
 
 data "firehydrant_user" "mika" {
   email = "mika@example.com"
+  # [Opsgenie] 9253cf00-6195-4123-a9a6-f9f1e25718d8 mika@example.io
 }
 
 data "firehydrant_user" "kiran" {
   email = "kiran@example.com"
+  # [Opsgenie] e94e17aa-418c-44f7-8e47-1eaebf6b5343 kiran@example.com
 }
 
 data "firehydrant_user" "jack" {
   email = "jack@example.com"
+  # [Opsgenie] d68757c4-5eec-4560-8c5b-91c463f87dd8 jack@example.com
 }
 
 data "firehydrant_user" "wong" {
   email = "wong@example.com"
+  # [Opsgenie] a13020ca-cb08-48e3-9403-bed181a22e72 wong@example.io
 }
 
 resource "firehydrant_team" "wong_squad" {
