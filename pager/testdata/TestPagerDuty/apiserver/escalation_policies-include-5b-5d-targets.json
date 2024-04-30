@@ -1,0 +1,103 @@
+{
+  "escalation_policies": [
+    {
+      "id": "P6F7EI2",
+      "type": "escalation_policy",
+      "summary": "Endeavour",
+      "self": "https://api.pagerduty.com/escalation_policies/P6F7EI2",
+      "html_url": "https://pdt-apidocs.pagerduty.com/escalation_policies/P6F7EI2",
+      "name": "Endeavour",
+      "escalation_rules": [
+        {
+          "id": "PFN10S6",
+          "escalation_delay_in_minutes": 1,
+          "targets": [
+            {
+              "name": "Douglas Hurley",
+              "email": "douglas.hurley@nasa.example",
+              "time_zone": "America/Los_Angeles",
+              "color": "teal",
+              "avatar_url": "https://secure.gravatar.com/avatar/ab94dd438eb6d722012e6155fb46d931.png?d=mm&r=PG",
+              "billed": true,
+              "role": "limited_user",
+              "description": null,
+              "invitation_sent": true,
+              "job_title": null,
+              "teams": [
+                {
+                  "id": "PQZPQGI",
+                  "type": "team_reference",
+                  "summary": "North American Space Agency (NASA)",
+                  "self": "https://api.pagerduty.com/teams/PQZPQGI",
+                  "html_url": "https://pdt-apidocs.pagerduty.com/teams/PQZPQGI"
+                }
+              ],
+              "contact_methods": [
+                {
+                  "id": "P92PVVL",
+                  "type": "email_contact_method_reference",
+                  "summary": "Default",
+                  "self": "https://api.pagerduty.com/users/PRF4164/contact_methods/P92PVVL",
+                  "html_url": null
+                },
+                {
+                  "id": "PRYGTVV",
+                  "type": "phone_contact_method_reference",
+                  "summary": "Work",
+                  "self": "https://api.pagerduty.com/users/PRF4164/contact_methods/PRYGTVV",
+                  "html_url": null
+                },
+                {
+                  "id": "PNMVSG5",
+                  "type": "sms_contact_method_reference",
+                  "summary": "Mobile",
+                  "self": "https://api.pagerduty.com/users/PRF4164/contact_methods/PNMVSG5",
+                  "html_url": null
+                }
+              ],
+              "notification_rules": [
+                {
+                  "id": "PNFV1JA",
+                  "type": "assignment_notification_rule_reference",
+                  "summary": "0 minutes: channel P92PVVL",
+                  "self": "https://api.pagerduty.com/users/PRF4164/notification_rules/PNFV1JA",
+                  "html_url": null
+                },
+                {
+                  "id": "PRRG2Z0",
+                  "type": "assignment_notification_rule_reference",
+                  "summary": "0 minutes: channel P92PVVL",
+                  "self": "https://api.pagerduty.com/users/PRF4164/notification_rules/PRRG2Z0",
+                  "html_url": null
+                },
+                {
+                  "id": "P4FC8CY",
+                  "type": "assignment_notification_rule_reference",
+                  "summary": "0 minutes: channel PRYGTVV",
+                  "self": "https://api.pagerduty.com/users/PRF4164/notification_rules/P4FC8CY",
+                  "html_url": null
+                },
+                {
+                  "id": "P16R808",
+                  "type": "assignment_notification_rule_reference",
+                  "summary": "0 minutes: channel PNMVSG5",
+                  "self": "https://api.pagerduty.com/users/PRF4164/notification_rules/P16R808",
+                  "html_url": null
+                }
+              ],
+              "id": "P4CMCAU",
+              "type": "user",
+              "summary": "Douglas Hurley",
+              "self": "https://api.pagerduty.com/users/PRF4164",
+              "html_url": "https://pdt-apidocs.pagerduty.com/users/PRF4164"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limit": 25,
+  "offset": 0,
+  "more": false,
+  "total": null
+}
