@@ -33,6 +33,7 @@ data "firehydrant_user" "wong" {
 
 resource "firehydrant_team" "aaaa_ipv6_migration_strategy" {
   name = "AAAA IPv6 migration strategy"
+
   # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
 
   memberships {
@@ -55,6 +56,7 @@ import {
 
 resource "firehydrant_team" "dunder_mifflin_scranton" {
   name = "Dunder Mifflin Scranton"
+
   # [PagerDuty] Jack Team https://pdt-apidocs.pagerduty.com/service-directory/PD2F80U
 
   memberships {
