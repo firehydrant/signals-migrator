@@ -70,12 +70,13 @@ type ExtScheduleTeam struct {
 }
 
 type ExtTeam struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
-	IsGroup  int64          `json:"is_group"`
-	ToImport int64          `json:"to_import"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	FhTeamID    sql.NullString `json:"fh_team_id"`
+	IsGroup     int64          `json:"is_group"`
+	ToImport    int64          `json:"to_import"`
+	Annotations string         `json:"annotations"`
 }
 
 type ExtTeamGroup struct {
@@ -104,14 +105,15 @@ type FhUser struct {
 }
 
 type LinkedTeam struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
-	IsGroup  int64          `json:"is_group"`
-	ToImport int64          `json:"to_import"`
-	FhName   sql.NullString `json:"fh_name"`
-	FhSlug   sql.NullString `json:"fh_slug"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	FhTeamID    sql.NullString `json:"fh_team_id"`
+	IsGroup     int64          `json:"is_group"`
+	ToImport    int64          `json:"to_import"`
+	Annotations string         `json:"annotations"`
+	FhName      sql.NullString `json:"fh_name"`
+	FhSlug      sql.NullString `json:"fh_slug"`
 }
 
 type LinkedUser struct {

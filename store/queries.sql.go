@@ -40,6 +40,17 @@ func (q *Queries) GetExtSchedule(ctx context.Context, id string) (ExtSchedule, e
 	return i, err
 }
 
+const getExtTeamAnnotation = `-- name: GetExtTeamAnnotation :one
+SELECT annotations FROM ext_teams WHERE id = ?
+`
+
+func (q *Queries) GetExtTeamAnnotation(ctx context.Context, id string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getExtTeamAnnotation, id)
+	var annotations string
+	err := row.Scan(&annotations)
+	return annotations, err
+}
+
 const getFhUserByEmail = `-- name: GetFhUserByEmail :one
 SELECT id, name, email FROM fh_users WHERE email = ?
 `
@@ -52,7 +63,7 @@ func (q *Queries) GetFhUserByEmail(ctx context.Context, email string) (FhUser, e
 }
 
 const getTeamByExtID = `-- name: GetTeamByExtID :one
-SELECT id, name, slug, fh_team_id, is_group, to_import, fh_name, fh_slug FROM linked_teams WHERE id = ?
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations, fh_name, fh_slug FROM linked_teams WHERE id = ?
 `
 
 func (q *Queries) GetTeamByExtID(ctx context.Context, id string) (LinkedTeam, error) {
@@ -65,6 +76,7 @@ func (q *Queries) GetTeamByExtID(ctx context.Context, id string) (LinkedTeam, er
 		&i.FhTeamID,
 		&i.IsGroup,
 		&i.ToImport,
+		&i.Annotations,
 		&i.FhName,
 		&i.FhSlug,
 	)
@@ -263,15 +275,17 @@ func (q *Queries) InsertExtScheduleTeam(ctx context.Context, arg InsertExtSchedu
 }
 
 const insertExtTeam = `-- name: InsertExtTeam :exec
-INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id) VALUES (?, ?, ?, ?, ?)
+INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id, annotations)
+VALUES (?, ?, ?, ?, ?, ?)
 `
 
 type InsertExtTeamParams struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	IsGroup  int64          `json:"is_group"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	IsGroup     int64          `json:"is_group"`
+	FhTeamID    sql.NullString `json:"fh_team_id"`
+	Annotations string         `json:"annotations"`
 }
 
 func (q *Queries) InsertExtTeam(ctx context.Context, arg InsertExtTeamParams) error {
@@ -281,6 +295,7 @@ func (q *Queries) InsertExtTeam(ctx context.Context, arg InsertExtTeamParams) er
 		arg.Slug,
 		arg.IsGroup,
 		arg.FhTeamID,
+		arg.Annotations,
 	)
 	return err
 }
@@ -589,7 +604,7 @@ func (q *Queries) ListExtSchedulesLikeID(ctx context.Context, id string) ([]ExtS
 }
 
 const listExtTeamMemberships = `-- name: ListExtTeamMemberships :many
-SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations FROM ext_memberships
+SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_teams.annotations, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations FROM ext_memberships
   JOIN ext_teams ON ext_teams.id = ext_memberships.team_id
   JOIN ext_users ON ext_users.id = ext_memberships.user_id
 `
@@ -615,6 +630,7 @@ func (q *Queries) ListExtTeamMemberships(ctx context.Context) ([]ListExtTeamMemb
 			&i.ExtTeam.FhTeamID,
 			&i.ExtTeam.IsGroup,
 			&i.ExtTeam.ToImport,
+			&i.ExtTeam.Annotations,
 			&i.ExtUser.ID,
 			&i.ExtUser.Name,
 			&i.ExtUser.Email,
@@ -635,7 +651,7 @@ func (q *Queries) ListExtTeamMemberships(ctx context.Context) ([]ListExtTeamMemb
 }
 
 const listExtTeams = `-- name: ListExtTeams :many
-SELECT id, name, slug, fh_team_id, is_group, to_import FROM ext_teams
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations FROM ext_teams
 `
 
 func (q *Queries) ListExtTeams(ctx context.Context) ([]ExtTeam, error) {
@@ -654,6 +670,7 @@ func (q *Queries) ListExtTeams(ctx context.Context) ([]ExtTeam, error) {
 			&i.FhTeamID,
 			&i.IsGroup,
 			&i.ToImport,
+			&i.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -845,7 +862,7 @@ func (q *Queries) ListFhUsers(ctx context.Context) ([]FhUser, error) {
 }
 
 const listGroupExtTeamMemberships = `-- name: ListGroupExtTeamMemberships :many
-SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations FROM ext_teams
+SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_teams.annotations, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations FROM ext_teams
   JOIN ext_team_groups ON ext_team_groups.group_team_id = ext_teams.id
   JOIN ext_teams AS member_team ON member_team.id = ext_team_groups.member_team_id
   JOIN ext_memberships ON ext_memberships.team_id = member_team.id
@@ -873,6 +890,7 @@ func (q *Queries) ListGroupExtTeamMemberships(ctx context.Context) ([]ListGroupE
 			&i.ExtTeam.FhTeamID,
 			&i.ExtTeam.IsGroup,
 			&i.ExtTeam.ToImport,
+			&i.ExtTeam.Annotations,
 			&i.ExtUser.ID,
 			&i.ExtUser.Name,
 			&i.ExtUser.Email,
@@ -893,7 +911,7 @@ func (q *Queries) ListGroupExtTeamMemberships(ctx context.Context) ([]ListGroupE
 }
 
 const listGroupExtTeams = `-- name: ListGroupExtTeams :many
-SELECT id, name, slug, fh_team_id, is_group, to_import FROM ext_teams
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations FROM ext_teams
 WHERE is_group = 1
 `
 
@@ -913,6 +931,7 @@ func (q *Queries) ListGroupExtTeams(ctx context.Context) ([]ExtTeam, error) {
 			&i.FhTeamID,
 			&i.IsGroup,
 			&i.ToImport,
+			&i.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -928,7 +947,7 @@ func (q *Queries) ListGroupExtTeams(ctx context.Context) ([]ExtTeam, error) {
 }
 
 const listMemberExtTeams = `-- name: ListMemberExtTeams :many
-SELECT id, name, slug, fh_team_id, is_group, to_import FROM ext_teams
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations FROM ext_teams
 WHERE id IN (
   SELECT DISTINCT member_team_id FROM ext_team_groups
   WHERE group_team_id = ?
@@ -951,6 +970,7 @@ func (q *Queries) ListMemberExtTeams(ctx context.Context, groupTeamID string) ([
 			&i.FhTeamID,
 			&i.IsGroup,
 			&i.ToImport,
+			&i.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -966,7 +986,7 @@ func (q *Queries) ListMemberExtTeams(ctx context.Context, groupTeamID string) ([
 }
 
 const listNonGroupExtTeams = `-- name: ListNonGroupExtTeams :many
-SELECT id, name, slug, fh_team_id, is_group, to_import FROM ext_teams
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations FROM ext_teams
 WHERE is_group = 0
 `
 
@@ -986,6 +1006,7 @@ func (q *Queries) ListNonGroupExtTeams(ctx context.Context) ([]ExtTeam, error) {
 			&i.FhTeamID,
 			&i.IsGroup,
 			&i.ToImport,
+			&i.Annotations,
 		); err != nil {
 			return nil, err
 		}
@@ -1001,7 +1022,7 @@ func (q *Queries) ListNonGroupExtTeams(ctx context.Context) ([]ExtTeam, error) {
 }
 
 const listTeams = `-- name: ListTeams :many
-SELECT id, name, slug, fh_team_id, is_group, to_import, fh_name, fh_slug from linked_teams
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations, fh_name, fh_slug from linked_teams
 `
 
 func (q *Queries) ListTeams(ctx context.Context) ([]LinkedTeam, error) {
@@ -1020,6 +1041,7 @@ func (q *Queries) ListTeams(ctx context.Context) ([]LinkedTeam, error) {
 			&i.FhTeamID,
 			&i.IsGroup,
 			&i.ToImport,
+			&i.Annotations,
 			&i.FhName,
 			&i.FhSlug,
 		); err != nil {
@@ -1037,7 +1059,7 @@ func (q *Queries) ListTeams(ctx context.Context) ([]LinkedTeam, error) {
 }
 
 const listTeamsByExtScheduleID = `-- name: ListTeamsByExtScheduleID :many
-SELECT linked_teams.id, linked_teams.name, linked_teams.slug, linked_teams.fh_team_id, linked_teams.is_group, linked_teams.to_import, linked_teams.fh_name, linked_teams.fh_slug FROM linked_teams
+SELECT linked_teams.id, linked_teams.name, linked_teams.slug, linked_teams.fh_team_id, linked_teams.is_group, linked_teams.to_import, linked_teams.annotations, linked_teams.fh_name, linked_teams.fh_slug FROM linked_teams
   JOIN ext_schedule_teams ON linked_teams.id = ext_schedule_teams.team_id
 WHERE ext_schedule_teams.schedule_id = ?
 `
@@ -1058,6 +1080,7 @@ func (q *Queries) ListTeamsByExtScheduleID(ctx context.Context, scheduleID strin
 			&i.FhTeamID,
 			&i.IsGroup,
 			&i.ToImport,
+			&i.Annotations,
 			&i.FhName,
 			&i.FhSlug,
 		); err != nil {
@@ -1075,7 +1098,7 @@ func (q *Queries) ListTeamsByExtScheduleID(ctx context.Context, scheduleID strin
 }
 
 const listTeamsToImport = `-- name: ListTeamsToImport :many
-SELECT id, name, slug, fh_team_id, is_group, to_import, fh_name, fh_slug from linked_teams WHERE to_import = 1
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations, fh_name, fh_slug from linked_teams WHERE to_import = 1
 `
 
 func (q *Queries) ListTeamsToImport(ctx context.Context) ([]LinkedTeam, error) {
@@ -1094,6 +1117,7 @@ func (q *Queries) ListTeamsToImport(ctx context.Context) ([]LinkedTeam, error) {
 			&i.FhTeamID,
 			&i.IsGroup,
 			&i.ToImport,
+			&i.Annotations,
 			&i.FhName,
 			&i.FhSlug,
 		); err != nil {

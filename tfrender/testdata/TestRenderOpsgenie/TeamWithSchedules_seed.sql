@@ -12,12 +12,12 @@ INSERT INTO ext_users VALUES('e94e17aa-418c-44f7-8e47-1eaebf6b5343','Kiran','kir
 INSERT INTO ext_users VALUES('d68757c4-5eec-4560-8c5b-91c463f87dd8','Jack T.','jack@example.com','6c08bff2-98f6-4ee9-8de1-12202186d084','[Opsgenie] d68757c4-5eec-4560-8c5b-91c463f87dd8 jack@example.com');
 INSERT INTO ext_users VALUES('a13020ca-cb08-48e3-9403-bed181a22e72','Wong','wong@example.io','032a1f07-987e-4f76-8273-136e08e50baa','[Opsgenie] a13020ca-cb08-48e3-9403-bed181a22e72 wong@example.io');
 
-INSERT INTO ext_teams VALUES('017e4326-abdf-4cd9-8cad-5f23bd7f4753','Wong Squad','wong-squad',NULL,0,1);
-INSERT INTO ext_teams VALUES('3dd6b50f-28ed-4660-b982-606bfa6c4cf2','Platform','platform',NULL,0,1);
-INSERT INTO ext_teams VALUES('946bf740-0497-4d5d-b31f-23a6e55a2719','AJ Team','aj-team',NULL,0,1);
-INSERT INTO ext_teams VALUES('b7acbc33-9853-4150-8a4b-10156d9408c8','Customer Success','customer-success',NULL,0,1);
-INSERT INTO ext_teams VALUES('e3436ab1-7547-4a47-a02a-36fee3dc91f9','noodlebrigade','noodlebrigade',NULL,0,1);
-INSERT INTO ext_teams VALUES('f5a99a73-cdfb-49a2-af34-aeb05c59d937','Christine Test Team','christine-test-team',NULL,0,1);
+INSERT INTO ext_teams VALUES('017e4326-abdf-4cd9-8cad-5f23bd7f4753','Wong Squad','wong-squad',NULL,0,1,'');
+INSERT INTO ext_teams VALUES('3dd6b50f-28ed-4660-b982-606bfa6c4cf2','Platform','platform',NULL,0,1,'');
+INSERT INTO ext_teams VALUES('946bf740-0497-4d5d-b31f-23a6e55a2719','AJ Team','aj-team',NULL,0,1,'');
+INSERT INTO ext_teams VALUES('b7acbc33-9853-4150-8a4b-10156d9408c8','Customer Success','customer-success',NULL,0,1,'');
+INSERT INTO ext_teams VALUES('e3436ab1-7547-4a47-a02a-36fee3dc91f9','noodlebrigade','noodlebrigade',NULL,0,1,'');
+INSERT INTO ext_teams VALUES('f5a99a73-cdfb-49a2-af34-aeb05c59d937','Christine Test Team','christine-test-team',NULL,0,1,'');
 
 INSERT INTO ext_memberships VALUES('e94e17aa-418c-44f7-8e47-1eaebf6b5343','946bf740-0497-4d5d-b31f-23a6e55a2719');
 INSERT INTO ext_memberships VALUES('9253cf00-6195-4123-a9a6-f9f1e25718d8','946bf740-0497-4d5d-b31f-23a6e55a2719');

@@ -16,8 +16,8 @@ INSERT INTO fh_teams VALUES('47016143-6547-483a-b68a-5220b21681fd','AAAA IPv6 mi
 INSERT INTO fh_teams VALUES('f159b173-1ffd-41ac-9254-ce8ec1142267','🐴 Cowboy Coders','cowboy-coders');
 INSERT INTO fh_teams VALUES('97d539b0-47a5-44f6-81e6-b6fcd98f23ac','Dunder Mifflin Scranton','dunder-mifflin-scranton');
 
-INSERT INTO ext_teams VALUES('PT54U20','Jen','jen','47016143-6547-483a-b68a-5220b21681fd',0,1);
-INSERT INTO ext_teams VALUES('PD2F80U','Jack Team','jack-team','97d539b0-47a5-44f6-81e6-b6fcd98f23ac',0,1);
+INSERT INTO ext_teams VALUES('PT54U20','Jen','jen','47016143-6547-483a-b68a-5220b21681fd',0,1,'[PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20');
+INSERT INTO ext_teams VALUES('PD2F80U','Jack Team','jack-team','97d539b0-47a5-44f6-81e6-b6fcd98f23ac',0,1,'[PagerDuty] Jack Team https://pdt-apidocs.pagerduty.com/service-directory/PD2F80U');
 
 INSERT INTO ext_memberships VALUES('PXI6XNI','PT54U20');
 INSERT INTO ext_memberships VALUES('P8ZZ1ZB','PT54U20');

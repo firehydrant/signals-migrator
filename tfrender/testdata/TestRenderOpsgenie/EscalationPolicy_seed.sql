@@ -15,7 +15,7 @@ INSERT INTO fh_teams VALUES('d98aa7e2-9b38-41a8-b5de-49743c3b9ac2','Assign Produ
 INSERT INTO fh_teams VALUES('20c766e5-318a-4acc-a8f9-660e824e50f8','Customer Success and Support','customer-success-and-support');
 
 
-INSERT INTO ext_teams VALUES('946bf740-0497-4d5d-b31f-23a6e55a2719','AJ Team','aj-team',NULL,0,1);
+INSERT INTO ext_teams VALUES('946bf740-0497-4d5d-b31f-23a6e55a2719','AJ Team','aj-team',NULL,0,1,'');
 
 INSERT INTO ext_memberships VALUES('9253cf00-6195-4123-a9a6-f9f1e25718d8','946bf740-0497-4d5d-b31f-23a6e55a2719');
 INSERT INTO ext_memberships VALUES('1dc37638-ab52-44f3-848e-a16bcc584fb7','946bf740-0497-4d5d-b31f-23a6e55a2719');

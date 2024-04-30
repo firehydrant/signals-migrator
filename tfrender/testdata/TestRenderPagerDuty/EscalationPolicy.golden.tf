@@ -15,6 +15,7 @@ data "firehydrant_user" "alice_bob" {
 
 resource "firehydrant_team" "cowboy_coders" {
   name = "🐴 Cowboy Coders"
+  # [PagerDuty] team-rocket https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
 
   memberships {
     user_id = data.firehydrant_user.alice_bob.id

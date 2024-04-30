@@ -46,8 +46,12 @@ SELECT * from linked_teams WHERE to_import = 1;
 -- name: ListExtTeams :many
 SELECT * FROM ext_teams;
 
+-- name: GetExtTeamAnnotation :one
+SELECT annotations FROM ext_teams WHERE id = ?;
+
 -- name: InsertExtTeam :exec
-INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id) VALUES (?, ?, ?, ?, ?);
+INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id, annotations)
+VALUES (?, ?, ?, ?, ?, ?);
 
 -- name: MarkExtTeamToImport :exec
 UPDATE ext_teams SET to_import = 1 WHERE id = ?;

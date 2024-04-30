@@ -7,7 +7,7 @@
       "String": "",
       "Valid": false
     },
-    "annotations": "https://acme-inc.pagerduty.com/users/P5A1XH2"
+    "annotations": "[PagerDuty] mika+eng@example.com https://acme-inc.pagerduty.com/users/P5A1XH2"
   },
   {
     "id": "PRXEEQ8",
@@ -17,7 +17,7 @@
       "String": "",
       "Valid": false
     },
-    "annotations": "https://acme-inc.pagerduty.com/users/PRXEEQ8"
+    "annotations": "[PagerDuty] horse+eng@example.com https://acme-inc.pagerduty.com/users/PRXEEQ8"
   },
   {
     "id": "PXI6XNI",
@@ -27,7 +27,7 @@
       "String": "",
       "Valid": false
     },
-    "annotations": "https://acme-inc.pagerduty.com/users/PXI6XNI"
+    "annotations": "[PagerDuty] acme-eng@example.com https://acme-inc.pagerduty.com/users/PXI6XNI"
   },
   {
     "id": "P8ZZ1ZB",
@@ -37,7 +37,7 @@
       "String": "",
       "Valid": false
     },
-    "annotations": "https://acme-inc.pagerduty.com/users/P8ZZ1ZB"
+    "annotations": "[PagerDuty] kiran+eng@example.com https://acme-inc.pagerduty.com/users/P8ZZ1ZB"
   },
   {
     "id": "P2C9LBA",
@@ -47,7 +47,7 @@
       "String": "",
       "Valid": false
     },
-    "annotations": "https://acme-inc.pagerduty.com/users/P2C9LBA"
+    "annotations": "[PagerDuty] acme-success+eng@example.com https://acme-inc.pagerduty.com/users/P2C9LBA"
   },
   {
     "id": "P4CMCAU",
@@ -57,6 +57,6 @@
       "String": "",
       "Valid": false
     },
-    "annotations": "https://acme-inc.pagerduty.com/users/P4CMCAU"
+    "annotations": "[PagerDuty] jack+eng@example.com https://acme-inc.pagerduty.com/users/P4CMCAU"
   }
 ]

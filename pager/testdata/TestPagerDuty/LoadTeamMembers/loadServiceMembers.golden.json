@@ -9,7 +9,8 @@
         "Valid": false
       },
       "is_group": 1,
-      "to_import": 0
+      "to_import": 0,
+      "annotations": "[PagerDuty] Endeavour https://pdt-apidocs.pagerduty.com/service-directory/P18JCJH"
     },
     "ext_user": {
       "id": "PXI6XNI",
@@ -19,7 +20,7 @@
         "String": "",
         "Valid": false
       },
-      "annotations": "https://acme-inc.pagerduty.com/users/PXI6XNI"
+      "annotations": "[PagerDuty] acme-eng@example.com https://acme-inc.pagerduty.com/users/PXI6XNI"
     }
   },
   {
@@ -32,7 +33,8 @@
         "Valid": false
       },
       "is_group": 1,
-      "to_import": 0
+      "to_import": 0,
+      "annotations": "[PagerDuty] Server under Jack's desk https://pdt-apidocs.pagerduty.com/service-directory/PU1BXAX"
     },
     "ext_user": {
       "id": "P4CMCAU",
@@ -42,7 +44,7 @@
         "String": "",
         "Valid": false
       },
-      "annotations": "https://acme-inc.pagerduty.com/users/P4CMCAU"
+      "annotations": "[PagerDuty] jack+eng@example.com https://acme-inc.pagerduty.com/users/P4CMCAU"
     }
   }
 ]
