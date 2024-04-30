@@ -421,7 +421,7 @@ func (r *TFRender) AppendComment(b *hclwrite.Body, comment string) {
 		hclwrite.Tokens{
 			&hclwrite.Token{
 				Type:  hclsyntax.TokenComment,
-				Bytes: []byte(fmt.Sprintf("# %s\n", comment)),
+				Bytes: []byte(str),
 
 				SpacesBefore: 2,
 			},
