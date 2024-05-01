@@ -199,7 +199,10 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 	console.Successf("Found %d teams on FireHydrant.\n", len(fhTeams))
 
 	if err := provider.LoadTeamMembers(ctx); err != nil {
-		return fmt.Errorf("unable to populate team members: %w", err)
+		console.Errorf("unable to load team members: %s", err.Error())
+		if y, yErr := console.YesNo("Continue without team members?"); yErr != nil || !y {
+			return fmt.Errorf("unable to populate team members: %w", err)
+		}
 	}
 
 	// First, we prompt users which teams to import to FireHydrant from the external provider.
