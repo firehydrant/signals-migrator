@@ -19,6 +19,16 @@ func (q *Queries) DeleteExtEscalationPolicyUnimported(ctx context.Context) error
 	return err
 }
 
+const deleteUnmatchedExtUsers = `-- name: DeleteUnmatchedExtUsers :exec
+DELETE FROM ext_users
+WHERE fh_user_id IS NULL
+`
+
+func (q *Queries) DeleteUnmatchedExtUsers(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteUnmatchedExtUsers)
+	return err
+}
+
 const getExtSchedule = `-- name: GetExtSchedule :one
 SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules WHERE id = ?
 `
