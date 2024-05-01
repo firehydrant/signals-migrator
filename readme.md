@@ -12,6 +12,12 @@ This can be used to import resources from legacy alerting providers into Signals
 
 ## Usage
 
+[Download the binary from GitHub releases](https://github.com/firehydrant/signals-migrator/releases), or if you prefer using Go toolchain, run:
+
+```shell
+go install github.com/firehydrant/signals-migrator@latest
+```
+
 ### Generate Signals resources from external alerting providers
 
 Ensure these environment variables are set:
