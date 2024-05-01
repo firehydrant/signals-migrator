@@ -2,13 +2,6 @@
 
 This can be used to import resources from legacy alerting providers into Signals.
 
-## Supported providers
-
-### Alerting 
-
-- PagerDuty
-- VictorOps
-- OpsGenie
 
 ## Usage
 
@@ -42,18 +35,17 @@ On the other hand, we can't reliably match teams ourselves as they have wide var
 
 Afterwards, the tool will generate the mapping appropriately, handling de-duplication and merging as necessary.
 
-## Feature roadmap
+## Supported providers
+
+We support importing from various providers. Refer to individual documentation for provider-specific instructions:
 
 | | PagerDuty | Opsgenie | VictorOps |
 | --- | --- | --- | --- |
+| Docs | [PagerDuty](./docs/pagerduty.md) | [Opsgenie](./docs/opsgenie.md) | [VictorOps](./docs/victorops.md) |
 | Import users | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Import teams and members | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Import escalation policies | :white_check_mark: | :white_check_mark: | :x: |
 | Import scheduling strategy | :white_check_mark: | :white_check_mark: | :x: |
-
-
-- [ ] Getting transposer URLs (e.g. Datadog) to the team data resource or a Signals ingest URL data resource
-- [ ] Auto-run `terraform apply` for users who would not manage their organization with Terraform after importing
 
 ## Developing
 
