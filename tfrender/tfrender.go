@@ -13,6 +13,7 @@ import (
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -291,7 +292,8 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 }
 
 func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
-	extTeams, err := store.UseQueries(ctx).ListTeamsToImport(ctx)
+	q := store.UseQueries(ctx)
+	extTeams, err := q.ListTeamsToImport(ctx)
 	if err != nil {
 		return fmt.Errorf("querying teams: %w", err)
 	}
@@ -315,7 +317,7 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 		// For a given t in extTeams, they may be a "group team" which contains "member team" entities.
 		// In those cases, the "member team" is merged into the "group team" in FireHydrant.
 		// As such, the user members will be consolidated to the "group team".
-		memberTeams, err := store.UseQueries(ctx).ListMemberExtTeams(ctx, t.ID)
+		memberTeams, err := q.ListMemberExtTeams(ctx, t.ID)
 		if err != nil {
 			if !errors.Is(err, sql.ErrNoRows) {
 				return fmt.Errorf("querying member teams: %w", err)
@@ -330,7 +332,21 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 		}
 
 		for _, teamID := range teamIDs {
-			members, err := store.UseQueries(ctx).ListFhMembersByExtTeamID(ctx, teamID)
+			b := fhTeamBlocks[name]
+			annotation, err := q.GetExtTeamAnnotation(ctx, teamID)
+			if err != nil {
+				if !errors.Is(err, sql.ErrNoRows) {
+					return fmt.Errorf("querying annotation for team '%s': %w", teamID, err)
+				} else {
+					annotation = ""
+				}
+			}
+			if annotation != "" {
+				b.AppendNewline()
+				r.AppendComment(b, annotation)
+			}
+
+			members, err := q.ListFhMembersByExtTeamID(ctx, teamID)
 			if err != nil {
 				return fmt.Errorf("querying team members: %w", err)
 			}
@@ -339,7 +355,6 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 					continue
 				}
 
-				b := fhTeamBlocks[name]
 				b.AppendNewline()
 				b.AppendNewBlock("memberships", []string{}).Body().
 					SetAttributeTraversal("user_id", hcl.Traversal{
@@ -376,6 +391,40 @@ func (r *TFRender) DataFireHydrantUsers(ctx context.Context) error {
 		r.root.AppendNewline()
 		b := r.root.AppendNewBlock("data", []string{"firehydrant_user", u.TFSlug()}).Body()
 		b.SetAttributeValue("email", cty.StringVal(u.Email))
+
+		annotations, err := store.UseQueries(ctx).ListFhUserAnnotations(ctx, sql.NullString{String: u.ID, Valid: true})
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				continue
+			} else {
+				return fmt.Errorf("querying annotations for user '%s': %w", u.Email, err)
+			}
+		}
+		for _, a := range annotations {
+			r.AppendComment(b, a)
+		}
 	}
 	return nil
+}
+
+func (r *TFRender) AppendComment(b *hclwrite.Body, comment string) {
+	str := strings.TrimSpace(comment)
+	if str == "" {
+		return
+	}
+	// If the body is multi-line, prefix the newline with comment tag.
+	str = strings.ReplaceAll(str, "\n", "\n# ")
+	// Then make sure to prepend first line with comment tag as well,
+	// and end with newline.
+	str = fmt.Sprintf("# %s\n", str)
+	b.AppendUnstructuredTokens(
+		hclwrite.Tokens{
+			&hclwrite.Token{
+				Type:  hclsyntax.TokenComment,
+				Bytes: []byte(str),
+
+				SpacesBefore: 2,
+			},
+		},
+	)
 }

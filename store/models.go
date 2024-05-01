@@ -70,12 +70,13 @@ type ExtScheduleTeam struct {
 }
 
 type ExtTeam struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
-	IsGroup  int64          `json:"is_group"`
-	ToImport int64          `json:"to_import"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	FhTeamID    sql.NullString `json:"fh_team_id"`
+	IsGroup     int64          `json:"is_group"`
+	ToImport    int64          `json:"to_import"`
+	Annotations string         `json:"annotations"`
 }
 
 type ExtTeamGroup struct {
@@ -84,10 +85,11 @@ type ExtTeamGroup struct {
 }
 
 type ExtUser struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Email    string         `json:"email"`
-	FhUserID sql.NullString `json:"fh_user_id"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Email       string         `json:"email"`
+	FhUserID    sql.NullString `json:"fh_user_id"`
+	Annotations string         `json:"annotations"`
 }
 
 type FhTeam struct {
@@ -103,21 +105,23 @@ type FhUser struct {
 }
 
 type LinkedTeam struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Slug     string         `json:"slug"`
-	FhTeamID sql.NullString `json:"fh_team_id"`
-	IsGroup  int64          `json:"is_group"`
-	ToImport int64          `json:"to_import"`
-	FhName   sql.NullString `json:"fh_name"`
-	FhSlug   sql.NullString `json:"fh_slug"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	FhTeamID    sql.NullString `json:"fh_team_id"`
+	IsGroup     int64          `json:"is_group"`
+	ToImport    int64          `json:"to_import"`
+	Annotations string         `json:"annotations"`
+	FhName      sql.NullString `json:"fh_name"`
+	FhSlug      sql.NullString `json:"fh_slug"`
 }
 
 type LinkedUser struct {
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Email    string         `json:"email"`
-	FhUserID sql.NullString `json:"fh_user_id"`
-	FhName   sql.NullString `json:"fh_name"`
-	FhEmail  sql.NullString `json:"fh_email"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Email       string         `json:"email"`
+	FhUserID    sql.NullString `json:"fh_user_id"`
+	Annotations string         `json:"annotations"`
+	FhName      sql.NullString `json:"fh_name"`
+	FhEmail     sql.NullString `json:"fh_email"`
 }

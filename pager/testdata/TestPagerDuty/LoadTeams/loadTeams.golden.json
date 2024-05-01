@@ -8,7 +8,8 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] Jen https://acme-inc.pagerduty.com/teams/PT54U20"
   },
   {
     "id": "PO206TE",
@@ -19,7 +20,8 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] canary-team https://acme-inc.pagerduty.com/teams/PO206TE"
   },
   {
     "id": "PO34CI9",
@@ -30,7 +32,8 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] CS-Team-Test https://acme-inc.pagerduty.com/teams/PO34CI9"
   },
   {
     "id": "P5PH8KY",
@@ -41,7 +44,8 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] Page Responder Team https://acme-inc.pagerduty.com/teams/P5PH8KY"
   },
   {
     "id": "PV9JOXL",
@@ -52,7 +56,8 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] Service Catalog Team https://acme-inc.pagerduty.com/teams/PV9JOXL"
   },
   {
     "id": "PD2F80U",
@@ -63,6 +68,7 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] Jack Team https://acme-inc.pagerduty.com/teams/PD2F80U"
   }
 ]

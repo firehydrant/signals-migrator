@@ -86,6 +86,8 @@ func (p *PagerDuty) LoadUsers(ctx context.Context) error {
 				ID:    user.ID,
 				Name:  user.Name,
 				Email: user.Email,
+
+				Annotations: fmt.Sprintf("[PagerDuty] %s %s", user.Email, user.HTMLURL),
 			}); err != nil {
 				return fmt.Errorf("saving user to db: %w", err)
 			}
@@ -131,6 +133,8 @@ func (p *PagerDuty) loadTeams(ctx context.Context) error {
 				Name: team.Name,
 				// PagerDuty does not expose slug, so we can safely generate one.
 				Slug: slug.Make(team.Name),
+
+				Annotations: fmt.Sprintf("[PagerDuty] %s %s", team.Name, team.HTMLURL),
 			}); err != nil {
 				return fmt.Errorf("saving team '%s (%s)' to db: %w", team.Name, team.ID, err)
 			}
@@ -167,6 +171,8 @@ func (p *PagerDuty) loadServices(ctx context.Context) error {
 				// PagerDuty does not expose "Slug", so we can safely generate one.
 				Slug:    slug.Make(service.Name),
 				IsGroup: 1,
+
+				Annotations: fmt.Sprintf("[PagerDuty] %s %s", service.Name, service.HTMLURL),
 			}); err != nil {
 				return fmt.Errorf("saving service '%s (%s)' as team to db: %w", service.Name, service.ID, err)
 			}

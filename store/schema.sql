@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS ext_users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
-  fh_user_id TEXT REFERENCES fh_users(id)
+  fh_user_id TEXT REFERENCES fh_users(id),
+  annotations TEXT NOT NULL DEFAULT ''
 ) STRICT;
 
 CREATE VIEW IF NOT EXISTS linked_users AS
@@ -30,7 +31,8 @@ CREATE TABLE IF NOT EXISTS ext_teams (
   slug TEXT NOT NULL,
   fh_team_id TEXT REFERENCES fh_teams(id),
   is_group INTEGER NOT NULL DEFAULT 0,
-  to_import INTEGER NOT NULL DEFAULT 0
+  to_import INTEGER NOT NULL DEFAULT 0,
+  annotations TEXT NOT NULL DEFAULT ''
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_team_groups (

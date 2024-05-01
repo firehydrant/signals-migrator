@@ -8,7 +8,8 @@
       "Valid": false
     },
     "is_group": 1,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] Endeavour https://pdt-apidocs.pagerduty.com/service-directory/P18JCJH"
   },
   {
     "id": "P5PH8KY",
@@ -19,7 +20,8 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": ""
   },
   {
     "id": "P3IIAF1",
@@ -30,7 +32,8 @@
       "Valid": false
     },
     "is_group": 1,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": "[PagerDuty] Server under Jack's desk https://pdt-apidocs.pagerduty.com/service-directory/PU1BXAX"
   },
   {
     "id": "PD2F80U",
@@ -41,6 +44,7 @@
       "Valid": false
     },
     "is_group": 0,
-    "to_import": 0
+    "to_import": 0,
+    "annotations": ""
   }
 ]

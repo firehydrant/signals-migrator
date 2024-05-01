@@ -9,7 +9,8 @@
         "Valid": false
       },
       "is_group": 0,
-      "to_import": 0
+      "to_import": 0,
+      "annotations": ""
     },
     "ext_user": {
       "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4",
@@ -18,7 +19,8 @@
       "fh_user_id": {
         "String": "",
         "Valid": false
-      }
+      },
+      "annotations": "[Opsgenie] b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4 john.doe@opsgenie.com"
     }
   }
 ]

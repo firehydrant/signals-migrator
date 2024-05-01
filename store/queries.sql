@@ -10,6 +10,9 @@ INSERT INTO fh_users (id, name, email) VALUES (?, ?, ?);
 -- name: GetUserByExtID :one
 SELECT * FROM linked_users WHERE id = ?;
 
+-- name: ListFhUserAnnotations :many
+SELECT annotations FROM linked_users WHERE fh_user_id = ?;
+
 -- name: ListFhTeams :many
 SELECT * FROM fh_teams;
 
@@ -28,7 +31,8 @@ SELECT * FROM ext_users
 WHERE fh_user_id IS NULL;
 
 -- name: InsertExtUser :exec
-INSERT INTO ext_users (id, name, email, fh_user_id) VALUES (?, ?, ?, ?);
+INSERT INTO ext_users (id, name, email, fh_user_id, annotations)
+VALUES (?, ?, ?, ?, ?);
 
 -- name: GetTeamByExtID :one
 SELECT * FROM linked_teams WHERE id = ?;
@@ -42,8 +46,12 @@ SELECT * from linked_teams WHERE to_import = 1;
 -- name: ListExtTeams :many
 SELECT * FROM ext_teams;
 
+-- name: GetExtTeamAnnotation :one
+SELECT annotations FROM ext_teams WHERE id = ?;
+
 -- name: InsertExtTeam :exec
-INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id) VALUES (?, ?, ?, ?, ?);
+INSERT INTO ext_teams (id, name, slug, is_group, fh_team_id, annotations)
+VALUES (?, ?, ?, ?, ?, ?);
 
 -- name: MarkExtTeamToImport :exec
 UPDATE ext_teams SET to_import = 1 WHERE id = ?;

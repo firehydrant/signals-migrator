@@ -92,6 +92,9 @@ func (o *Opsgenie) LoadUsers(ctx context.Context) error {
 				ID:    user.Id,
 				Name:  user.FullName,
 				Email: user.Username,
+
+				// Opsgenie "Username" is the user's email.
+				Annotations: fmt.Sprintf("[Opsgenie] %s %s", user.Id, user.Username),
 			}); err != nil {
 				return fmt.Errorf("saving user to db: %w", err)
 			}

@@ -9,10 +9,14 @@ terraform {
 
 data "firehydrant_user" "alice_bob" {
   email = "alice.bob@example.com"
+  # Insert PagerDuty URL here :)
+  # https://acme-eng.pagerduty.com/users/PUIDISU
 }
 
 resource "firehydrant_team" "cowboy_coders" {
   name = "🐴 Cowboy Coders"
+
+  # [PagerDuty] team-rocket https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
 
   memberships {
     user_id = data.firehydrant_user.alice_bob.id
