@@ -72,3 +72,11 @@ func MultiSelectf[T any](options []T, toString func(T) string, title string, arg
 
 	return values, selected, nil
 }
+
+func YesNo(title string, args ...any) (bool, error) {
+	response, _, err := Selectf([]string{"Yes", "No"}, func(s string) string { return s }, title, args...)
+	if err != nil {
+		return false, fmt.Errorf("selecting yes/no: %w", err)
+	}
+	return response == 0, nil
+}
