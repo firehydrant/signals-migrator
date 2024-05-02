@@ -2,6 +2,7 @@
 
 This can be used to import resources from legacy alerting providers into Signals.
 
+![Screencast signals-migrator in action](./docs/demo-screencast.gif)
 
 ## Usage
 
