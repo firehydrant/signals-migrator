@@ -1,0 +1,15 @@
+{
+  "users": [
+    {
+      "firstName": "John",
+      "lastName": "Doe",
+      "username": "johndoe",
+      "email": "jdoe@example.com",
+      "createdAt": "2024-05-02T17:12:35Z",
+      "passwordLastUpdated": "2024-05-02T17:12:35Z",
+      "verified": true,
+      "_selfUrl": "https://example.com/me"
+    }
+  ],
+  "_selfUrl": "https://example.com/me"
+}

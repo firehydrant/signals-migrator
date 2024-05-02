@@ -1,0 +1,14 @@
+[
+  {
+    "id": "team-rocket",
+    "name": "TeamRocket",
+    "slug": "team-rocket",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0,
+    "annotations": "https://example.com [Default Team]"
+  }
+]

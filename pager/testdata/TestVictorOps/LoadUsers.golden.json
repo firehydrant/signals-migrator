@@ -1,0 +1,12 @@
+[
+  {
+    "id": "johndoe",
+    "name": "John Doe",
+    "email": "jdoe@example.com",
+    "fh_user_id": {
+      "String": "",
+      "Valid": false
+    },
+    "annotations": "https://example.com/me"
+  }
+]

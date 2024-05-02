@@ -1,0 +1,13 @@
+{
+  "_selfUrl": "https://example.com/members",
+  "_teamUrl": "https://example.com/teams/1",
+  "members": [
+    {
+      "username": "johndoe",
+      "firstName": "John",
+      "lastName": "Doe",
+      "version": 0,
+      "verified": true
+    }
+  ]
+}
