@@ -48,9 +48,13 @@ func pagerProviderHttpServer(t *testing.T) *httptest.Server {
 			t.Fatalf("error joining path for expected response: %s", err)
 		}
 		if _, err := os.Stat(filename); err != nil {
-			t.Logf("file not found: %s", filename)
-			http.NotFound(w, r)
-			return
+			t.Logf("file not found: %s, pre-creating file with empty JSON", filename)
+			if f, err := os.OpenFile(filename, os.O_CREATE, 0644); err != nil {
+				t.Fatalf("error creating file: %s", err)
+			} else {
+				_, _ = f.WriteString("{}")
+				_ = f.Close()
+			}
 		}
 		http.ServeFile(w, r, filename)
 	})

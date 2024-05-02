@@ -1,0 +1,26 @@
+[
+  {
+    "ext_team": {
+      "id": "team-rocket",
+      "name": "TeamRocket",
+      "slug": "team-rocket",
+      "fh_team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "is_group": 0,
+      "to_import": 0,
+      "annotations": "https://example.com [Default Team]"
+    },
+    "ext_user": {
+      "id": "johndoe",
+      "name": "John Doe",
+      "email": "jdoe@example.com",
+      "fh_user_id": {
+        "String": "",
+        "Valid": false
+      },
+      "annotations": "https://example.com/me"
+    }
+  }
+]

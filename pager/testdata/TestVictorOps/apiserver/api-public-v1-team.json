@@ -1,0 +1,14 @@
+[
+  {
+    "_selfUrl": "https://example.com",
+    "_membersUrl": "https://example.com/members",
+    "_policiesUrl": "https://example.com/policies",
+    "_adminsUrl": "https://example.com/admins",
+    "name": "TeamRocket",
+    "slug": "team-rocket",
+    "memberCount": 1,
+    "version": 0,
+    "isDefaultTeam": true,
+    "description": "Team Rocket responds to every on-call!"
+  }
+]
