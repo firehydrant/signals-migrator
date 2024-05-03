@@ -25,6 +25,6 @@ INSERT INTO ext_escalation_policy_steps VALUES('PKQDFZH','P2D2WR1',0,'PT30M');
 INSERT INTO ext_escalation_policy_steps VALUES('P08T67P','PS6ITO0',0,'PT30M');
 
 INSERT INTO ext_escalation_policy_step_targets VALUES('P08T67P','User','PXI6XNI');
-INSERT INTO ext_escalation_policy_step_targets VALUES('PKQDFZH','OnCallSchedule','PGR96WL-PR3J6XJ');
+INSERT INTO ext_escalation_policy_step_targets VALUES('PKQDFZH','OnCallSchedule','PGR96WL');
 
 COMMIT;
