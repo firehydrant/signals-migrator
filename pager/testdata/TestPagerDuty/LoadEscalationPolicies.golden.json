@@ -1,0 +1,36 @@
+{
+  "escalation_policies": [
+    {
+      "id": "P6F7EI2",
+      "name": "Endeavour",
+      "description": "",
+      "team_id": {
+        "String": "",
+        "Valid": false
+      },
+      "repeat_limit": 0,
+      "repeat_interval": {
+        "String": "",
+        "Valid": false
+      },
+      "handoff_target_type": "",
+      "handoff_target_id": "",
+      "to_import": 0
+    }
+  ],
+  "escalation_policy_step_targets": [
+    {
+      "escalation_policy_step_id": "PFN10S6",
+      "target_type": "User",
+      "target_id": "P4CMCAU"
+    }
+  ],
+  "escalation_policy_steps": [
+    {
+      "id": "PFN10S6",
+      "escalation_policy_id": "P6F7EI2",
+      "position": 0,
+      "timeout": "PT1M"
+    }
+  ]
+}

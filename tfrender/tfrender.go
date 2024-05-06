@@ -159,7 +159,7 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 			}
 
 			for _, t := range targets {
-				var idTraversal *hcl.Traversal
+				idTraversals := []hcl.Traversal{}
 
 				switch t.TargetType {
 				case store.TARGET_TYPE_USER:
@@ -168,37 +168,39 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						console.Errorf("querying user '%s' for step %d of %s: %s\n", t.TargetID, s.Position, p.Name, err.Error())
 						continue
 					}
-					idTraversal = &hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+					idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
 						hcl.TraverseRoot{Name: "data"},
 						hcl.TraverseAttr{Name: "firehydrant_user"},
 						hcl.TraverseAttr{Name: u.TFSlug()},
 						hcl.TraverseAttr{Name: "id"},
-					}
+					})
 				case store.TARGET_TYPE_SCHEDULE:
-					schedule, err := store.UseQueries(ctx).GetExtSchedule(ctx, t.TargetID)
+					schedules, err := store.UseQueries(ctx).ListExtSchedulesLikeID(ctx, fmt.Sprintf(`%s%%`, t.TargetID))
 					if err != nil {
 						console.Errorf("querying schedule '%s' for step %d of %s: %s\n", t.TargetID, s.Position, p.Name, err.Error())
 						continue
 					}
-					slug := schedule.TFSlug()
-					if currentTeam != nil {
-						slug = fmt.Sprintf("%s_%s", currentTeam.TFSlug(), slug)
-					}
-					idTraversal = &hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
-						hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
-						hcl.TraverseAttr{Name: slug},
-						hcl.TraverseAttr{Name: "id"},
+					for _, schedule := range schedules {
+						slug := schedule.TFSlug()
+						if currentTeam != nil {
+							slug = fmt.Sprintf("%s_%s", currentTeam.TFSlug(), slug)
+						}
+						idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+							hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
+							hcl.TraverseAttr{Name: slug},
+							hcl.TraverseAttr{Name: "id"},
+						})
 					}
 				default:
 					console.Errorf("unknown target type '%s' for step %d of %s\n", t.TargetType, s.Position, p.Name)
 					continue
 				}
 
-				if idTraversal != nil { //nolint:staticcheck // Safeguard in case the switch-case above is changed.
+				for _, targetTraversal := range idTraversals { //nolint:staticcheck // Safeguard in case the switch-case above is changed.
 					step.AppendNewline()
 					target := step.AppendNewBlock("targets", nil).Body()
 					target.SetAttributeValue("type", cty.StringVal(t.TargetType))
-					target.SetAttributeTraversal("id", *idTraversal)
+					target.SetAttributeTraversal("id", targetTraversal)
 				}
 			}
 		}
