@@ -147,4 +147,45 @@ func TestPagerDuty(t *testing.T) {
 		t.Logf("found %d schedules", len(s))
 		assertJSON(t, s)
 	})
+
+	t.Run("LoadEscalationPolicies", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+		data := map[string]any{}
+
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		if err := pd.LoadEscalationPolicies(ctx); err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+
+		ep, err := store.UseQueries(ctx).ListExtEscalationPolicies(ctx)
+		if err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+		data["escalation_policies"] = ep
+
+		data["escalation_policy_steps"] = []any{}
+		data["escalation_policy_step_targets"] = []any{}
+		for _, p := range ep {
+			steps, err := store.UseQueries(ctx).ListExtEscalationPolicySteps(ctx, p.ID)
+			if err != nil {
+				t.Fatalf("error loading escalation policy steps: %s", err)
+			}
+			for _, s := range steps {
+				data["escalation_policy_steps"] = append(data["escalation_policy_steps"].([]any), s)
+				targets, err := store.UseQueries(ctx).ListExtEscalationPolicyStepTargets(ctx, s.ID)
+				if err != nil {
+					t.Fatalf("error loading escalation policy step targets for '%s': %s", s.ID, err)
+				}
+				for _, t := range targets {
+					data["escalation_policy_step_targets"] = append(data["escalation_policy_step_targets"].([]any), t)
+				}
+			}
+		}
+
+		assertJSON(t, data)
+	})
 }
