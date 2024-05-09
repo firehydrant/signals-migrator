@@ -267,36 +267,92 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 		return fmt.Errorf("unable to match users to FireHydrant: %w", err)
 	}
 
-	// Manually link users which do not have matching email addresses
+	// Find out which users should be pre-created in FireHydrant via SCIM / matched to existing user.
 	unmatched, err := store.UseQueries(ctx).ListUnmatchedExtUsers(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to list unmatched users: %w", err)
 	}
-	if len(unmatched) > 0 {
-		console.Warnf("Please match the following users to their FireHydrant account.\n")
-		fhUsers, err := fh.ListUsers(ctx)
-		if err != nil {
-			return fmt.Errorf("unable to list FireHydrant users: %w", err)
-		}
-		options := []store.FhUser{{Name: "[<] SKIP"}}
-		options = append(options, fhUsers...)
+	if len(unmatched) == 0 {
+		console.Successf("All users are already matched to FireHydrant.\n")
+		return nil
+	}
 
-		for _, u := range unmatched {
-			selected, fhUser, err := console.Selectf(options, func(u store.FhUser) string {
-				return fmt.Sprintf("%s %s", u.Name, u.Email)
-			}, fmt.Sprintf("Which FireHydrant user should '%s' be imported to?", u.Name))
+	// Get padding number to pretty print the information in table-like view.
+	idPad := console.PadStrings(unmatched, func(u store.ExtUser) int { return len(u.ID) })
+	emailPad := console.PadStrings(unmatched, func(u store.ExtUser) int { return len(u.Email) })
+
+	importOpts := []store.ExtUser{{ID: "[+] IMPORT ALL"}, {ID: "[<] SKIP ALL"}}
+	importOpts = append(importOpts, unmatched...)
+	selected, toImport, err := console.MultiSelectf(importOpts, func(u store.ExtUser) string {
+		return fmt.Sprintf("%*s  %-*s  %s", idPad, u.ID, emailPad, u.Email, u.Name)
+	}, "These users do not have a FireHydrant account. Which users should be created / merged in FireHydrant?")
+	if err != nil {
+		return fmt.Errorf("selecting users to import: %w", err)
+	}
+	switch selected[0] {
+	case 0:
+		console.Successf("[+] All users will be created in FireHydrant.\n")
+	case 1:
+		console.Warnf("[<] No users will be created in FireHydrant.\n")
+		if err := store.UseQueries(ctx).DeleteUnmatchedExtUsers(ctx); err != nil {
+			return fmt.Errorf("unable to delete unmatched users: %w", err)
+		}
+		return nil
+	default:
+		console.Warnf("Selected %d users to be imported to FireHydrant.\n", len(toImport))
+	}
+
+	// We now ask if all of them are to be created as new users, or if they should be matched to existing FireHydrant users.
+	console.Warnf("Please match the following users to a FireHydrant account.\n")
+	fhUsers, err := fh.ListUsers(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to list FireHydrant users: %w", err)
+	}
+
+	namePad := console.PadStrings(fhUsers, func(u store.FhUser) int { return len(u.Name) })
+
+	matchOpts := []store.FhUser{{Name: "[+] CREATE THE REST OF USERS AS NEW"}, {Name: "[+] CREATE USER AS NEW"}}
+	matchOpts = append(matchOpts, fhUsers...)
+	for i, u := range toImport {
+		selected, fhUser, err := console.Selectf(matchOpts, func(u store.FhUser) string {
+			return fmt.Sprintf("%*s  %s", namePad, u.Name, u.Email)
+		}, fmt.Sprintf("[%03d/%03d] Which FireHydrant user should '%s' be imported to?", i+1, len(toImport), u.Name))
+		if err != nil {
+			return fmt.Errorf("selecting FireHydrant user for '%s': %w", u.Name, err)
+		}
+		switch selected {
+		case 0:
+			console.Infof("[+] All users will be created in FireHydrant.\n")
+			for _, u := range unmatched[i:] {
+				fhUser, err := fh.CreateUser(ctx, &u)
+				if err != nil {
+					console.Warnf("unable to create user '%s': %s\n", u.Email, err.Error())
+					continue
+				}
+				if err := store.UseQueries(ctx).LinkExtUser(ctx, store.LinkExtUserParams{
+					ID:       u.ID,
+					FhUserID: sql.NullString{String: fhUser.ID, Valid: true},
+				}); err != nil {
+					console.Warnf("unable to link user '%s': %s\n", u.Email, err.Error())
+					continue
+				}
+			}
+			return nil
+		case 1:
+			console.Infof("[+] User '%s (%s)' will be created in FireHydrant.\n", u.Name, u.Email)
+			scimUser, err := fh.CreateUser(ctx, &u)
 			if err != nil {
-				return fmt.Errorf("selecting FireHydrant user for '%s': %w", u.Name, err)
+				return fmt.Errorf("creating user '%s': %w", u.Name, err)
 			}
-			if selected == 0 {
-				console.Infof("[<] User '%s' will not be imported to FireHydrant.\n", u.Name)
-				continue
-			}
+			fhUser = *scimUser
+			fallthrough
+		default:
 			if err := store.UseQueries(ctx).LinkExtUser(ctx, store.LinkExtUserParams{
 				ID:       u.ID,
 				FhUserID: sql.NullString{String: fhUser.ID, Valid: true},
 			}); err != nil {
-				return fmt.Errorf("linking user '%s': %w", u.Name, err)
+				console.Warnf("unable to link user '%s': %s\n", u.Email, err.Error())
+				continue
 			}
 			console.Successf("[=] User '%s' linked to FireHydrant user '%s'.\n", u.Email, fhUser.Email)
 		}

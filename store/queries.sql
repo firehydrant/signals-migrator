@@ -30,6 +30,10 @@ SELECT * FROM ext_users;
 SELECT * FROM ext_users
 WHERE fh_user_id IS NULL;
 
+-- name: DeleteUnmatchedExtUsers :exec
+DELETE FROM ext_users
+WHERE fh_user_id IS NULL;
+
 -- name: InsertExtUser :exec
 INSERT INTO ext_users (id, name, email, fh_user_id, annotations)
 VALUES (?, ?, ?, ?, ?);

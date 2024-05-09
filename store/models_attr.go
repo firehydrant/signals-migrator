@@ -88,3 +88,21 @@ func (u *FhUser) TFSlug() string {
 	username := strings.Split(u.Email, "@")[0]
 	return strings.ReplaceAll(slug.Make(username), "-", "_")
 }
+
+func (u *ExtUser) Username() string {
+	return strings.Split(u.Email, "@")[0]
+}
+
+func (u *ExtUser) FamilyName() string {
+	words := strings.Split(u.Name, " ")
+	return words[len(words)-1]
+}
+
+func (u *ExtUser) GivenName() string {
+	words := strings.Split(u.Name, " ")
+	return words[0]
+}
+
+func (u *ExtUser) PrimaryEmail() string {
+	return u.Email
+}

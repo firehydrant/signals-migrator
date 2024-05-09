@@ -1,0 +1,77 @@
+{
+  "data": [
+    {
+      "created_at": "2024-04-03T23:55:34.887Z",
+      "created_by": {
+        "email": "jdoe@example.com",
+        "id": "a993700a-1cb1-40b8-a2f0-82834dc67017",
+        "name": "John Doe",
+        "source": "firehydrant_user"
+      },
+      "description": "",
+      "functionalities": [],
+      "id": "47016143-6547-483a-b68a-5220b21681fd",
+      "memberships": [
+        {
+          "default_incident_role": null,
+          "schedule": null,
+          "user": {
+            "created_at": "2024-04-03T23:37:49.043Z",
+            "email": "jdoe@example.com",
+            "id": "a993700a-1cb1-40b8-a2f0-82834dc67017",
+            "name": "Wilson Husin",
+            "signals_enabled_notification_types": ["slack", "sms"],
+            "slack_linked?": true,
+            "slack_user_id": "U06JS9XJCKB",
+            "updated_at": "2024-04-04T02:38:05.809Z"
+          }
+        }
+      ],
+      "name": "AAAA IPv6 migration strategy",
+      "owned_checklist_templates": [],
+      "owned_functionalities": [],
+      "owned_runbooks": [],
+      "owned_services": [
+        {
+          "alert_on_add": true,
+          "auto_add_responding_team": false,
+          "created_at": "2024-04-12T19:55:18.604Z",
+          "description": "",
+          "id": "3fccf801-10b3-4ecc-b2ce-1a2f3d514343",
+          "labels": {},
+          "name": "AAAA IPv6",
+          "service_tier": 5,
+          "slug": "aaaa-ipv6",
+          "updated_at": "2024-04-12T19:55:18.604Z"
+        }
+      ],
+      "responding_services": [],
+      "services": [
+        {
+          "alert_on_add": true,
+          "auto_add_responding_team": false,
+          "created_at": "2024-04-12T19:55:18.604Z",
+          "description": "",
+          "id": "3fccf801-10b3-4ecc-b2ce-1a2f3d514343",
+          "labels": {},
+          "name": "AAAA IPv6",
+          "service_tier": 5,
+          "slug": "aaaa-ipv6",
+          "updated_at": "2024-04-12T19:55:18.604Z"
+        }
+      ],
+      "signals_ical_url": "https://app.firehydrant.io/signals/65f77d1c-21b2-4a2d-8ac6-d4446d6472c1/569b69da-30ee-4d7e-afc4-ffdf6885ae54/team/47016143-6547-483a-b68a-5220b21681fd.ics",
+      "slug": "aaaa-ipv6-migration-strategy",
+      "updated_at": "2024-04-10T22:36:24.185Z"
+    }
+  ],
+  "pagination": {
+    "count": 11,
+    "items": 11,
+    "last": 1,
+    "next": null,
+    "page": 1,
+    "pages": 1,
+    "prev": null
+  }
+}
