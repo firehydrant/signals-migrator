@@ -1,0 +1,145 @@
+{
+  "data": [
+    {
+      "created_at": "2024-04-03T23:55:34.887Z",
+      "created_by": {
+        "email": "whusin@firehydrant.com",
+        "id": "a993700a-1cb1-40b8-a2f0-82834dc67017",
+        "name": "Wilson Husin",
+        "source": "firehydrant_user"
+      },
+      "description": "",
+      "functionalities": [
+        {
+          "active_incidents": [],
+          "alert_on_add": false,
+          "auto_add_responding_team": false,
+          "created_at": "2024-05-01T10:57:38.510Z",
+          "description": "some description",
+          "id": "3323441e-9184-4579-867f-01433b897036",
+          "labels": {},
+          "links": [],
+          "name": "Test Calin",
+          "owner": {
+            "created_at": "2024-04-09T19:37:35.190Z",
+            "created_by": {
+              "email": "davidcelis@firehydrant.com",
+              "id": "35b5390f-d134-4bc6-966d-0b4048788b62",
+              "name": "David Celis",
+              "source": "firehydrant_user"
+            },
+            "description": "",
+            "id": "f159b173-1ffd-41ac-9254-ce8ec1142267",
+            "name": "🐴 Cowboy Coders",
+            "signals_ical_url": "https://app.staging.firehydrant.io/signals/65f77d1c-21b2-4a2d-8ac6-d4446d6472c1/569b69da-30ee-4d7e-afc4-ffdf6885ae54/team/f159b173-1ffd-41ac-9254-ce8ec1142267.ics",
+            "slug": "cowboy-coders",
+            "updated_at": "2024-04-09T19:42:29.843Z"
+          },
+          "slug": "test-calin",
+          "updated_at": "2024-05-01T10:59:16.519Z",
+          "updated_by": {
+            "email": "cbunea@firehydrant.com",
+            "id": "37650102-e3f2-49cc-8f1b-57694acde79c",
+            "name": "Calin Bunea",
+            "source": "firehydrant_user"
+          }
+        }
+      ],
+      "id": "47016143-6547-483a-b68a-5220b21681fd",
+      "memberships": [
+        {
+          "default_incident_role": null,
+          "schedule": null,
+          "user": {
+            "created_at": "2024-04-04T17:31:23.675Z",
+            "email": "kfarrar@firehydrant.com",
+            "id": "032a1f07-987e-4f76-8273-136e08e50baa",
+            "name": "Kate Farrar",
+            "signals_enabled_notification_types": [],
+            "slack_linked?": true,
+            "slack_user_id": "U03SNDLS5EJ",
+            "updated_at": "2024-04-04T19:45:07.172Z"
+          }
+        },
+        {
+          "default_incident_role": null,
+          "schedule": null,
+          "user": {
+            "created_at": "2024-04-03T14:44:07.720Z",
+            "email": "local@firehydrant.io",
+            "id": "0946be55-ea20-4483-b9ab-617d5f0969e2",
+            "name": "Admin Account",
+            "signals_enabled_notification_types": [],
+            "slack_linked?": true,
+            "slack_user_id": "U02M5PH68CA",
+            "updated_at": "2024-04-03T14:44:07.720Z"
+          }
+        },
+        {
+          "default_incident_role": null,
+          "schedule": null,
+          "user": {
+            "created_at": "2024-04-03T23:37:49.043Z",
+            "email": "whusin@firehydrant.com",
+            "id": "a993700a-1cb1-40b8-a2f0-82834dc67017",
+            "name": "Wilson Husin",
+            "signals_enabled_notification_types": ["slack", "sms"],
+            "slack_linked?": true,
+            "slack_user_id": "U06JS9XJCKB",
+            "updated_at": "2024-04-04T02:38:05.809Z"
+          }
+        }
+      ],
+      "name": "AAAA IPv6 migration strategy",
+      "owned_checklist_templates": [],
+      "owned_functionalities": [],
+      "owned_runbooks": [],
+      "owned_services": [
+        {
+          "alert_on_add": true,
+          "auto_add_responding_team": false,
+          "created_at": "2024-04-12T19:55:18.604Z",
+          "description": "",
+          "id": "3fccf801-10b3-4ecc-b2ce-1a2f3d514343",
+          "labels": {},
+          "name": "AAAA IPv6",
+          "service_tier": 5,
+          "slug": "aaaa-ipv6",
+          "updated_at": "2024-04-12T19:55:18.604Z"
+        }
+      ],
+      "responding_services": [],
+      "services": [
+        {
+          "alert_on_add": true,
+          "auto_add_responding_team": false,
+          "created_at": "2024-04-12T19:55:18.604Z",
+          "description": "",
+          "id": "3fccf801-10b3-4ecc-b2ce-1a2f3d514343",
+          "labels": {},
+          "name": "AAAA IPv6",
+          "service_tier": 5,
+          "slug": "aaaa-ipv6",
+          "updated_at": "2024-04-12T19:55:18.604Z"
+        }
+      ],
+      "signals_ical_url": "https://app.staging.firehydrant.io/signals/65f77d1c-21b2-4a2d-8ac6-d4446d6472c1/569b69da-30ee-4d7e-afc4-ffdf6885ae54/team/47016143-6547-483a-b68a-5220b21681fd.ics",
+      "slack_channel": {
+        "id": "39abdbdc-5406-42cd-b917-afac784340e1",
+        "name": "#general",
+        "slack_channel_id": "C02M5PH7H2N"
+      },
+      "slug": "aaaa-ipv6-migration-strategy",
+      "updated_at": "2024-04-10T22:36:24.185Z"
+    }
+  ],
+  "pagination": {
+    "count": 11,
+    "items": 11,
+    "last": 1,
+    "next": null,
+    "page": 1,
+    "pages": 1,
+    "prev": null
+  }
+}

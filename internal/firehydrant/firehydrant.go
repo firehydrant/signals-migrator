@@ -1,10 +1,14 @@
 package firehydrant
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"net/http"
 
+	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
 )
@@ -13,6 +17,9 @@ import (
 // satisfy the Pager interface, since that's not what we're using it for.
 type Client struct {
 	client firehydrant.Client
+
+	apiKey string
+	apiURL string
 }
 
 func NewClient(apiKey string, apiURL string) (*Client, error) {
@@ -24,7 +31,11 @@ func NewClient(apiKey string, apiURL string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("initializing FireHydrant client: %w", err)
 	}
-	return &Client{client: client}, nil
+	return &Client{
+		client: client,
+		apiKey: apiKey,
+		apiURL: apiURL,
+	}, nil
 }
 
 func (c *Client) ListTeams(ctx context.Context) ([]store.FhTeam, error) {
@@ -99,6 +110,30 @@ func (c *Client) ListUsers(ctx context.Context) ([]store.FhUser, error) {
 	return users, nil
 }
 
+func (c *Client) fetchUser(ctx context.Context, email string) (*store.FhUser, error) {
+	opts := firehydrant.GetUserParams{Query: email}
+	resp, err := c.client.GetUsers(ctx, opts)
+	if err != nil {
+		return nil, fmt.Errorf("fetching users from FireHydrant: %w", err)
+	}
+	if len(resp.Users) == 0 {
+		return nil, fmt.Errorf("fetching users from FireHydrant: no users found")
+	}
+	if len(resp.Users) > 1 {
+		console.Warnf("multiple users found for email %s, selecting first one with ID: '%s'", email, resp.Users[0].ID)
+	}
+	user := store.FhUser{
+		ID:    resp.Users[0].ID,
+		Name:  resp.Users[0].Name,
+		Email: resp.Users[0].Email,
+	}
+	if err := store.UseQueries(ctx).InsertFhUser(ctx, store.InsertFhUserParams(user)); err != nil {
+		return nil, fmt.Errorf("storing user '%s' to database: %w", user.Email, err)
+	}
+
+	return &user, nil
+}
+
 // MatchUsers attempts to pair users in the parameter with its FireHydrant User counterpart.
 // Returns: a list of users which were not successfully matched.
 func (c *Client) MatchUsers(ctx context.Context) error {
@@ -131,4 +166,64 @@ func (c *Client) PairUsers(ctx context.Context, fhUserID string, extUserID strin
 		FhUserID: sql.NullString{Valid: true, String: fhUserID},
 		ID:       extUserID,
 	})
+}
+
+type SCIMUser interface {
+	Username() string
+	FamilyName() string
+	GivenName() string
+	PrimaryEmail() string
+}
+
+var (
+	_ SCIMUser = &store.ExtUser{}
+)
+
+// CreateUser provisions user via SCIM. Terraform client does not support this, therefore
+// we are making the barebones request directly.
+func (c *Client) CreateUser(ctx context.Context, u SCIMUser) (*store.FhUser, error) {
+	payload := map[string]any{
+		"userName": u.Username(),
+		"name": map[string]any{
+			"familyName": u.FamilyName(),
+			"givenName":  u.GivenName(),
+		},
+		"emails": []map[string]any{
+			{
+				"value":   u.PrimaryEmail(),
+				"primary": true,
+			},
+		},
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("converting user payload to JSON: %w", err)
+	}
+	buf := bytes.NewBuffer(body)
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/scim/v2/Users", c.apiURL), buf)
+	if err != nil {
+		return nil, fmt.Errorf("composing request to create user: %w", err)
+	}
+	req.Header.Set("Authorization", c.apiKey)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("creating user: %w", err)
+	}
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("creating user: unexpected status code %d", resp.StatusCode)
+	}
+	return c.fetchUser(ctx, u.PrimaryEmail())
+}
+
+func (c *Client) CreateUsers(ctx context.Context, users []SCIMUser) ([]store.FhUser, error) {
+	created := []store.FhUser{}
+	for _, u := range users {
+		user, err := c.CreateUser(ctx, u)
+		if err != nil {
+			return nil, fmt.Errorf("creating user: %w", err)
+		}
+		created = append(created, *user)
+	}
+	return created, nil
 }
