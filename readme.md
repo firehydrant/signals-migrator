@@ -16,7 +16,7 @@ go install github.com/firehydrant/signals-migrator@latest
 
 Ensure these environment variables are set:
 
-- `FIREHYDRANT_API_KEY`
+- `FIREHYDRANT_API_KEY` (retrieve this from [FireHydrant Settings > API Keys](https://docs.firehydrant.com/docs/api-keys))
 - `PROVIDER` e.g. 'PagerDuty'
 - `PROVIDER_API_KEY`
 - `PROVIDER_APP_ID` (optional, not all providers require this)
