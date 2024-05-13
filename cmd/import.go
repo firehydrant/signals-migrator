@@ -292,6 +292,21 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 	switch selected[0] {
 	case 0:
 		console.Successf("[+] All users will be created in FireHydrant.\n")
+		for _, u := range unmatched {
+			fhUser, err := fh.CreateUser(ctx, &u)
+			if err != nil {
+				console.Warnf("unable to create user '%s': %s\n", u.Email, err.Error())
+				continue
+			}
+			if err := store.UseQueries(ctx).LinkExtUser(ctx, store.LinkExtUserParams{
+				ID:       u.ID,
+				FhUserID: sql.NullString{String: fhUser.ID, Valid: true},
+			}); err != nil {
+				console.Warnf("unable to link user '%s': %s\n", u.Email, err.Error())
+				continue
+			}
+		}
+		return nil
 	case 1:
 		console.Warnf("[<] No users will be created in FireHydrant.\n")
 		if err := store.UseQueries(ctx).DeleteUnmatchedExtUsers(ctx); err != nil {
