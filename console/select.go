@@ -3,6 +3,7 @@ package console
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/charmbracelet/huh"
 )
@@ -52,8 +53,14 @@ func MultiSelectf[T any](options []T, toString func(T) string, title string, arg
 			continue
 		}
 		Warnf("You have selected: \n")
-		for _, i := range values {
-			Warnf("  %s\n", opts[i].Key)
+		if len(values) == 1 {
+			// Don't perform padding based on list's max when it's only one value,
+			// as it would look oddly spaced out.
+			Warnf("  %s\n", strings.TrimSpace(opts[values[0]].Key))
+		} else {
+			for _, i := range values {
+				Warnf("  %s\n", opts[i].Key)
+			}
 		}
 
 		response, _, err := Selectf([]string{"Yes", "No"}, func(s string) string { return s }, "Confirm selection?")

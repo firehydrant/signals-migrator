@@ -281,7 +281,10 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 	idPad := console.PadStrings(unmatched, func(u store.ExtUser) int { return len(u.ID) })
 	emailPad := console.PadStrings(unmatched, func(u store.ExtUser) int { return len(u.Email) })
 
-	importOpts := []store.ExtUser{{ID: "[+] IMPORT ALL"}, {ID: "[<] SKIP ALL"}}
+	importOpts := []store.ExtUser{
+		{ID: "[+] IMPORT ALL"},
+		{ID: "[<] SKIP ALL  "}, // Extra spaces for padding alignment of icons
+	}
 	importOpts = append(importOpts, unmatched...)
 	selected, toImport, err := console.MultiSelectf(importOpts, func(u store.ExtUser) string {
 		return fmt.Sprintf("%*s  %-*s  %s", idPad, u.ID, emailPad, u.Email, u.Name)
@@ -311,7 +314,10 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 
 	namePad := console.PadStrings(fhUsers, func(u store.FhUser) int { return len(u.Name) })
 
-	matchOpts := []store.FhUser{{Name: "[+] CREATE THE REST OF USERS AS NEW"}, {Name: "[+] CREATE USER AS NEW"}}
+	matchOpts := []store.FhUser{
+		{Name: "[+] CREATE THE REST OF USERS AS NEW"},
+		{Name: "[+] CREATE USER AS NEW             "}, // Extra spaces for padding alignment of icons
+	}
 	matchOpts = append(matchOpts, fhUsers...)
 	for i, u := range toImport {
 		selected, fhUser, err := console.Selectf(matchOpts, func(u store.FhUser) string {
