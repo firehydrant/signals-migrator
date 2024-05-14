@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/firehydrant/signals-migrator/console"
@@ -211,6 +212,8 @@ func (c *Client) CreateUser(ctx context.Context, u SCIMUser) (*store.FhUser, err
 		return nil, fmt.Errorf("creating user: %w", err)
 	}
 	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		console.Errorf("unexpected status code %d: %s\n", resp.StatusCode, body)
 		return nil, fmt.Errorf("creating user: unexpected status code %d", resp.StatusCode)
 	}
 	return c.fetchUser(ctx, u.PrimaryEmail())
