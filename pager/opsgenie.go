@@ -350,17 +350,22 @@ func (o *Opsgenie) LoadEscalationPolicies(ctx context.Context) error {
 
 func (o *Opsgenie) saveEscalationPolicyToDB(ctx context.Context, policy escalation.Escalation) error {
 	var repeatLimit int64
-	var repeatInterval sql.NullString
+	repeatInterval := sql.NullString{Valid: false}
 	if policy.Repeat != nil {
 		repeatLimit = int64(policy.Repeat.Count)
 		repeatInterval.Valid = true
 		repeatInterval.String = fmt.Sprintf("PT%dM", policy.Repeat.WaitInterval)
 	}
+	teamID := sql.NullString{}
+	if policy.OwnerTeam != nil {
+		teamID.Valid = true
+		teamID.String = policy.OwnerTeam.Id
+	}
 	ep := store.InsertExtEscalationPolicyParams{
 		ID:             policy.Id,
 		Name:           policy.Name,
 		Description:    policy.Description,
-		TeamID:         sql.NullString{Valid: true, String: policy.OwnerTeam.Id},
+		TeamID:         teamID,
 		RepeatInterval: repeatInterval,
 		RepeatLimit:    repeatLimit,
 	}
