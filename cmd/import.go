@@ -338,7 +338,7 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 		switch selected {
 		case 0:
 			console.Infof("[+] All users will be created in FireHydrant.\n")
-			for _, u := range unmatched[i:] {
+			for _, u := range toImport[i:] {
 				fhUser, err := fh.CreateUser(ctx, &u)
 				if err != nil {
 					console.Warnf("unable to create user '%s': %s\n", u.Email, err.Error())
