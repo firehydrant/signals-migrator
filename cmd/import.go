@@ -245,6 +245,10 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 			return fmt.Errorf("linking team '%s' to FireHydrant: %w", t.Name, err)
 		}
 	}
+
+	if err := store.UseQueries(ctx).DeleteExtTeamUnimported(ctx); err != nil {
+		return fmt.Errorf("unable to delete unimported teams: %w", err)
+	}
 	return nil
 }
 

@@ -129,13 +129,11 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 			b.SetAttributeValue("description", cty.StringVal(p.Description))
 		}
 
-		var currentTeam *store.LinkedTeam
 		if p.TeamID.Valid && p.TeamID.String != "" {
 			t, err := store.UseQueries(ctx).GetTeamByExtID(ctx, p.TeamID.String)
 			if err != nil {
 				return fmt.Errorf("querying team '%s' for policy '%s': %w", p.TeamID.String, p.Name, err)
 			}
-			currentTeam = &t
 			b.SetAttributeTraversal("team_id", hcl.Traversal{
 				hcl.TraverseRoot{Name: "firehydrant_team"},
 				hcl.TraverseAttr{Name: t.TFSlug()},
@@ -181,15 +179,18 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						continue
 					}
 					for _, schedule := range schedules {
-						slug := schedule.TFSlug()
-						if currentTeam != nil {
-							slug = fmt.Sprintf("%s_%s", currentTeam.TFSlug(), slug)
+						teams, err := store.UseQueries(ctx).ListTeamsByExtScheduleID(ctx, schedule.ID)
+						if err != nil {
+							return fmt.Errorf("querying teams for schedule '%s': %w", schedule.Name, err)
 						}
-						idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
-							hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
-							hcl.TraverseAttr{Name: slug},
-							hcl.TraverseAttr{Name: "id"},
-						})
+						for _, team := range teams {
+							slug := fmt.Sprintf("%s_%s", team.TFSlug(), schedule.TFSlug())
+							idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+								hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
+								hcl.TraverseAttr{Name: slug},
+								hcl.TraverseAttr{Name: "id"},
+							})
+						}
 					}
 				default:
 					console.Errorf("unknown target type '%s' for step %d of %s\n", t.TargetType, s.Position, p.Name)

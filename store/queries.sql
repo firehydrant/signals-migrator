@@ -78,6 +78,9 @@ WHERE id IN (
 -- name: InsertExtTeamGroup :exec
 INSERT INTO ext_team_groups (group_team_id, member_team_id) VALUES (?, ?);
 
+-- name: DeleteExtTeamUnimported :exec
+DELETE FROM ext_teams WHERE to_import = 0;
+
 -- name: LinkExtUser :exec
 UPDATE ext_users SET fh_user_id = ? WHERE id = ?;
 

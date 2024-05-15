@@ -51,7 +51,7 @@ resource "firehydrant_escalation_policy" "atalice_bob_test_service_ep" {
 
     targets {
       type = "OnCallSchedule"
-      id   = firehydrant_on_call_schedule.atalice_bob_is_always_on_call_layer_1.id
+      id   = firehydrant_on_call_schedule.cowboy_coders_atalice_bob_is_always_on_call_layer_1.id
     }
   }
 
