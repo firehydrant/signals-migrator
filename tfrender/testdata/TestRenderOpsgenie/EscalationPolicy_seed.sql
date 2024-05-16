@@ -56,7 +56,7 @@ INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b
 INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e94e17aa-418c-44f7-8e47-1eaebf6b5343');
 INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e0a51be7-3c7e-407f-8678-292ab421f55f');
 
-INSERT INTO ext_escalation_policies VALUES('880ec24e-58db-441b-9681-2cb527bd24b2','AJ Team_escalation','','946bf740-0497-4d5d-b31f-23a6e55a2719',0,NULL,'','',1);
+INSERT INTO ext_escalation_policies VALUES('880ec24e-58db-441b-9681-2cb527bd24b2','AJ Team_escalation','','946bf740-0497-4d5d-b31f-23a6e55a2719',0,NULL,'','','',1);
 
 INSERT INTO ext_escalation_policy_steps VALUES('880ec24e-58db-441b-9681-2cb527bd24b2-0','880ec24e-58db-441b-9681-2cb527bd24b2',0,'PT1M');
 

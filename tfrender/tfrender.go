@@ -141,6 +141,11 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 			})
 		}
 
+		if p.Annotations != "" {
+			b.AppendNewline()
+			r.AppendComment(b, p.Annotations)
+		}
+
 		steps, err := store.UseQueries(ctx).ListExtEscalationPolicySteps(ctx, p.ID)
 		if err != nil {
 			return fmt.Errorf("querying steps for policy '%s': %w", p.Name, err)
@@ -244,6 +249,11 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
 			if s.Strategy == "custom" && s.StartTime != "" {
 				b.SetAttributeValue("start_time", cty.StringVal(s.StartTime))
+			}
+
+			if t.Annotations != "" {
+				b.AppendNewline()
+				r.AppendComment(b, t.Annotations)
 			}
 
 			members, err := store.UseQueries(ctx).ListFhMembersByExtScheduleID(ctx, s.ID)
@@ -415,19 +425,22 @@ func (r *TFRender) AppendComment(b *hclwrite.Body, comment string) {
 	if str == "" {
 		return
 	}
-	// If the body is multi-line, prefix the newline with comment tag.
-	str = strings.ReplaceAll(str, "\n", "\n# ")
-	// Then make sure to prepend first line with comment tag as well,
-	// and end with newline.
-	str = fmt.Sprintf("# %s\n", str)
-	b.AppendUnstructuredTokens(
-		hclwrite.Tokens{
-			&hclwrite.Token{
-				Type:  hclsyntax.TokenComment,
-				Bytes: []byte(str),
 
-				SpacesBefore: 2,
+	lines := strings.Split(str, "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		comment := fmt.Sprintf("# %s\n", line)
+		b.AppendUnstructuredTokens(
+			hclwrite.Tokens{
+				&hclwrite.Token{
+					Type:  hclsyntax.TokenComment,
+					Bytes: []byte(comment),
+
+					SpacesBefore: 2,
+				},
 			},
-		},
-	)
+		)
+	}
 }

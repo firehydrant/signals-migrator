@@ -2,6 +2,7 @@ package pager
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"slices"
 	"strconv"
@@ -485,14 +486,29 @@ func (p *PagerDuty) LoadEscalationPolicies(ctx context.Context) error {
 }
 
 func (p *PagerDuty) saveEscalationPolicyToDB(ctx context.Context, policy pagerduty.EscalationPolicy) error {
+	teamIDs := []string{}
+	for _, team := range policy.Teams {
+		teamIDs = append(teamIDs, team.ID)
+	}
 	ep := store.InsertExtEscalationPolicyParams{
 		ID:          policy.ID,
 		Name:        policy.Name,
 		Description: policy.Description,
 		RepeatLimit: int64(policy.NumLoops),
+		Annotations: fmt.Sprintf("[PagerDuty]\n  %s %s\n  Teams: %v", policy.Name, policy.HTMLURL, teamIDs),
 	}
+
 	if err := store.UseQueries(ctx).InsertExtEscalationPolicy(ctx, ep); err != nil {
 		return fmt.Errorf("saving escalation policy %s (%s): %w", ep.Name, ep.ID, err)
+	}
+
+	for _, team := range policy.Teams {
+		if err := store.UseQueries(ctx).UpdateExtEscalationPolicyTeam(ctx, store.UpdateExtEscalationPolicyTeamParams{
+			ID:     ep.ID,
+			TeamID: sql.NullString{Valid: true, String: team.ID},
+		}); err == nil {
+			break
+		}
 	}
 
 	// PagerDuty's Escalation Rule is equivalent to FireHydrant Escalation Policy Step.

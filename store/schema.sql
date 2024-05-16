@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS ext_escalation_policies (
   repeat_interval TEXT,
   handoff_target_type TEXT NOT NULL,
   handoff_target_id TEXT NOT NULL,
+  annotations TEXT NOT NULL DEFAULT '',
   to_import INTEGER NOT NULL DEFAULT 0
 ) STRICT;
 

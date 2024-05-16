@@ -122,8 +122,8 @@ func (q *Queries) GetUserByExtID(ctx context.Context, id string) (LinkedUser, er
 }
 
 const insertExtEscalationPolicy = `-- name: InsertExtEscalationPolicy :exec
-INSERT INTO ext_escalation_policies (id, name, description, team_id, repeat_interval, repeat_limit, handoff_target_type, handoff_target_id, to_import)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO ext_escalation_policies (id, name, description, team_id, repeat_interval, repeat_limit, handoff_target_type, handoff_target_id, annotations, to_import)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type InsertExtEscalationPolicyParams struct {
@@ -135,6 +135,7 @@ type InsertExtEscalationPolicyParams struct {
 	RepeatLimit       int64          `json:"repeat_limit"`
 	HandoffTargetType string         `json:"handoff_target_type"`
 	HandoffTargetID   string         `json:"handoff_target_id"`
+	Annotations       string         `json:"annotations"`
 	ToImport          int64          `json:"to_import"`
 }
 
@@ -148,6 +149,7 @@ func (q *Queries) InsertExtEscalationPolicy(ctx context.Context, arg InsertExtEs
 		arg.RepeatLimit,
 		arg.HandoffTargetType,
 		arg.HandoffTargetID,
+		arg.Annotations,
 		arg.ToImport,
 	)
 	return err
@@ -416,7 +418,7 @@ func (q *Queries) LinkExtUser(ctx context.Context, arg LinkExtUserParams) error 
 }
 
 const listExtEscalationPolicies = `-- name: ListExtEscalationPolicies :many
-SELECT id, name, description, team_id, repeat_limit, repeat_interval, handoff_target_type, handoff_target_id, to_import FROM ext_escalation_policies
+SELECT id, name, description, team_id, repeat_limit, repeat_interval, handoff_target_type, handoff_target_id, annotations, to_import FROM ext_escalation_policies
 `
 
 func (q *Queries) ListExtEscalationPolicies(ctx context.Context) ([]ExtEscalationPolicy, error) {
@@ -437,6 +439,7 @@ func (q *Queries) ListExtEscalationPolicies(ctx context.Context) ([]ExtEscalatio
 			&i.RepeatInterval,
 			&i.HandoffTargetType,
 			&i.HandoffTargetID,
+			&i.Annotations,
 			&i.ToImport,
 		); err != nil {
 			return nil, err
@@ -1253,5 +1256,19 @@ UPDATE ext_teams SET to_import = 1 WHERE id = ?
 
 func (q *Queries) MarkExtTeamToImport(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, markExtTeamToImport, id)
+	return err
+}
+
+const updateExtEscalationPolicyTeam = `-- name: UpdateExtEscalationPolicyTeam :exec
+UPDATE ext_escalation_policies SET team_id = ? WHERE id = ?
+`
+
+type UpdateExtEscalationPolicyTeamParams struct {
+	TeamID sql.NullString `json:"team_id"`
+	ID     string         `json:"id"`
+}
+
+func (q *Queries) UpdateExtEscalationPolicyTeam(ctx context.Context, arg UpdateExtEscalationPolicyTeamParams) error {
+	_, err := q.db.ExecContext(ctx, updateExtEscalationPolicyTeam, arg.TeamID, arg.ID)
 	return err
 }

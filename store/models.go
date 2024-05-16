@@ -17,6 +17,7 @@ type ExtEscalationPolicy struct {
 	RepeatInterval    sql.NullString `json:"repeat_interval"`
 	HandoffTargetType string         `json:"handoff_target_type"`
 	HandoffTargetID   string         `json:"handoff_target_id"`
+	Annotations       string         `json:"annotations"`
 	ToImport          int64          `json:"to_import"`
 }
 
