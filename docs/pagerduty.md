@@ -16,3 +16,4 @@ Afterwards, run `signals-migrator import` and follow the prompts.
 ## Known limitations
 
 - While we support importing "PagerDuty Service" as "FireHydrant Team", we still require the Teams API to be accessible. If your account does not have access to the Teams API, please see [#27](https://github.com/firehydrant/signals-migrator/issues/27) and let us know what error you encountered.
+- Inactive users will have "warning" lines.

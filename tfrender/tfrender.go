@@ -108,6 +108,7 @@ func (r *TFRender) Write(ctx context.Context) error {
 	if _, err := f.Write(r.f.Bytes()); err != nil {
 		return fmt.Errorf("writing file: %w", err)
 	}
+	console.Successf("Terraform file has been written to %s\n", r.Filepath())
 
 	return nil
 }
@@ -129,18 +130,21 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 			b.SetAttributeValue("description", cty.StringVal(p.Description))
 		}
 
-		var currentTeam *store.LinkedTeam
 		if p.TeamID.Valid && p.TeamID.String != "" {
 			t, err := store.UseQueries(ctx).GetTeamByExtID(ctx, p.TeamID.String)
 			if err != nil {
 				return fmt.Errorf("querying team '%s' for policy '%s': %w", p.TeamID.String, p.Name, err)
 			}
-			currentTeam = &t
 			b.SetAttributeTraversal("team_id", hcl.Traversal{
 				hcl.TraverseRoot{Name: "firehydrant_team"},
 				hcl.TraverseAttr{Name: t.TFSlug()},
 				hcl.TraverseAttr{Name: "id"},
 			})
+		}
+
+		if p.Annotations != "" {
+			b.AppendNewline()
+			r.AppendComment(b, p.Annotations)
 		}
 
 		steps, err := store.UseQueries(ctx).ListExtEscalationPolicySteps(ctx, p.ID)
@@ -181,15 +185,18 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						continue
 					}
 					for _, schedule := range schedules {
-						slug := schedule.TFSlug()
-						if currentTeam != nil {
-							slug = fmt.Sprintf("%s_%s", currentTeam.TFSlug(), slug)
+						teams, err := store.UseQueries(ctx).ListTeamsByExtScheduleID(ctx, schedule.ID)
+						if err != nil {
+							return fmt.Errorf("querying teams for schedule '%s': %w", schedule.Name, err)
 						}
-						idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
-							hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
-							hcl.TraverseAttr{Name: slug},
-							hcl.TraverseAttr{Name: "id"},
-						})
+						for _, team := range teams {
+							slug := fmt.Sprintf("%s_%s", team.TFSlug(), schedule.TFSlug())
+							idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+								hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
+								hcl.TraverseAttr{Name: slug},
+								hcl.TraverseAttr{Name: "id"},
+							})
+						}
 					}
 				default:
 					console.Errorf("unknown target type '%s' for step %d of %s\n", t.TargetType, s.Position, p.Name)
@@ -243,6 +250,11 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
 			if s.Strategy == "custom" && s.StartTime != "" {
 				b.SetAttributeValue("start_time", cty.StringVal(s.StartTime))
+			}
+
+			if t.Annotations != "" {
+				b.AppendNewline()
+				r.AppendComment(b, t.Annotations)
 			}
 
 			members, err := store.UseQueries(ctx).ListFhMembersByExtScheduleID(ctx, s.ID)
@@ -414,19 +426,22 @@ func (r *TFRender) AppendComment(b *hclwrite.Body, comment string) {
 	if str == "" {
 		return
 	}
-	// If the body is multi-line, prefix the newline with comment tag.
-	str = strings.ReplaceAll(str, "\n", "\n# ")
-	// Then make sure to prepend first line with comment tag as well,
-	// and end with newline.
-	str = fmt.Sprintf("# %s\n", str)
-	b.AppendUnstructuredTokens(
-		hclwrite.Tokens{
-			&hclwrite.Token{
-				Type:  hclsyntax.TokenComment,
-				Bytes: []byte(str),
 
-				SpacesBefore: 2,
+	lines := strings.Split(str, "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		comment := fmt.Sprintf("# %s\n", line)
+		b.AppendUnstructuredTokens(
+			hclwrite.Tokens{
+				&hclwrite.Token{
+					Type:  hclsyntax.TokenComment,
+					Bytes: []byte(comment),
+
+					SpacesBefore: 2,
+				},
 			},
-		},
-	)
+		)
+	}
 }

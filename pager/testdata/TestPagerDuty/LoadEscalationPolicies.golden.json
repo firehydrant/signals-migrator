@@ -15,6 +15,7 @@
       },
       "handoff_target_type": "",
       "handoff_target_id": "",
+      "annotations": "[PagerDuty]\n  Endeavour https://pdt-apidocs.pagerduty.com/escalation_policies/P6F7EI2",
       "to_import": 0
     }
   ],

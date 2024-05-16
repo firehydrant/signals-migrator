@@ -76,6 +76,8 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-04-10T20:39:29-07:00"
 
+  # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
+
   member_ids = [data.firehydrant_user.kiran.id]
 
   strategy {
@@ -97,6 +99,8 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
   team_id     = firehydrant_team.aaaa_ipv6_migration_strategy.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-04-10T20:39:29-07:00"
+
+  # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
 
   member_ids = [data.firehydrant_user.wong.id, data.firehydrant_user.local.id]
 
@@ -160,6 +164,8 @@ resource "firehydrant_on_call_schedule" "dunder_mifflin_scranton_jack_on_call_sc
   description = " (Layer 1)"
   team_id     = firehydrant_team.dunder_mifflin_scranton.id
   time_zone   = "America/Los_Angeles"
+
+  # [PagerDuty] Jack Team https://pdt-apidocs.pagerduty.com/service-directory/PD2F80U
 
   member_ids = [data.firehydrant_user.jack.id]
 

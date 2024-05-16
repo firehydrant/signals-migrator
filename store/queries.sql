@@ -78,6 +78,9 @@ WHERE id IN (
 -- name: InsertExtTeamGroup :exec
 INSERT INTO ext_team_groups (group_team_id, member_team_id) VALUES (?, ?);
 
+-- name: DeleteExtTeamUnimported :exec
+DELETE FROM ext_teams WHERE to_import = 0;
+
 -- name: LinkExtUser :exec
 UPDATE ext_users SET fh_user_id = ? WHERE id = ?;
 
@@ -150,8 +153,11 @@ VALUES (?, ?);
 SELECT * FROM ext_escalation_policies;
 
 -- name: InsertExtEscalationPolicy :exec
-INSERT INTO ext_escalation_policies (id, name, description, team_id, repeat_interval, repeat_limit, handoff_target_type, handoff_target_id, to_import)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ext_escalation_policies (id, name, description, team_id, repeat_interval, repeat_limit, handoff_target_type, handoff_target_id, annotations, to_import)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: UpdateExtEscalationPolicyTeam :exec
+UPDATE ext_escalation_policies SET team_id = ? WHERE id = ?;
 
 -- name: MarkAllExtEscalationPolicyToImport :exec
 UPDATE ext_escalation_policies SET to_import = 1;
