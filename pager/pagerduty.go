@@ -486,29 +486,53 @@ func (p *PagerDuty) LoadEscalationPolicies(ctx context.Context) error {
 }
 
 func (p *PagerDuty) saveEscalationPolicyToDB(ctx context.Context, policy pagerduty.EscalationPolicy) error {
-	teamIDs := []string{}
-	for _, team := range policy.Teams {
-		teamIDs = append(teamIDs, team.ID)
+	annotations := fmt.Sprintf("[PagerDuty]\n  %s %s", policy.Name, policy.HTMLURL)
+	if len(policy.Teams) > 0 {
+		annotations += "\n[Teams]"
+		for _, team := range policy.Teams {
+			annotations += fmt.Sprintf("\n  - %s", team.ID)
+		}
+	}
+	if len(policy.Services) > 0 {
+		annotations += "\n[Services]"
+		for _, service := range policy.Services {
+			annotations += fmt.Sprintf("\n  - %s %s %s", service.ID, service.HTMLURL, service.Summary)
+		}
 	}
 	ep := store.InsertExtEscalationPolicyParams{
 		ID:          policy.ID,
 		Name:        policy.Name,
 		Description: policy.Description,
 		RepeatLimit: int64(policy.NumLoops),
-		Annotations: fmt.Sprintf("[PagerDuty]\n  %s %s\n  Teams: %v", policy.Name, policy.HTMLURL, teamIDs),
+		Annotations: annotations,
 	}
 
 	if err := store.UseQueries(ctx).InsertExtEscalationPolicy(ctx, ep); err != nil {
 		return fmt.Errorf("saving escalation policy %s (%s): %w", ep.Name, ep.ID, err)
 	}
 
-	for _, team := range policy.Teams {
-		if err := store.UseQueries(ctx).UpdateExtEscalationPolicyTeam(ctx, store.UpdateExtEscalationPolicyTeamParams{
-			ID:     ep.ID,
-			TeamID: sql.NullString{Valid: true, String: team.ID},
-		}); err == nil {
-			break
+	// We do our best to match first one from the list of teams / services. Since the full list is annotated in comments,
+	// users can duplicate as needed. While it's possible for us to fan out and replicate, it's likely not the desired behavior
+	// as in such scenario, user should really be merging the teams instead of duplicating escalation policies across teams.
+	if pdTeamInterface == "service" {
+		for _, service := range policy.Services {
+			if err := store.UseQueries(ctx).UpdateExtEscalationPolicyTeam(ctx, store.UpdateExtEscalationPolicyTeamParams{
+				ID:     ep.ID,
+				TeamID: sql.NullString{Valid: true, String: service.ID},
+			}); err == nil {
+				break
+			}
 		}
+	} else {
+		for _, team := range policy.Teams {
+			if err := store.UseQueries(ctx).UpdateExtEscalationPolicyTeam(ctx, store.UpdateExtEscalationPolicyTeamParams{
+				ID:     ep.ID,
+				TeamID: sql.NullString{Valid: true, String: team.ID},
+			}); err == nil {
+				break
+			}
+		}
+
 	}
 
 	// PagerDuty's Escalation Rule is equivalent to FireHydrant Escalation Policy Step.

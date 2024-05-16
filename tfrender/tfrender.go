@@ -108,6 +108,7 @@ func (r *TFRender) Write(ctx context.Context) error {
 	if _, err := f.Write(r.f.Bytes()); err != nil {
 		return fmt.Errorf("writing file: %w", err)
 	}
+	console.Successf("Terraform file has been written to %s\n", r.Filepath())
 
 	return nil
 }
