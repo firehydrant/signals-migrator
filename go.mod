@@ -14,7 +14,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.2
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.14.4
-	modernc.org/sqlite v1.29.9
+	modernc.org/sqlite v1.29.10
 )
 
 require gotest.tools/v3 v3.5.1
