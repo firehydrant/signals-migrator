@@ -1,13 +1,14 @@
 module github.com/firehydrant/signals-migrator
 
 go 1.22
+toolchain go1.22.2
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.8.0
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240328185852-590ecabc34b9
 	github.com/fatih/color v1.17.0
-	github.com/firehydrant/terraform-provider-firehydrant v0.8.0
+	github.com/firehydrant/terraform-provider-firehydrant v0.9.0
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.20.1
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
@@ -62,7 +63,7 @@ require (
 	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.16.0 // indirect
+	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.19.0 // indirect
 	modernc.org/gc/v3 v3.0.0-20240107210532-573471604cb6 // indirect
