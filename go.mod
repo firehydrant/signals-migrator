@@ -1,7 +1,8 @@
 module github.com/firehydrant/signals-migrator
 
-go 1.22
-toolchain go1.22.2
+go 1.22.1
+
+toolchain go1.22.3
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.8.0
