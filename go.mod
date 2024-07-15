@@ -12,7 +12,7 @@ require (
 	github.com/firehydrant/terraform-provider-firehydrant v0.9.0
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.21.0
-	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
+	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
 	github.com/urfave/cli/v2 v2.27.2
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.14.4
