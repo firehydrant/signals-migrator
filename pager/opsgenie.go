@@ -28,12 +28,25 @@ type Opsgenie struct {
 }
 
 func NewOpsgenie(apiKey string) *Opsgenie {
-	conf := &client.Config{ApiKey: apiKey}
+	conf := &client.Config{
+		ApiKey: apiKey,
+
+		// This corresponds to logrus.ErrorLevel but avoids importing logrus,
+		// since we don't use it but the SDK imports it.
+		LogLevel: 2,
+	}
 	return NewOpsgenieWithConfig(conf)
 }
 
 func NewOpsgenieWithURL(apiKey, url string) *Opsgenie {
-	conf := &client.Config{ApiKey: apiKey, OpsGenieAPIURL: client.ApiUrl(url)}
+	conf := &client.Config{
+		ApiKey:         apiKey,
+		OpsGenieAPIURL: client.ApiUrl(url),
+
+		// This corresponds to logrus.ErrorLevel but avoids importing logrus,
+		// since we don't use it but the SDK imports it.
+		LogLevel: 2,
+	}
 	return NewOpsgenieWithConfig(conf)
 }
 
@@ -150,7 +163,11 @@ func (o *Opsgenie) LoadTeamMembers(ctx context.Context) error {
 				TeamID: t.ID,
 				UserID: m.User.ID,
 			}); err != nil {
-				return fmt.Errorf("saving team member to db: %w", err)
+				if sqlErr, ok := store.AsSQLError(err); ok && sqlErr.IsForeignKeyConstraint() {
+					console.Warnf("User %q (%s) isn't imported. Skipping...\n", m.User.Username, m.User.ID)
+					return nil
+				}
+				return fmt.Errorf("saving user %q (%s) as member of %q (%s) to db: %w", m.User.Username, m.User.ID, t.Name, t.ID, err)
 			}
 		}
 	}
