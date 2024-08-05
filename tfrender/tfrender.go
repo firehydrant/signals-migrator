@@ -46,7 +46,9 @@ func fhProviderVersion() string {
 			if versionStr != dep.Version {
 				break
 			}
-			return fmt.Sprintf("~> %s", dep.Version)
+			// Go versioning may include v-prefix, but Terraform doesn't like it.
+			v := strings.TrimPrefix(dep.Version, "v")
+			return fmt.Sprintf("~> %s", v)
 		}
 	}
 
