@@ -1,6 +1,43 @@
 {
   "data": [
     {
+      "id": "a6feab7-936d-4829-800f-e781a96bdf1b",
+      "name": "Escalation policy from unimported team",
+      "description": "",
+      "ownerTeam": {
+        "id": "f7acbc33-9853-4150-8a4b-10156d9408c8",
+        "name": "This team is not imported"
+      },
+      "rules": [
+        {
+          "condition": "if-not-acked",
+          "notifyType": "default",
+          "delay": {
+            "timeAmount": 0,
+            "timeUnit": "minutes"
+          },
+          "recipient": {
+            "type": "user",
+            "id": "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4",
+            "username": "john.doe@opsgenie.com"
+          }
+        },
+        {
+          "condition": "if-not-acked",
+          "notifyType": "default",
+          "delay": {
+            "timeAmount": 0,
+            "timeUnit": "minutes"
+          },
+          "recipient": {
+            "type": "schedule",
+            "id": "3fee43f2-02da-49be-ab50-c88ed13aecc3",
+            "name": "Customer Success_schedule"
+          }
+        }
+      ]
+    },
+    {
       "id": "2a6feab7-936d-4829-800f-e781a96bdf1b",
       "name": "Customer Success_escalation",
       "description": "",
