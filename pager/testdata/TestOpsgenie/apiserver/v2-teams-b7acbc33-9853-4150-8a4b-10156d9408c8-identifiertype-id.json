@@ -10,6 +10,13 @@
           "username": "john.doe@opsgenie.com"
         },
         "role": "admin"
+      },
+      {
+        "user": {
+          "id": "e5b92115-bfe7-43eb-8c2a-e467f2e5ddc4",
+          "username": "unimported.member@donotimport.com"
+        },
+        "role": "admin"
       }
     ],
     "links": {

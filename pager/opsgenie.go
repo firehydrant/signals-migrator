@@ -163,7 +163,11 @@ func (o *Opsgenie) LoadTeamMembers(ctx context.Context) error {
 				TeamID: t.ID,
 				UserID: m.User.ID,
 			}); err != nil {
-				return fmt.Errorf("saving team member to db: %w", err)
+				if sqlErr, ok := store.AsSQLError(err); ok && sqlErr.IsForeignKeyConstraint() {
+					console.Warnf("User %q (%s) isn't imported. Skipping...\n", m.User.Username, m.User.ID)
+					return nil
+				}
+				return fmt.Errorf("saving user %q (%s) as member of %q (%s) to db: %w", m.User.Username, m.User.ID, t.Name, t.ID, err)
 			}
 		}
 	}
