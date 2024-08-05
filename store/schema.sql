@@ -4,13 +4,13 @@ PRAGMA foreign_keys=ON;
 CREATE TABLE IF NOT EXISTS fh_users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT NOT NULL
+  email TEXT NOT NULL COLLATE NOCASE
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS ext_users (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT NOT NULL,
+  email TEXT NOT NULL COLLATE NOCASE,
   fh_user_id TEXT REFERENCES fh_users(id),
   annotations TEXT NOT NULL DEFAULT ''
 ) STRICT;
