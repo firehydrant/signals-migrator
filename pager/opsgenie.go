@@ -370,7 +370,12 @@ func (o *Opsgenie) saveEscalationPolicyToDB(ctx context.Context, policy escalati
 		RepeatLimit:    repeatLimit,
 	}
 	if err := store.UseQueries(ctx).InsertExtEscalationPolicy(ctx, ep); err != nil {
-		return fmt.Errorf("saving escalation policy %s (%s): %w", ep.Name, ep.ID, err)
+		if sqlErr, ok := store.AsSQLError(err); ok && sqlErr.IsForeignKeyConstraint() {
+			console.Warnf("Escalation policy %q (%s) belongs to a team that isn't imported. Skipping...\n", ep.Name, ep.ID)
+			return nil
+		}
+
+		return fmt.Errorf("saving escalation policy %q (%s): %w", ep.Name, ep.ID, err)
 	}
 
 	for i, rule := range policy.Rules {
