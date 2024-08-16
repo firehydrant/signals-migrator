@@ -13,7 +13,7 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.21.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
-	github.com/urfave/cli/v2 v2.27.2
+	github.com/urfave/cli/v2 v2.27.4
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.15.0
 	modernc.org/sqlite v1.30.2
@@ -65,7 +65,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
+	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
