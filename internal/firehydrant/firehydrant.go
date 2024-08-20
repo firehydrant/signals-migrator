@@ -48,28 +48,21 @@ func (c *Client) ListTeams(ctx context.Context) ([]store.FhTeam, error) {
 
 	teams := []store.FhTeam{}
 	opts := &firehydrant.TeamQuery{}
-	for {
-		resp, err := c.client.Teams().List(ctx, opts)
-		if err != nil {
-			return nil, fmt.Errorf("fetching teams from FireHydrant: %w", err)
-		}
-		for _, t := range resp.Teams {
-			teams = append(teams, store.FhTeam{
-				ID:   t.ID,
-				Name: t.Name,
-				Slug: t.Slug,
-			})
-		}
-		if resp.Pagination.Next == 0 || resp.Pagination.Page >= resp.Pagination.Last {
-			break
-		}
-		opts.Page = resp.Pagination.Next
+	resp, err := c.client.Teams().List(ctx, opts)
+	if err != nil {
+		return nil, fmt.Errorf("fetching teams from FireHydrant: %w", err)
 	}
+	for _, t := range resp.Teams {
+		team := store.FhTeam{
+			ID:   t.ID,
+			Name: t.Name,
+			Slug: t.Slug,
+		}
 
-	for _, t := range teams {
-		if err := q.InsertFhTeam(ctx, store.InsertFhTeamParams(t)); err != nil {
+		if err := q.InsertFhTeam(ctx, store.InsertFhTeamParams(team)); err != nil {
 			return nil, fmt.Errorf("storing teams to database: %w", err)
 		}
+		teams = append(teams, team)
 	}
 	return teams, nil
 }
