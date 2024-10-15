@@ -230,7 +230,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 	for _, t := range toImport {
 		selected, fhTeam, err := console.Selectf(options, func(t store.FhTeam) string {
 			return fmt.Sprintf("%s %s", t.ID, t.Name)
-		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", t.Name))
+		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", t.Name)) //nolint:govet
 		if err != nil {
 			return fmt.Errorf("selecting FireHydrant team for '%s': %w", t.Name, err)
 		}
@@ -341,7 +341,7 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 	for i, u := range toImport {
 		selected, fhUser, err := console.Selectf(matchOpts, func(u store.FhUser) string {
 			return fmt.Sprintf("%*s  %s", namePad, u.Name, u.Email)
-		}, fmt.Sprintf("[%03d/%03d] Which FireHydrant user should '%s' be imported to?", i+1, len(toImport), u.Name))
+		}, fmt.Sprintf("[%03d/%03d] Which FireHydrant user should '%s' be imported to?", i+1, len(toImport), u.Name)) //nolint:govet
 		if err != nil {
 			return fmt.Errorf("selecting FireHydrant user for '%s': %w", u.Name, err)
 		}
