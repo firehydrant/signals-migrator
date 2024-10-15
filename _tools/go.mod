@@ -1,6 +1,7 @@
 module github.com/firehydrant/signals-migrator/_tools
 
-go 1.21.8
+go 1.22.0
+
 toolchain go1.22.5
 
 require (
