@@ -13,7 +13,7 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/hcl/v2 v2.22.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
-	github.com/urfave/cli/v2 v2.27.4
+	github.com/urfave/cli/v2 v2.27.5
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.15.0
 	modernc.org/sqlite v1.33.1
@@ -33,7 +33,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.2.3 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
 	github.com/charmbracelet/x/term v0.2.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
