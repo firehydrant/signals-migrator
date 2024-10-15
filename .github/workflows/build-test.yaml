@@ -88,7 +88,7 @@ jobs:
 
       - name: Run linters
         run: |
-          golangci-lint run --out-format=github-actions
+          golangci-lint run --out-format=colored-line-number
 
   build:
     runs-on: ubuntu-latest
