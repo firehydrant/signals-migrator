@@ -44,8 +44,8 @@ github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f/go.mod h1:vw97
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.18.0 h1:S8gINlzdQ840/4pfAwic/ZE0djQEH3wM94VfqLTZcOM=
 github.com/fatih/color v1.18.0/go.mod h1:4FelSpRwEGDpQ12mAdzqdOukCy4u8WUtOY6lkT/6HfU=
-github.com/firehydrant/terraform-provider-firehydrant v0.13.2 h1:8o+2MM1giuiQymynlA05lbUy3fD7wjDHOPBgNbzPW9Y=
-github.com/firehydrant/terraform-provider-firehydrant v0.13.2/go.mod h1:JMaYeNMUVp4lSajsuhP3aQBzgZRdW/hmPk1ni37cE50=
+github.com/firehydrant/terraform-provider-firehydrant v0.13.3 h1:vDM2Q3Y/b3mkmC4QWd7YKZvqfjB45TnAjGgJjT3V3Ig=
+github.com/firehydrant/terraform-provider-firehydrant v0.13.3/go.mod h1:JMaYeNMUVp4lSajsuhP3aQBzgZRdW/hmPk1ni37cE50=
 github.com/go-test/deep v1.0.3 h1:ZrJSEWsXzPOxaZnFteGEfooLba+ju3FYIbOrS+rQd68=
 github.com/go-test/deep v1.0.3/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3aSFNA=
 github.com/google/go-cmp v0.5.2/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
