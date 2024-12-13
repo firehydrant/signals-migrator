@@ -119,6 +119,14 @@ SELECT * FROM ext_schedules;
 -- name: ListExtSchedulesLikeID :many
 SELECT * FROM ext_schedules WHERE id LIKE ?;
 
+-- name: ListUnmatchedExtSchedule :many
+SELECT * FROM ext_schedules
+WHERE id NOT IN (
+  SELECT schedule_id FROM ext_schedule_teams
+) AND id IN (
+  SELECT target_id FROM ext_escalation_policy_step_targets
+);
+
 -- name: InsertExtSchedule :exec
 INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
