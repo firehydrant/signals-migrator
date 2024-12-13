@@ -42,6 +42,12 @@ var importFlags = []cli.Flag{
 		EnvVars: []string{"OUTPUT_DIR"},
 		Value:   "./output",
 	},
+	&cli.StringFlag{
+		Name:    "dsn",
+		Usage:   "The DSN for the SQLite database",
+		EnvVars: []string{"DSN"},
+		Value:   "file::memory:?cache=shared",
+	},
 }
 
 var ImportCommand = &cli.Command{
@@ -410,7 +416,7 @@ func matchSchedulesToTeams(ctx context.Context) error {
 	importOpts = append(importOpts, unmatchedSchedules...)
 	selected, toImport, err := console.MultiSelectf(importOpts, func(s store.ExtSchedule) string {
 		return fmt.Sprintf("%*s  %-*s  %s", idPad, s.ID, namePad, s.Name, s.Description)
-	}, "FireHydrant requires every on-call schedule to be associated with a team. The following schedules are referenced in escalation policies. Without the owning team, they will be skipped in the import process.")
+	}, "FireHydrant requires every on-call schedule to be associated with a team. Without the owning team, they will be skipped in the import process.")
 	if err != nil {
 		return fmt.Errorf("selecting schedules to import: %w", err)
 	}
