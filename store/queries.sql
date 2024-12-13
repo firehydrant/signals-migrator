@@ -123,8 +123,6 @@ SELECT * FROM ext_schedules WHERE id LIKE ?;
 SELECT * FROM ext_schedules
 WHERE id NOT IN (
   SELECT schedule_id FROM ext_schedule_teams
-) AND id IN (
-  SELECT target_id FROM ext_escalation_policy_step_targets
 );
 
 -- name: InsertExtSchedule :exec

@@ -1160,8 +1160,6 @@ const listUnmatchedExtSchedule = `-- name: ListUnmatchedExtSchedule :many
 SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules
 WHERE id NOT IN (
   SELECT schedule_id FROM ext_schedule_teams
-) AND id IN (
-  SELECT target_id FROM ext_escalation_policy_step_targets
 )
 `
 
