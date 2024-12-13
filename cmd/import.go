@@ -434,7 +434,7 @@ func matchSchedulesToTeams(ctx context.Context) error {
 	for _, s := range toImport {
 		_, team, err := console.Selectf(teams, func(t store.ExtTeam) string {
 			return fmt.Sprintf("%s %s", t.ID, t.Name)
-		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", s.Name))
+		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", s.Name)) //nolint:govet
 		if err != nil {
 			return fmt.Errorf("selecting FireHydrant team for '%s': %w", s.Name, err)
 		}
