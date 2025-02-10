@@ -19,7 +19,7 @@ require (
 	modernc.org/sqlite v1.34.5
 )
 
-require gotest.tools/v3 v3.5.1
+require gotest.tools/v3 v3.5.2
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
