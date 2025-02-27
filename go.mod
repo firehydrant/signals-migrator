@@ -16,7 +16,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.16.2
-	modernc.org/sqlite v1.35.0
+	modernc.org/sqlite v1.36.0
 )
 
 require gotest.tools/v3 v3.5.2
@@ -66,7 +66,7 @@ require (
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/tools v0.23.0 // indirect
 	modernc.org/libc v1.61.13 // indirect
