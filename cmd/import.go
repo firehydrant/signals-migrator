@@ -42,6 +42,12 @@ var importFlags = []cli.Flag{
 		EnvVars: []string{"OUTPUT_DIR"},
 		Value:   "./output",
 	},
+	&cli.StringFlag{
+		Name:    "dsn",
+		Usage:   "The DSN for the SQLite database",
+		EnvVars: []string{"DSN"},
+		Value:   "file::memory:?cache=shared",
+	},
 }
 
 var ImportCommand = &cli.Command{
@@ -91,6 +97,10 @@ func importAction(cliCtx *cli.Context) error {
 		return fmt.Errorf("importing escalation policies: %w", err)
 	}
 	console.Infof("Imported escalation policies from %s.\n", providerName)
+
+	if err := matchSchedulesToTeams(ctx); err != nil {
+		return fmt.Errorf("matching schedules to teams: %w", err)
+	}
 
 	tfr, err := tfrender.New(filepath.Join(
 		cliCtx.String("output-dir"),
@@ -382,5 +392,65 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 			console.Successf("[=] User '%s' linked to FireHydrant user '%s'.\n", u.Email, fhUser.Email)
 		}
 	}
+	return nil
+}
+
+func matchSchedulesToTeams(ctx context.Context) error {
+	unmatchedSchedules, err := store.UseQueries(ctx).ListUnmatchedExtSchedule(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to list schedules without team: %w", err)
+	}
+	if len(unmatchedSchedules) == 0 {
+		console.Successf("All schedules are already matched to teams.\n")
+		return nil
+	}
+
+	// Get padding number to pretty print the information in table-like view.
+	idPad := console.PadStrings(unmatchedSchedules, func(s store.ExtSchedule) int { return len(s.ID) })
+	namePad := console.PadStrings(unmatchedSchedules, func(s store.ExtSchedule) int { return len(s.Name) })
+
+	importOpts := []store.ExtSchedule{
+		{ID: "[+] IMPORT ALL"},
+		{ID: "[<] SKIP ALL  "}, // Extra spaces for padding alignment of icons
+	}
+	importOpts = append(importOpts, unmatchedSchedules...)
+	selected, toImport, err := console.MultiSelectf(importOpts, func(s store.ExtSchedule) string {
+		return fmt.Sprintf("%*s  %-*s  %s", idPad, s.ID, namePad, s.Name, s.Description)
+	}, "FireHydrant requires every on-call schedule to be associated with a team. Without the owning team, they will be skipped in the import process.")
+	if err != nil {
+		return fmt.Errorf("selecting schedules to import: %w", err)
+	}
+	switch selected[0] {
+	case 0:
+		console.Successf("[+] All schedules will be imported.\n")
+		toImport = unmatchedSchedules
+	case 1:
+		console.Warnf("[<] Skipping manual schedule import.\n")
+		return nil
+	default:
+		console.Warnf("Selected %d schedules to be imported.\n", len(toImport))
+	}
+
+	// Now, we prompt users to match the schedules that we are importing to a known external team.
+	teams, err := store.UseQueries(ctx).ListExtTeams(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to list teams: %w", err)
+	}
+	console.Warnf("Please match the following schedules to a FireHydrant team.\n")
+	for _, s := range toImport {
+		_, team, err := console.Selectf(teams, func(t store.ExtTeam) string {
+			return fmt.Sprintf("%s %s", t.ID, t.Name)
+		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", s.Name)) //nolint:govet
+		if err != nil {
+			return fmt.Errorf("selecting FireHydrant team for '%s': %w", s.Name, err)
+		}
+		if err := store.UseQueries(ctx).InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
+			ScheduleID: s.ID,
+			TeamID:     team.ID,
+		}); err != nil {
+			return fmt.Errorf("linking schedule '%s' to FireHydrant team: %w", s.Name, err)
+		}
+	}
+
 	return nil
 }
