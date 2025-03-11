@@ -13,7 +13,7 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
-	github.com/urfave/cli/v2 v2.27.5
+	github.com/urfave/cli/v2 v2.27.6
 	github.com/victorops/go-victorops v1.0.7
 	github.com/zclconf/go-cty v1.16.2
 	modernc.org/sqlite v1.36.0
