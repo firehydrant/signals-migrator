@@ -8,7 +8,7 @@ require (
 	github.com/golangci/golangci-lint v1.64.6
 	github.com/sqlc-dev/sqlc v1.28.0
 	golang.org/x/tools v0.31.0
-	gotest.tools/gotestsum v1.12.0
+	gotest.tools/gotestsum v1.12.1
 )
 
 require (
@@ -61,7 +61,7 @@ require (
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.5 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/ghostiam/protogetter v0.3.9 // indirect
 	github.com/go-critic/go-critic v0.12.0 // indirect
