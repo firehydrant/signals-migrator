@@ -25,8 +25,8 @@ Afterwards, run `signals-migrator import` (or `go run . import` for development 
 
 During the process, we will attempt to match users by email to existing users in FireHydrant. For users without a match, we will ask you to decide on whether to skip the user or manually match them to existing user.
 
-> [!IMPORTANT]  
-> If you are using Single Sign-On (SSO) for FireHydrant, users of your organization may need to log in to FireHydrant _at least once_ before running the migration tool.
+> [!IMPORTANT]
+> If you are using Single Sign-On (SSO) for FireHydrant, we recommend using SCIM provisioning before running this tool to ensure users are correctly set up.
 
 On the other hand, we can't reliably match teams ourselves as they have wide variance of identification. As such, we will ask you to select from three options:
 
