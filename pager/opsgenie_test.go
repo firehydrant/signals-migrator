@@ -89,6 +89,45 @@ func TestOpsgenie(t *testing.T) {
 		assertJSON(t, s)
 	})
 
+	t.Run("LoadSchedulesPreservesMemberOrder", func(t *testing.T) {
+		ctx, og := setup(t)
+
+		if err := og.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := og.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		// Check that schedule members are ordered correctly
+		// For schedule 3fee43f2-02da-49be-ab50-c88ed13aecc3-b1b5f7f6-728b-47bd-af02-c3e1c33bf219
+		// we expect users in order based on the API response
+		scheduleID := "3fee43f2-02da-49be-ab50-c88ed13aecc3-b1b5f7f6-728b-47bd-af02-c3e1c33bf219"
+		members, err := store.UseQueries(ctx).ListExtScheduleMembers(ctx, scheduleID)
+		if err != nil {
+			t.Fatalf("error loading schedule members: %s", err)
+		}
+
+		// Verify that members are ordered by member_order
+		for i, member := range members {
+			if member.MemberOrder != int64(i) {
+				t.Errorf("schedule %s member at position %d: expected order %d, got %d", scheduleID, i, i, member.MemberOrder)
+			}
+		}
+
+		// Verify that we have at least one member and the order is sequential
+		if len(members) > 0 {
+			for i := 1; i < len(members); i++ {
+				if members[i].MemberOrder <= members[i-1].MemberOrder {
+					t.Errorf("schedule %s: member order is not sequential at position %d", scheduleID, i)
+				}
+			}
+		}
+	})
+
 	t.Run("LoadEscalationPolicies", func(t *testing.T) {
 		ctx, og := setup(t)
 

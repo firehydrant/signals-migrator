@@ -16,7 +16,7 @@ INSERT INTO ext_schedules VALUES('PGR96WL-PR3J6XJ','🐴 @alice.bob is always on
 
 INSERT INTO ext_schedule_teams VALUES('PGR96WL-PR3J6XJ','PV9JOXL');
 
-INSERT INTO ext_schedule_members VALUES('PGR96WL-PR3J6XJ','PRXEEQ8');
+INSERT INTO ext_schedule_members VALUES('PGR96WL-PR3J6XJ','PRXEEQ8',0);
 
 INSERT INTO ext_escalation_policies VALUES('P2D2WR1','🐴 @alice.bob Test Service-ep','',NULL,0,NULL,'','','',1);
 INSERT INTO ext_escalation_policies VALUES('PS6ITO0','🐴 Notify @alice.bob','',NULL,0,NULL,'','','',1);
