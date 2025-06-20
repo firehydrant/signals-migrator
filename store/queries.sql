@@ -146,8 +146,13 @@ SELECT fh_users.* FROM ext_schedule_members
 WHERE ext_schedule_members.schedule_id = ?;
 
 -- name: InsertExtScheduleMember :exec
-INSERT INTO ext_schedule_members (schedule_id, user_id)
-VALUES (?, ?);
+INSERT INTO ext_schedule_members (schedule_id, user_id, member_order)
+VALUES (?, ?, ?);
+
+-- name: ListExtScheduleMembers :many
+SELECT * FROM ext_schedule_members 
+WHERE schedule_id = ?
+ORDER BY member_order ASC;
 
 -- name: ListExtEscalationPolicies :many
 SELECT * FROM ext_escalation_policies;

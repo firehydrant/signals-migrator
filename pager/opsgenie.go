@@ -271,10 +271,13 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 	}
 
 	// ExtScheduleMembers
-	for _, p := range r.Participants {
+	for i, p := range r.Participants {
+		// Store the order of participants as they appear in the API response
+		// This preserves the exact order from OpsGenie
 		if err := q.InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
-			ScheduleID: ogsParams.ID,
-			UserID:     p.Id,
+			ScheduleID:  ogsParams.ID,
+			UserID:      p.Id,
+			MemberOrder: int64(i),
 		}); err != nil {
 			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
 				console.Warnf("User %s not found for schedule %s, skipping...\n", p.Id, ogsParams.ID)

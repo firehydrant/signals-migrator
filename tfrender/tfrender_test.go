@@ -193,8 +193,9 @@ func TestRenderOnCallScheduleResource(t *testing.T) {
 	}
 
 	if err := store.UseQueries(ctx).InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
-		ScheduleID: "id-for-ext-schedule-0",
-		UserID:     "id-for-ext-user-0",
+		ScheduleID:  "id-for-ext-schedule-0",
+		UserID:      "id-for-ext-user-0",
+		MemberOrder: 0,
 	}); err != nil {
 		t.Fatal(err)
 	}

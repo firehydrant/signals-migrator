@@ -44,17 +44,17 @@ INSERT INTO ext_schedule_teams VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3b
 INSERT INTO ext_schedule_teams VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','946bf740-0497-4d5d-b31f-23a6e55a2719');
 
 
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-b1103233-600f-433c-bbdc-5269ad010255','9253cf00-6195-4123-a9a6-f9f1e25718d8');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-b1103233-600f-433c-bbdc-5269ad010255','1dc37638-ab52-44f3-848e-a16bcc584fb7');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-b1103233-600f-433c-bbdc-5269ad010255','e94e17aa-418c-44f7-8e47-1eaebf6b5343');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','9253cf00-6195-4123-a9a6-f9f1e25718d8');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','1dc37638-ab52-44f3-848e-a16bcc584fb7');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','e94e17aa-418c-44f7-8e47-1eaebf6b5343');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','e0a51be7-3c7e-407f-8678-292ab421f55f');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','9253cf00-6195-4123-a9a6-f9f1e25718d8');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','1dc37638-ab52-44f3-848e-a16bcc584fb7');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e94e17aa-418c-44f7-8e47-1eaebf6b5343');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e0a51be7-3c7e-407f-8678-292ab421f55f');
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-b1103233-600f-433c-bbdc-5269ad010255','9253cf00-6195-4123-a9a6-f9f1e25718d8',0);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-b1103233-600f-433c-bbdc-5269ad010255','1dc37638-ab52-44f3-848e-a16bcc584fb7',1);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-b1103233-600f-433c-bbdc-5269ad010255','e94e17aa-418c-44f7-8e47-1eaebf6b5343',2);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','9253cf00-6195-4123-a9a6-f9f1e25718d8',0);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','1dc37638-ab52-44f3-848e-a16bcc584fb7',1);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','e94e17aa-418c-44f7-8e47-1eaebf6b5343',2);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','e0a51be7-3c7e-407f-8678-292ab421f55f',3);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','9253cf00-6195-4123-a9a6-f9f1e25718d8',0);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','1dc37638-ab52-44f3-848e-a16bcc584fb7',1);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e94e17aa-418c-44f7-8e47-1eaebf6b5343',2);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e0a51be7-3c7e-407f-8678-292ab421f55f',3);
 
 INSERT INTO ext_escalation_policies VALUES('880ec24e-58db-441b-9681-2cb527bd24b2','AJ Team_escalation','','946bf740-0497-4d5d-b31f-23a6e55a2719',0,NULL,'','','',1);
 

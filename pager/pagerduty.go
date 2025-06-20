@@ -392,10 +392,13 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 		}
 	}
 
-	for _, user := range layer.Users {
+	for i, user := range layer.Users {
+		// Store the order of members as they appear in the API response
+		// This preserves the exact order from PagerDuty
 		if err := q.InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
-			ScheduleID: s.ID,
-			UserID:     user.User.ID,
+			ScheduleID:  s.ID,
+			UserID:      user.User.ID,
+			MemberOrder: int64(i),
 		}); err != nil {
 			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
 				console.Warnf("User %s not found for schedule %s, skipping...\n", user.User.ID, s.ID)
