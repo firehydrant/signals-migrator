@@ -775,6 +775,7 @@ SELECT fh_users.id, fh_users.name, fh_users.email FROM ext_schedule_members
   JOIN ext_users ON ext_users.id = ext_schedule_members.user_id
   JOIN fh_users ON fh_users.id = ext_users.fh_user_id
 WHERE ext_schedule_members.schedule_id = ?
+ORDER BY ext_schedule_members.member_order ASC
 `
 
 func (q *Queries) ListFhMembersByExtScheduleID(ctx context.Context, scheduleID string) ([]FhUser, error) {

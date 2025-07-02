@@ -53,7 +53,7 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_rota3" {
   team_id     = firehydrant_team.aj_team.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = [data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_success.id]
+  member_ids = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id]
 
   strategy {
     type           = "custom"
@@ -67,7 +67,7 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_daytime_rotati
   team_id     = firehydrant_team.aj_team.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = [data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_eng.id, data.firehydrant_user.jsmith.id, data.firehydrant_user.fh_success.id]
+  member_ids = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
 
   strategy {
     type         = "weekly"
@@ -117,7 +117,7 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_nighttime_rota
   team_id     = firehydrant_team.aj_team.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = [data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_eng.id, data.firehydrant_user.jsmith.id, data.firehydrant_user.fh_success.id]
+  member_ids = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
 
   strategy {
     type         = "daily"

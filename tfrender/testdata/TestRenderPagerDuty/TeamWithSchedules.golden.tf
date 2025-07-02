@@ -102,7 +102,7 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
 
   # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
 
-  member_ids = [data.firehydrant_user.wong.id, data.firehydrant_user.local.id]
+  member_ids = [data.firehydrant_user.local.id, data.firehydrant_user.wong.id]
 
   strategy {
     type           = "custom"

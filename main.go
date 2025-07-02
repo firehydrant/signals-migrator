@@ -22,7 +22,7 @@ func main() {
 			Name:  "version",
 			Usage: "Print the version",
 			Action: func(c *cli.Context) error {
-				fmt.Printf("signals-migrator version %s\n" + revision()) //nolint:forbidigo,govet
+				fmt.Printf("signals-migrator version %s\n", revision()) //nolint:forbidigo,govet
 				return nil
 			},
 		},
