@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS ext_schedule_teams (
 CREATE TABLE IF NOT EXISTS ext_schedule_members (
   schedule_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
+  member_order INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (schedule_id, user_id),
   FOREIGN KEY (schedule_id) REFERENCES ext_schedules(id),
   FOREIGN KEY (user_id) REFERENCES ext_users(id)

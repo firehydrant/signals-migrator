@@ -49,12 +49,12 @@ INSERT INTO ext_schedule_teams VALUES('791aa2c3-431b-4fb0-ae83-8d2814034098-0685
 INSERT INTO ext_schedule_teams VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','946bf740-0497-4d5d-b31f-23a6e55a2719');
 INSERT INTO ext_schedule_teams VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','946bf740-0497-4d5d-b31f-23a6e55a2719');
 
-INSERT INTO ext_schedule_members VALUES('57c134f4-adeb-41f2-990b-8eebe7bcfcf2-cf71a41b-3261-4f0b-93ed-5a1d1c583db8','9253cf00-6195-4123-a9a6-f9f1e25718d8');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','9253cf00-6195-4123-a9a6-f9f1e25718d8');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','1dc37638-ab52-44f3-848e-a16bcc584fb7');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','e94e17aa-418c-44f7-8e47-1eaebf6b5343');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','9253cf00-6195-4123-a9a6-f9f1e25718d8');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','1dc37638-ab52-44f3-848e-a16bcc584fb7');
-INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e94e17aa-418c-44f7-8e47-1eaebf6b5343');
+INSERT INTO ext_schedule_members VALUES('57c134f4-adeb-41f2-990b-8eebe7bcfcf2-cf71a41b-3261-4f0b-93ed-5a1d1c583db8','9253cf00-6195-4123-a9a6-f9f1e25718d8',0);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','9253cf00-6195-4123-a9a6-f9f1e25718d8',0);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','1dc37638-ab52-44f3-848e-a16bcc584fb7',1);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-2b3ba1f8-5df9-4af7-a1ac-73f90bd30b2d','e94e17aa-418c-44f7-8e47-1eaebf6b5343',2);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','9253cf00-6195-4123-a9a6-f9f1e25718d8',0);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','1dc37638-ab52-44f3-848e-a16bcc584fb7',1);
+INSERT INTO ext_schedule_members VALUES('8ab5a183-8ef5-47db-9de0-56663cfbae7c-9b488cc6-efa0-44f3-a432-b913acab9147','e94e17aa-418c-44f7-8e47-1eaebf6b5343',2);
 
 COMMIT;
