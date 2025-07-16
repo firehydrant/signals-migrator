@@ -144,9 +144,7 @@ resource "firehydrant_signals_api_escalation_policy" "aj_team_escalation" {
   name    = "AJ Team_escalation"
   team_id = firehydrant_team.aj_team.id
 
-  step {
-    timeout = "PT1M"
-  }
+  steps = [{ timeout = "PT1M", targets = [] }]
 
   repetitions = 0
 }

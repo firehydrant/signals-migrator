@@ -46,9 +46,7 @@ resource "firehydrant_signals_api_on_call_schedule" "cowboy_coders_atalice_bob_i
 resource "firehydrant_signals_api_escalation_policy" "atalice_bob_test_service_ep" {
   name = "🐴 @alice.bob Test Service-ep"
 
-  step {
-    timeout = "PT30M"
-  }
+  steps = [{ timeout = "PT30M", targets = [] }]
 
   repetitions = 0
 }
@@ -56,9 +54,7 @@ resource "firehydrant_signals_api_escalation_policy" "atalice_bob_test_service_e
 resource "firehydrant_signals_api_escalation_policy" "notify_atalice_bob" {
   name = "🐴 Notify @alice.bob"
 
-  step {
-    timeout = "PT30M"
-  }
+  steps = [{ timeout = "PT30M", targets = [] }]
 
   repetitions = 0
 }
