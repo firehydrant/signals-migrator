@@ -9,6 +9,9 @@ import (
 	"io"
 	"net/http"
 
+	firehydrantgosdk "github.com/firehydrant/firehydrant-go-sdk"
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
+	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -17,25 +20,36 @@ import (
 // firehyrant.Client is technically a kind of Pager, but it does not necessarily
 // satisfy the Pager interface, since that's not what we're using it for.
 type Client struct {
-	client firehydrant.Client
+	legacyClient firehydrant.Client
+	client       *firehydrantgosdk.FireHydrant
 
 	apiKey string
 	apiURL string
 }
 
 func NewClient(apiKey string, apiURL string) (*Client, error) {
-	client, err := firehydrant.NewRestClient(
+	// Initialize legacy client for SCIM
+	legacyClient, err := firehydrant.NewRestClient(
 		apiKey,
 		firehydrant.WithBaseURL(apiURL),
 		firehydrant.WithUserAgentSuffix("signals-migrator"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("initializing FireHydrant client: %w", err)
+		return nil, fmt.Errorf("initializing legacy FireHydrant client: %w", err)
 	}
+
+	// Initialize Go SDK client
+	client := firehydrantgosdk.New(
+		firehydrantgosdk.WithSecurity(components.Security{
+			APIKey: apiKey,
+		}),
+	)
+
 	return &Client{
-		client: client,
-		apiKey: apiKey,
-		apiURL: apiURL,
+		legacyClient: legacyClient,
+		client:       client,
+		apiKey:       apiKey,
+		apiURL:       apiURL,
 	}, nil
 }
 
@@ -47,22 +61,39 @@ func (c *Client) ListTeams(ctx context.Context) ([]store.FhTeam, error) {
 	}
 
 	teams := []store.FhTeam{}
-	opts := &firehydrant.TeamQuery{}
-	resp, err := c.client.Teams().List(ctx, opts)
-	if err != nil {
-		return nil, fmt.Errorf("fetching teams from FireHydrant: %w", err)
+	page := 1
+	request := operations.ListTeamsRequest{
+		Page: &page,
 	}
-	for _, t := range resp.Teams {
-		team := store.FhTeam{
-			ID:   t.ID,
-			Name: t.Name,
-			Slug: t.Slug,
+
+	for {
+		resp, err := c.client.Teams.ListTeams(ctx, request)
+		if err != nil {
+			return nil, fmt.Errorf("fetching teams from FireHydrant: %w", err)
+		}
+		for _, t := range resp.Data {
+			if t.ID == nil || t.Name == nil || t.Slug == nil {
+				console.Warnf("skipping team with nil fields")
+				continue
+			}
+			team := store.FhTeam{
+				ID:   *t.ID,
+				Name: *t.Name,
+				Slug: *t.Slug,
+			}
+
+			if err := q.InsertFhTeam(ctx, store.InsertFhTeamParams(team)); err != nil {
+				return nil, fmt.Errorf("storing teams to database: %w", err)
+			}
+			teams = append(teams, team)
+
 		}
 
-		if err := q.InsertFhTeam(ctx, store.InsertFhTeamParams(team)); err != nil {
-			return nil, fmt.Errorf("storing teams to database: %w", err)
+		if resp.Pagination.Next == nil || *resp.Pagination.Next == 0 {
+			break
 		}
-		teams = append(teams, team)
+		page = *resp.Pagination.Next
+
 	}
 	return teams, nil
 }
@@ -77,23 +108,26 @@ func (c *Client) ListUsers(ctx context.Context) ([]store.FhUser, error) {
 	}
 
 	users := []store.FhUser{}
-	opts := firehydrant.GetUserParams{}
+	page := 1
 	for {
-		resp, err := c.client.GetUsers(ctx, opts)
+
+		resp, err := c.client.Users.ListUsers(ctx, &page, nil, nil, nil)
 		if err != nil {
 			return nil, fmt.Errorf("fetching users from FireHydrant: %w", err)
 		}
-		for _, u := range resp.Users {
+		for _, u := range resp.Data {
 			users = append(users, store.FhUser{
-				ID:    u.ID,
-				Name:  u.Name,
-				Email: u.Email,
+				ID:    *u.ID,
+				Name:  *u.Name,
+				Email: *u.Email,
 			})
 		}
-		if resp.Pagination.Next == 0 {
+
+		next := resp.Pagination.Next
+		if *next == 0 {
 			break
 		}
-		opts.Page = resp.Pagination.Next
+		page = *resp.Pagination.Next
 	}
 
 	for _, u := range users {
@@ -106,7 +140,7 @@ func (c *Client) ListUsers(ctx context.Context) ([]store.FhUser, error) {
 
 func (c *Client) fetchUser(ctx context.Context, email string) (*store.FhUser, error) {
 	opts := firehydrant.GetUserParams{Query: email}
-	resp, err := c.client.GetUsers(ctx, opts)
+	resp, err := c.legacyClient.GetUsers(ctx, opts)
 	if err != nil {
 		return nil, fmt.Errorf("fetching users from FireHydrant: %w", err)
 	}

@@ -1,26 +1,26 @@
 terraform {
   required_providers {
     firehydrant = {
-      source  = "firehydrant/firehydrant"
-      version = ">= 0.8.0"
+      source  = "firehydrant/firehydrant-v2"
+      version = "~> 0.3.0"
     }
   }
 }
 
 data "firehydrant_user" "user_0" {
-  email = "user-0@example.com"
+  id = "id-for-user-0"
 }
 
 data "firehydrant_user" "user_1" {
-  email = "user-1@example.com"
+  id = "id-for-user-1"
 }
 
 data "firehydrant_user" "user_2" {
-  email = "user-2@example.com"
+  id = "id-for-user-2"
 }
 
 data "firehydrant_user" "user_3" {
-  email = "user-3@example.com"
+  id = "id-for-user-3"
 }
 
 resource "firehydrant_team" "team_0_slug" {
@@ -49,16 +49,16 @@ resource "firehydrant_team" "team_3_slug" {
   name = "Team 3"
 }
 
-resource "firehydrant_on_call_schedule" "team_1_slug_schedule_0" {
+resource "firehydrant_signals_api_on_call_schedule" "team_1_slug_schedule_0" {
   name        = "Schedule 0"
   description = "Schedule 0 description"
   team_id     = firehydrant_team.team_1_slug.id
   time_zone   = "UTC"
 
-  member_ids = [data.firehydrant_user.user_0.id]
+  members_input = [{ user_id = data.firehydrant_user.user_0.id }]
 
-  strategy {
-    type         = "daily"
+  strategy_input = {
     handoff_time = "11:00"
+    type         = "daily"
   }
 }
