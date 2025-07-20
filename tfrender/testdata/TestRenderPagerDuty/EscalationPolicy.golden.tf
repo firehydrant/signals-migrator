@@ -46,7 +46,7 @@ resource "firehydrant_signals_api_on_call_schedule" "cowboy_coders_atalice_bob_i
 resource "firehydrant_signals_api_escalation_policy" "atalice_bob_test_service_ep" {
   name = "🐴 @alice.bob Test Service-ep"
 
-  steps = [{ timeout = "PT30M", targets = [] }]
+  steps = [{ timeout = "PT30M", targets = [{ type = "OnCallSchedule", id = firehydrant_signals_api_on_call_schedule.cowboy_coders_atalice_bob_is_always_on_call_layer_1.id }] }]
 
   repetitions = 0
 }
@@ -54,7 +54,7 @@ resource "firehydrant_signals_api_escalation_policy" "atalice_bob_test_service_e
 resource "firehydrant_signals_api_escalation_policy" "notify_atalice_bob" {
   name = "🐴 Notify @alice.bob"
 
-  steps = [{ timeout = "PT30M", targets = [] }]
+  steps = [{ timeout = "PT30M", targets = [{ type = "User", id = data.firehydrant_user.alice_bob.id }] }]
 
   repetitions = 0
 }

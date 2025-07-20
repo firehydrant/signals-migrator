@@ -144,7 +144,7 @@ resource "firehydrant_signals_api_escalation_policy" "aj_team_escalation" {
   name    = "AJ Team_escalation"
   team_id = firehydrant_team.aj_team.id
 
-  steps = [{ timeout = "PT1M", targets = [] }]
+  steps = [{ timeout = "PT1M", targets = [{ type = "OnCallSchedule", id = firehydrant_signals_api_on_call_schedule.aj_team_aj_team_schedule_daytime_rotation.id }, { type = "OnCallSchedule", id = firehydrant_signals_api_on_call_schedule.aj_team_aj_team_schedule_nighttime_rotation.id }, { type = "OnCallSchedule", id = firehydrant_signals_api_on_call_schedule.aj_team_aj_team_schedule_rota3.id }] }]
 
   repetitions = 0
 }
