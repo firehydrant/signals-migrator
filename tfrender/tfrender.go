@@ -272,9 +272,11 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 			stepsTokens = append(stepsTokens, stepTokens)
 		}
 
+		b.AppendNewline()
 		if len(stepsTokens) > 0 {
-			b.AppendNewline()
 			b.SetAttributeRaw("steps", hclwrite.TokensForTuple(stepsTokens))
+		} else {
+			b.SetAttributeRaw("steps", hclwrite.TokensForTuple([]hclwrite.Tokens{}))
 		}
 
 		b.AppendNewline()
