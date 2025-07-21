@@ -43,6 +43,7 @@ func NewClient(apiKey string, apiURL string) (*Client, error) {
 		firehydrantgosdk.WithSecurity(components.Security{
 			APIKey: apiKey,
 		}),
+		firehydrantgosdk.WithServerURL(apiURL),
 	)
 
 	return &Client{
