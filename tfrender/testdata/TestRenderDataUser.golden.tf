@@ -1,20 +1,20 @@
 terraform {
   required_providers {
     firehydrant = {
-      source  = "firehydrant/firehydrant"
-      version = ">= 0.8.0"
+      source  = "firehydrant/firehydrant-v2"
+      version = "~> 0.3.0"
     }
   }
 }
 
 data "firehydrant_user" "user_0" {
-  email = "user-0@example.com"
+  id = "id-for-user-0"
 }
 
 data "firehydrant_user" "user_1" {
-  email = "user-1@example.com"
+  id = "id-for-user-1"
 }
 
 data "firehydrant_user" "user_2" {
-  email = "user-2@example.com"
+  id = "id-for-user-2"
 }

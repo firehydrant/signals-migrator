@@ -3,12 +3,15 @@ package tfrender
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
@@ -31,28 +34,49 @@ type TFRender struct {
 }
 
 func fhProviderVersion() string {
-	bi, ok := debug.ReadBuildInfo()
-	if !ok {
-		return ">= 0.8.0"
+	if version := os.Getenv("FH_PROVIDER_VERSION"); version != "" {
+		return fmt.Sprintf("~> %s", version)
 	}
 
-	// Recommend version which is used in the migration tool
-	for _, dep := range bi.Deps {
-		if dep.Path == "github.com/firehydrant/terraform-provider-firehydrant" {
-			versionStr := strings.Split(dep.Version, "-")[0]
-			// Version tag may be using Go-module commit hash syntax.
-			// This means the version we use is potentially unknown to Terraform provider registry.
-			// Bail out and use the latest version.
-			if versionStr != dep.Version {
-				break
-			}
-			// Go versioning may include v-prefix, but Terraform doesn't like it.
-			v := strings.TrimPrefix(dep.Version, "v")
-			return fmt.Sprintf("~> %s", v)
-		}
+	if version := getVersionFromTerraformRegistry(); version != "" {
+		return version
 	}
 
-	return ">= 0.8.0"
+	// Fallback
+	return ">= 0.3.0"
+}
+
+func getVersionFromTerraformRegistry() string {
+	client := &http.Client{Timeout: 5 * time.Second}
+
+	resp, err := client.Get("https://registry.terraform.io/v1/providers/firehydrant/firehydrant-v2")
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return ""
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ""
+	}
+
+	var registryResp struct {
+		Tag string `json:"tag"`
+	}
+	if err := json.Unmarshal(body, &registryResp); err != nil {
+		return ""
+	}
+
+	if registryResp.Tag != "" {
+		version := strings.TrimPrefix(registryResp.Tag, "v")
+		return fmt.Sprintf("~> %s", version)
+	}
+
+	return ""
 }
 
 func New(name string) (*TFRender, error) {
@@ -66,7 +90,7 @@ func New(name string) (*TFRender, error) {
 	root := f.Body()
 	provider := root.AppendNewBlock("terraform", nil).Body().AppendNewBlock("required_providers", nil).Body()
 	provider.SetAttributeValue("firehydrant", cty.ObjectVal(map[string]cty.Value{
-		"source":  cty.StringVal("firehydrant/firehydrant"),
+		"source":  cty.StringVal("firehydrant/firehydrant-v2"),
 		"version": cty.StringVal(fhProviderVersion()),
 	}))
 
@@ -124,7 +148,7 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 		r.root.AppendNewline()
 
 		b := r.root.AppendNewBlock("resource", []string{
-			"firehydrant_escalation_policy",
+			"firehydrant_signals_api_escalation_policy",
 			p.TFSlug(),
 		}).Body()
 		b.SetAttributeValue("name", cty.StringVal(p.Name))
@@ -154,19 +178,15 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 			return fmt.Errorf("querying steps for policy '%s': %w", p.Name, err)
 		}
 
+		var stepsTokens []hclwrite.Tokens
 		for _, s := range steps {
-			b.AppendNewline()
-			step := b.AppendNewBlock("step", nil).Body()
-			step.SetAttributeValue("timeout", cty.StringVal(s.Timeout))
-
 			targets, err := store.UseQueries(ctx).ListExtEscalationPolicyStepTargets(ctx, s.ID)
 			if err != nil {
 				return fmt.Errorf("querying targets for step %d of %s: %w", s.Position, p.Name, err)
 			}
 
+			var targetsTokens []hclwrite.Tokens
 			for _, t := range targets {
-				idTraversals := []hcl.Traversal{}
-
 				switch t.TargetType {
 				case store.TARGET_TYPE_USER:
 					u, err := store.UseQueries(ctx).GetUserByExtID(ctx, t.TargetID)
@@ -174,12 +194,27 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						console.Errorf("querying user '%s' for step %d of %s: %s\n", t.TargetID, s.Position, p.Name, err.Error())
 						continue
 					}
-					idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+
+					targetTokens := hclwrite.Tokens{
+						{Type: hclsyntax.TokenOBrace, Bytes: []byte("{")},
+						{Type: hclsyntax.TokenIdent, Bytes: []byte("type")},
+						{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+						{Type: hclsyntax.TokenOQuote, Bytes: []byte(`"`)},
+						{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(t.TargetType)},
+						{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"`)},
+						{Type: hclsyntax.TokenComma, Bytes: []byte(",")},
+						{Type: hclsyntax.TokenIdent, Bytes: []byte("id")},
+						{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+					}
+					targetTokens = append(targetTokens, hclwrite.TokensForTraversal(hcl.Traversal{
 						hcl.TraverseRoot{Name: "data"},
 						hcl.TraverseAttr{Name: "firehydrant_user"},
 						hcl.TraverseAttr{Name: u.TFSlug()},
 						hcl.TraverseAttr{Name: "id"},
-					})
+					})...)
+					targetTokens = append(targetTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
+					targetsTokens = append(targetsTokens, targetTokens)
+
 				case store.TARGET_TYPE_SCHEDULE:
 					schedules, err := store.UseQueries(ctx).ListExtSchedulesLikeID(ctx, fmt.Sprintf(`%s%%`, t.TargetID))
 					if err != nil {
@@ -193,25 +228,55 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						}
 						for _, team := range teams {
 							slug := fmt.Sprintf("%s_%s", team.TFSlug(), schedule.TFSlug())
-							idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
-								hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
+
+							targetTokens := hclwrite.Tokens{
+								{Type: hclsyntax.TokenOBrace, Bytes: []byte("{")},
+								{Type: hclsyntax.TokenIdent, Bytes: []byte("type")},
+								{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+								{Type: hclsyntax.TokenOQuote, Bytes: []byte(`"`)},
+								{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(t.TargetType)},
+								{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"`)},
+								{Type: hclsyntax.TokenComma, Bytes: []byte(",")},
+								{Type: hclsyntax.TokenIdent, Bytes: []byte("id")},
+								{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+							}
+							targetTokens = append(targetTokens, hclwrite.TokensForTraversal(hcl.Traversal{
+								hcl.TraverseRoot{Name: "firehydrant_signals_api_on_call_schedule"},
 								hcl.TraverseAttr{Name: slug},
 								hcl.TraverseAttr{Name: "id"},
-							})
+							})...)
+							targetTokens = append(targetTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
+							targetsTokens = append(targetsTokens, targetTokens)
 						}
 					}
 				default:
 					console.Errorf("unknown target type '%s' for step %d of %s\n", t.TargetType, s.Position, p.Name)
 					continue
 				}
-
-				for _, targetTraversal := range idTraversals { //nolint:staticcheck // Safeguard in case the switch-case above is changed.
-					step.AppendNewline()
-					target := step.AppendNewBlock("targets", nil).Body()
-					target.SetAttributeValue("type", cty.StringVal(t.TargetType))
-					target.SetAttributeTraversal("id", targetTraversal)
-				}
 			}
+
+			stepTokens := hclwrite.Tokens{
+				{Type: hclsyntax.TokenOBrace, Bytes: []byte("{")},
+				{Type: hclsyntax.TokenIdent, Bytes: []byte("timeout")},
+				{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+				{Type: hclsyntax.TokenOQuote, Bytes: []byte(`"`)},
+				{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(s.Timeout)},
+				{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"`)},
+				{Type: hclsyntax.TokenComma, Bytes: []byte(",")},
+				{Type: hclsyntax.TokenIdent, Bytes: []byte("targets")},
+				{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+			}
+			stepTokens = append(stepTokens, hclwrite.TokensForTuple(targetsTokens)...)
+			stepTokens = append(stepTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
+
+			stepsTokens = append(stepsTokens, stepTokens)
+		}
+
+		b.AppendNewline()
+		if len(stepsTokens) > 0 {
+			b.SetAttributeRaw("steps", hclwrite.TokensForTuple(stepsTokens))
+		} else {
+			b.SetAttributeRaw("steps", hclwrite.TokensForTuple([]hclwrite.Tokens{}))
 		}
 
 		b.AppendNewline()
@@ -237,7 +302,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			r.root.AppendNewline()
 
 			b := r.root.AppendNewBlock("resource", []string{
-				"firehydrant_on_call_schedule",
+				"firehydrant_signals_api_on_call_schedule",
 				fmt.Sprintf("%s_%s", t.TFSlug(), s.TFSlug()),
 			}).Body()
 			b.SetAttributeValue("name", cty.StringVal(s.Name))
@@ -264,43 +329,67 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 				return fmt.Errorf("querying members for schedule '%s': %w", s.Name, err)
 			}
 
-			memberList := []hclwrite.Tokens{}
-			for _, m := range members {
-				member := hcl.Traversal{
-					hcl.TraverseRoot{Name: "data"},
-					hcl.TraverseAttr{Name: "firehydrant_user"},
-					hcl.TraverseAttr{Name: m.TFSlug()},
-					hcl.TraverseAttr{Name: "id"},
+			if len(members) > 0 {
+				memberInputs := []hclwrite.Tokens{}
+				for _, m := range members {
+
+					objTokens := hclwrite.Tokens{
+						{Type: hclsyntax.TokenOBrace, Bytes: []byte("{")},
+						{Type: hclsyntax.TokenIdent, Bytes: []byte("user_id")},
+						{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+					}
+
+					objTokens = append(objTokens, hclwrite.TokensForTraversal(hcl.Traversal{
+						hcl.TraverseRoot{Name: "data"},
+						hcl.TraverseAttr{Name: "firehydrant_user"},
+						hcl.TraverseAttr{Name: m.TFSlug()},
+						hcl.TraverseAttr{Name: "id"},
+					})...)
+					objTokens = append(objTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
+
+					memberInputs = append(memberInputs, objTokens)
 				}
-				memberList = append(memberList, hclwrite.TokensForTraversal(member))
-			}
 
-			b.AppendNewline()
-			b.SetAttributeRaw("member_ids", hclwrite.TokensForTuple(memberList))
-
-			b.AppendNewline()
-			strategy := b.AppendNewBlock("strategy", []string{}).Body()
-			strategy.SetAttributeValue("type", cty.StringVal(s.Strategy))
-			if s.Strategy == "weekly" {
-				strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
-			}
-			if s.Strategy == "custom" {
-				strategy.SetAttributeValue("shift_duration", cty.StringVal(s.ShiftDuration))
+				b.AppendNewline()
+				b.SetAttributeRaw("members_input", hclwrite.TokensForTuple(memberInputs))
 			} else {
-				strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
+				b.AppendNewline()
+				b.SetAttributeRaw("members_input", hclwrite.TokensForTuple([]hclwrite.Tokens{}))
 			}
+
+			b.AppendNewline()
+			strategyObj := map[string]cty.Value{
+				"type": cty.StringVal(s.Strategy),
+			}
+			if s.Strategy == "weekly" && s.HandoffDay != "" {
+				strategyObj["handoff_day"] = cty.StringVal(s.HandoffDay)
+			}
+			if s.Strategy == "custom" && s.ShiftDuration != "" {
+				strategyObj["shift_duration"] = cty.StringVal(s.ShiftDuration)
+			}
+			if (s.Strategy == "daily" || s.Strategy == "weekly") && s.HandoffTime != "" {
+				strategyObj["handoff_time"] = cty.StringVal(s.HandoffTime)
+			}
+			b.SetAttributeValue("strategy_input", cty.ObjectVal(strategyObj))
 
 			restrictions, err := store.UseQueries(ctx).ListExtScheduleRestrictionsByExtScheduleID(ctx, s.ID)
 			if err != nil {
 				return fmt.Errorf("querying restrictions for schedule '%s': %w", s.Name, err)
 			}
-			for _, r := range restrictions {
+
+			if len(restrictions) > 0 {
+				restrictionInputs := []hclwrite.Tokens{}
+				for _, restriction := range restrictions {
+					restrictionInput := hclwrite.TokensForValue(cty.ObjectVal(map[string]cty.Value{
+						"start_day":  cty.StringVal(restriction.StartDay),
+						"start_time": cty.StringVal(restriction.StartTime),
+						"end_day":    cty.StringVal(restriction.EndDay),
+						"end_time":   cty.StringVal(restriction.EndTime),
+					}))
+					restrictionInputs = append(restrictionInputs, restrictionInput)
+				}
 				b.AppendNewline()
-				restriction := b.AppendNewBlock("restrictions", []string{}).Body()
-				restriction.SetAttributeValue("start_day", cty.StringVal(r.StartDay))
-				restriction.SetAttributeValue("start_time", cty.StringVal(r.StartTime))
-				restriction.SetAttributeValue("end_day", cty.StringVal(r.EndDay))
-				restriction.SetAttributeValue("end_time", cty.StringVal(r.EndTime))
+				b.SetAttributeRaw("restrictions_input", hclwrite.TokensForTuple(restrictionInputs))
 			}
 		}
 	}
@@ -366,20 +455,35 @@ func (r *TFRender) ResourceFireHydrantTeams(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("querying team members: %w", err)
 			}
-			for _, m := range members {
-				if importedMembership[tfSlug+m.TFSlug()] {
-					continue
-				}
 
-				b.AppendNewline()
-				b.AppendNewBlock("memberships", []string{}).Body().
-					SetAttributeTraversal("user_id", hcl.Traversal{
+			if len(members) > 0 {
+				membershipInputs := []hclwrite.Tokens{}
+				for _, m := range members {
+					if importedMembership[tfSlug+m.TFSlug()] {
+						continue
+					}
+
+					objTokens := hclwrite.Tokens{
+						{Type: hclsyntax.TokenOBrace, Bytes: []byte("{")},
+						{Type: hclsyntax.TokenIdent, Bytes: []byte("user_id")},
+						{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
+					}
+					objTokens = append(objTokens, hclwrite.TokensForTraversal(hcl.Traversal{
 						hcl.TraverseRoot{Name: "data"},
 						hcl.TraverseAttr{Name: "firehydrant_user"},
 						hcl.TraverseAttr{Name: m.TFSlug()},
 						hcl.TraverseAttr{Name: "id"},
-					})
-				importedMembership[tfSlug+m.TFSlug()] = true
+					})...)
+					objTokens = append(objTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
+
+					membershipInputs = append(membershipInputs, objTokens)
+					importedMembership[tfSlug+m.TFSlug()] = true
+				}
+
+				if len(membershipInputs) > 0 {
+					b.AppendNewline()
+					b.SetAttributeRaw("memberships_input", hclwrite.TokensForTuple(membershipInputs))
+				}
 			}
 		}
 
@@ -406,14 +510,14 @@ func (r *TFRender) DataFireHydrantUsers(ctx context.Context) error {
 	for _, u := range users {
 		r.root.AppendNewline()
 		b := r.root.AppendNewBlock("data", []string{"firehydrant_user", u.TFSlug()}).Body()
-		b.SetAttributeValue("email", cty.StringVal(u.Email))
+		b.SetAttributeValue("id", cty.StringVal(u.ID))
 
 		annotations, err := store.UseQueries(ctx).ListFhUserAnnotations(ctx, sql.NullString{String: u.ID, Valid: true})
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				continue
 			} else {
-				return fmt.Errorf("querying annotations for user '%s': %w", u.Email, err)
+				return fmt.Errorf("querying annotations for user '%s': %w", u.ID, err)
 			}
 		}
 		for _, a := range annotations {
