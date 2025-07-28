@@ -11,7 +11,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/firehydrant/terraform-provider-firehydrant v0.13.5
 	github.com/gosimple/slug v1.15.0
-	github.com/hashicorp/hcl/v2 v2.23.0
+	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/victorops/go-victorops v1.0.7
