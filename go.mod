@@ -20,7 +20,7 @@ require (
 )
 
 require (
-	github.com/firehydrant/firehydrant-go-sdk v1.1.5
+	github.com/firehydrant/firehydrant-go-sdk v1.3.0
 	gotest.tools/v3 v3.5.2
 )
 
