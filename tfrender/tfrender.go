@@ -154,15 +154,19 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 			return fmt.Errorf("querying steps for policy '%s': %w", p.Name, err)
 		}
 
-		var stepsTokens []hclwrite.Tokens
 		for _, s := range steps {
+			b.AppendNewline()
+			step := b.AppendNewBlock("step", nil).Body()
+			step.SetAttributeValue("timeout", cty.StringVal(s.Timeout))
+
 			targets, err := store.UseQueries(ctx).ListExtEscalationPolicyStepTargets(ctx, s.ID)
 			if err != nil {
 				return fmt.Errorf("querying targets for step %d of %s: %w", s.Position, p.Name, err)
 			}
 
-			var targetsTokens []hclwrite.Tokens
 			for _, t := range targets {
+				idTraversals := []hcl.Traversal{}
+
 				switch t.TargetType {
 				case store.TARGET_TYPE_USER:
 					u, err := store.UseQueries(ctx).GetUserByExtID(ctx, t.TargetID)
@@ -170,27 +174,12 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						console.Errorf("querying user '%s' for step %d of %s: %s\n", t.TargetID, s.Position, p.Name, err.Error())
 						continue
 					}
-
-					targetTokens := hclwrite.Tokens{
-						{Type: hclsyntax.TokenOBrace, Bytes: []byte("{")},
-						{Type: hclsyntax.TokenIdent, Bytes: []byte("type")},
-						{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
-						{Type: hclsyntax.TokenOQuote, Bytes: []byte(`"`)},
-						{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(t.TargetType)},
-						{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"`)},
-						{Type: hclsyntax.TokenComma, Bytes: []byte(",")},
-						{Type: hclsyntax.TokenIdent, Bytes: []byte("id")},
-						{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
-					}
-					targetTokens = append(targetTokens, hclwrite.TokensForTraversal(hcl.Traversal{
+					idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
 						hcl.TraverseRoot{Name: "data"},
 						hcl.TraverseAttr{Name: "firehydrant_user"},
 						hcl.TraverseAttr{Name: u.TFSlug()},
 						hcl.TraverseAttr{Name: "id"},
-					})...)
-					targetTokens = append(targetTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
-					targetsTokens = append(targetsTokens, targetTokens)
-
+					})
 				case store.TARGET_TYPE_SCHEDULE:
 					schedules, err := store.UseQueries(ctx).ListExtSchedulesLikeID(ctx, fmt.Sprintf(`%s%%`, t.TargetID))
 					if err != nil {
@@ -208,39 +197,21 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 								hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
 								hcl.TraverseAttr{Name: slug},
 								hcl.TraverseAttr{Name: "id"},
-							})...)
-							targetTokens = append(targetTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
-							targetsTokens = append(targetsTokens, targetTokens)
+							})
 						}
 					}
 				default:
 					console.Errorf("unknown target type '%s' for step %d of %s\n", t.TargetType, s.Position, p.Name)
 					continue
 				}
+
+				for _, targetTraversal := range idTraversals { //nolint:staticcheck // Safeguard in case the switch-case above is changed.
+					step.AppendNewline()
+					target := step.AppendNewBlock("targets", nil).Body()
+					target.SetAttributeValue("type", cty.StringVal(t.TargetType))
+					target.SetAttributeTraversal("id", targetTraversal)
+				}
 			}
-
-			stepTokens := hclwrite.Tokens{
-				{Type: hclsyntax.TokenOBrace, Bytes: []byte("{")},
-				{Type: hclsyntax.TokenIdent, Bytes: []byte("timeout")},
-				{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
-				{Type: hclsyntax.TokenOQuote, Bytes: []byte(`"`)},
-				{Type: hclsyntax.TokenQuotedLit, Bytes: []byte(s.Timeout)},
-				{Type: hclsyntax.TokenCQuote, Bytes: []byte(`"`)},
-				{Type: hclsyntax.TokenComma, Bytes: []byte(",")},
-				{Type: hclsyntax.TokenIdent, Bytes: []byte("targets")},
-				{Type: hclsyntax.TokenEqual, Bytes: []byte("=")},
-			}
-			stepTokens = append(stepTokens, hclwrite.TokensForTuple(targetsTokens)...)
-			stepTokens = append(stepTokens, &hclwrite.Token{Type: hclsyntax.TokenCBrace, Bytes: []byte("}")})
-
-			stepsTokens = append(stepsTokens, stepTokens)
-		}
-
-		b.AppendNewline()
-		if len(stepsTokens) > 0 {
-			b.SetAttributeRaw("steps", hclwrite.TokensForTuple(stepsTokens))
-		} else {
-			b.SetAttributeRaw("steps", hclwrite.TokensForTuple([]hclwrite.Tokens{}))
 		}
 
 		b.AppendNewline()
