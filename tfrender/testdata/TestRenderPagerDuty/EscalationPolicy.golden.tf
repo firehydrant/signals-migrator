@@ -1,14 +1,14 @@
 terraform {
   required_providers {
     firehydrant = {
-      source  = "firehydrant/firehydrant-v2"
-      version = "~> 0.3.1"
+      source  = "firehydrant/firehydrant"
+      version = ">= 0.8.0"
     }
   }
 }
 
 data "firehydrant_user" "alice_bob" {
-  id = "35b5390f-d134-4bc6-966d-0b4048788b62"
+  email = "alice.bob@example.com"
   # Insert PagerDuty URL here :)
   # https://acme-eng.pagerduty.com/users/PUIDISU
 }
@@ -18,7 +18,9 @@ resource "firehydrant_team" "cowboy_coders" {
 
   # [PagerDuty] team-rocket https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
 
-  memberships_input = [{ user_id = data.firehydrant_user.alice_bob.id }]
+  memberships {
+    user_id = data.firehydrant_user.alice_bob.id
+  }
 }
 
 import {
@@ -26,7 +28,7 @@ import {
   to = firehydrant_team.cowboy_coders
 }
 
-resource "firehydrant_signals_api_on_call_schedule" "cowboy_coders_atalice_bob_is_always_on_call_layer_1" {
+resource "firehydrant_on_call_schedule" "cowboy_coders_atalice_bob_is_always_on_call_layer_1" {
   name        = "🐴 @alice.bob is always on call - Layer 1"
   description = "Always 😭 (Layer 1)"
   team_id     = firehydrant_team.cowboy_coders.id
@@ -34,27 +36,41 @@ resource "firehydrant_signals_api_on_call_schedule" "cowboy_coders_atalice_bob_i
 
   # [PagerDuty] team-rocket https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
 
-  members_input = [{ user_id = data.firehydrant_user.alice_bob.id }]
+  member_ids = [data.firehydrant_user.alice_bob.id]
 
-  strategy_input = {
+  strategy {
+    type         = "weekly"
     handoff_day  = "friday"
     handoff_time = "12:00:00"
-    type         = "weekly"
   }
 }
 
-resource "firehydrant_signals_api_escalation_policy" "atalice_bob_test_service_ep" {
+resource "firehydrant_escalation_policy" "atalice_bob_test_service_ep" {
   name = "🐴 @alice.bob Test Service-ep"
 
-  steps = [{ timeout = "PT30M", targets = [{ type = "OnCallSchedule", id = firehydrant_signals_api_on_call_schedule.cowboy_coders_atalice_bob_is_always_on_call_layer_1.id }] }]
+  step {
+    timeout = "PT30M"
+
+    targets {
+      type = "OnCallSchedule"
+      id   = firehydrant_on_call_schedule.cowboy_coders_atalice_bob_is_always_on_call_layer_1.id
+    }
+  }
 
   repetitions = 0
 }
 
-resource "firehydrant_signals_api_escalation_policy" "notify_atalice_bob" {
+resource "firehydrant_escalation_policy" "notify_atalice_bob" {
   name = "🐴 Notify @alice.bob"
 
-  steps = [{ timeout = "PT30M", targets = [{ type = "User", id = data.firehydrant_user.alice_bob.id }] }]
+  step {
+    timeout = "PT30M"
+
+    targets {
+      type = "User"
+      id   = data.firehydrant_user.alice_bob.id
+    }
+  }
 
   repetitions = 0
 }
