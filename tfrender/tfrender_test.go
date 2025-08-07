@@ -159,6 +159,7 @@ func TestRenderTeamResource(t *testing.T) {
 	// - 4 team blocks, where:
 	//   - team 0 and team 2 have import {} block
 	//   - team 0 has 1 user membership, linked with user 0
+	// Updated expectation: Teams now use memberships_input with proper HCL traversals
 	golden.Assert(t, string(content), goldenFile(tfr.Filename()))
 }
 
@@ -215,5 +216,7 @@ func TestRenderOnCallScheduleResource(t *testing.T) {
 	//   - team 0 and team 2 have import {} block
 	//   - team 0 has 1 user membership, linked with user 0
 	// - 1 on-call schedule block, linked with team 1
+	// Updated expectation: Schedule now uses firehydrant_signals_api_on_call_schedule
+	// and uses members_input with proper HCL traversals, strategy_input as object
 	golden.Assert(t, string(content), goldenFile(tfr.Filename()))
 }
