@@ -412,11 +412,11 @@ func TestPagerDuty(t *testing.T) {
 
 		// Extract the on-call schedule resource for P3D7DLW-PSQ0VRL
 		// Look for the schedule resource that contains the expected member order
-		scheduleRegex := regexp.MustCompile(`resource "firehydrant_signals_api_on_call_schedule" "[^"]*" \{[\s\S]*?\n\}`)
+		scheduleRegex := regexp.MustCompile(`resource "firehydrant_on_call_schedule" "[^"]*" \{[\s\S]*?\}`)
 		scheduleMatches := scheduleRegex.FindAllString(tfContentStr, -1)
 
 		if len(scheduleMatches) == 0 {
-			t.Fatal("No firehydrant_signals_api_on_call_schedule resources found in Terraform file")
+			t.Fatal("No firehydrant_on_call_schedule resources found in Terraform file")
 		}
 
 		// Find the schedule that contains our expected users
@@ -435,12 +435,12 @@ func TestPagerDuty(t *testing.T) {
 
 		t.Logf("Found target schedule:\n%s", targetSchedule)
 
-		// Extract the members_input array from the Terraform resource
-		memberIDsRegex := regexp.MustCompile(`members_input = \[([^\]]*)\]`)
+		// Extract the member_ids array from the Terraform resource
+		memberIDsRegex := regexp.MustCompile(`member_ids = \[([^\]]*)\]`)
 		memberIDsMatch := memberIDsRegex.FindStringSubmatch(targetSchedule)
 
 		if len(memberIDsMatch) < 2 {
-			t.Fatal("No members_input found in schedule resource")
+			t.Fatal("No member_ids found in schedule resource")
 		}
 
 		memberIDsStr := memberIDsMatch[1]
@@ -484,12 +484,12 @@ func TestPagerDuty(t *testing.T) {
 		}
 
 		// Additional verification: Check that the schedule resource contains the correct structure
-		if !strings.Contains(targetSchedule, "firehydrant_signals_api_on_call_schedule") {
-			t.Error("Schedule resource should contain firehydrant_signals_api_on_call_schedule")
+		if !strings.Contains(targetSchedule, "firehydrant_on_call_schedule") {
+			t.Error("Schedule resource should contain firehydrant_on_call_schedule")
 		}
 
-		if !strings.Contains(targetSchedule, "members_input") {
-			t.Error("Schedule resource should contain members_input")
+		if !strings.Contains(targetSchedule, "member_ids") {
+			t.Error("Schedule resource should contain member_ids")
 		}
 
 		t.Logf("✅ Terraform output order verification completed successfully")
