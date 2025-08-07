@@ -1,32 +1,34 @@
 terraform {
   required_providers {
     firehydrant = {
-      source  = "firehydrant/firehydrant-v2"
-      version = "~> 0.3.1"
+      source  = "firehydrant/firehydrant"
+      version = ">= 0.8.0"
     }
   }
 }
 
 data "firehydrant_user" "user_0" {
-  id = "id-for-user-0"
+  email = "user-0@example.com"
 }
 
 data "firehydrant_user" "user_1" {
-  id = "id-for-user-1"
+  email = "user-1@example.com"
 }
 
 data "firehydrant_user" "user_2" {
-  id = "id-for-user-2"
+  email = "user-2@example.com"
 }
 
 data "firehydrant_user" "user_3" {
-  id = "id-for-user-3"
+  email = "user-3@example.com"
 }
 
 resource "firehydrant_team" "team_0_slug" {
   name = "Team 0"
 
-  memberships_input = [{ user_id = data.firehydrant_user.user_0.id }]
+  memberships {
+    user_id = data.firehydrant_user.user_0.id
+  }
 }
 
 import {
