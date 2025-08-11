@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/huh v0.7.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240328185852-590ecabc34b9
 	github.com/fatih/color v1.18.0
-	github.com/firehydrant/terraform-provider-firehydrant v0.13.5
+	github.com/firehydrant/terraform-provider-firehydrant v0.14.0
 	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
@@ -70,7 +70,7 @@ require (
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 	modernc.org/libc v1.66.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
