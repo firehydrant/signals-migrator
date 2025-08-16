@@ -1187,6 +1187,46 @@ func (q *Queries) ListTeamsToImport(ctx context.Context) ([]LinkedTeam, error) {
 	return items, nil
 }
 
+const listUnmatchedExtSchedule = `-- name: ListUnmatchedExtSchedule :many
+SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules
+WHERE id NOT IN (
+  SELECT schedule_id FROM ext_schedule_teams
+)
+`
+
+func (q *Queries) ListUnmatchedExtSchedule(ctx context.Context) ([]ExtSchedule, error) {
+	rows, err := q.db.QueryContext(ctx, listUnmatchedExtSchedule)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtSchedule
+	for rows.Next() {
+		var i ExtSchedule
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Timezone,
+			&i.Strategy,
+			&i.ShiftDuration,
+			&i.StartTime,
+			&i.HandoffTime,
+			&i.HandoffDay,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUnmatchedExtUsers = `-- name: ListUnmatchedExtUsers :many
 SELECT id, name, email, fh_user_id, annotations FROM ext_users
 WHERE fh_user_id IS NULL
