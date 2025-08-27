@@ -50,6 +50,9 @@ SELECT * from linked_teams WHERE to_import = 1;
 -- name: ListExtTeams :many
 SELECT * FROM ext_teams;
 
+-- name: GetExtTeam :one
+SELECT * FROM ext_teams WHERE id = ?;
+
 -- name: GetExtTeamAnnotation :one
 SELECT annotations FROM ext_teams WHERE id = ?;
 
@@ -190,3 +193,47 @@ WHERE escalation_policy_step_id = ?;
 -- name: InsertExtEscalationPolicyStepTarget :exec
 INSERT INTO ext_escalation_policy_step_targets (escalation_policy_step_id, target_type, target_id)
 VALUES (?, ?, ?);
+
+-- name: ListExtSchedulesV2 :many
+SELECT * FROM ext_schedules_v2;
+
+-- name: GetExtScheduleV2 :one
+SELECT * FROM ext_schedules_v2 WHERE id = ?;
+
+-- name: InsertExtScheduleV2 :exec
+INSERT INTO ext_schedules_v2 (id, name, description, timezone, team_id, source_system, source_schedule_id)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- name: ListExtRotations :many
+SELECT * FROM ext_rotations ORDER BY rotation_order ASC;
+
+-- name: ListExtRotationsByScheduleID :many
+SELECT * FROM ext_rotations WHERE schedule_id = ? ORDER BY rotation_order ASC;
+
+-- name: GetExtRotation :one
+SELECT * FROM ext_rotations WHERE id = ?;
+
+-- name: InsertExtRotation :exec
+INSERT INTO ext_rotations (id, schedule_id, name, description, strategy, shift_duration, start_time, handoff_time, handoff_day, rotation_order)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- name: ListExtRotationMembers :many
+SELECT * FROM ext_rotation_members WHERE rotation_id = ? ORDER BY member_order ASC;
+
+-- name: InsertExtRotationMember :exec
+INSERT INTO ext_rotation_members (rotation_id, user_id, member_order)
+VALUES (?, ?, ?);
+
+-- name: ListExtRotationRestrictions :many
+SELECT * FROM ext_rotation_restrictions WHERE rotation_id = ? ORDER BY restriction_index ASC;
+
+-- name: InsertExtRotationRestriction :exec
+INSERT INTO ext_rotation_restrictions (rotation_id, restriction_index, start_time, start_day, end_time, end_day)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- name: ListFhMembersByExtRotationID :many
+SELECT fh_users.* FROM ext_rotation_members
+  JOIN ext_users ON ext_users.id = ext_rotation_members.user_id
+  JOIN fh_users ON fh_users.id = ext_users.fh_user_id
+WHERE ext_rotation_members.rotation_id = ?
+ORDER BY ext_rotation_members.member_order ASC;
