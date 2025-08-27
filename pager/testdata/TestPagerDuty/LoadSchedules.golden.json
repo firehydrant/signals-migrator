@@ -1,57 +1,38 @@
 [
   {
-    "id": "P3D7DLW-PC1DX4O",
-    "name": "Jen - primary - Layer 2",
-    "description": "(Layer 2)",
+    "id": "P3D7DLW",
+    "name": "Jen - primary",
+    "description": "",
     "timezone": "America/Los_Angeles",
-    "strategy": "weekly",
-    "shift_duration": "",
-    "start_time": "",
-    "handoff_time": "16:00:00",
-    "handoff_day": "monday"
+    "team_id": "P5PH8KY",
+    "source_system": "pagerduty",
+    "source_schedule_id": "P3D7DLW"
   },
   {
-    "id": "P3D7DLW-PSQ0VRL",
-    "name": "Jen - primary - Layer 1",
-    "description": "(Layer 1)",
+    "id": "PVJMUIC",
+    "name": "CS-on-call",
+    "description": "",
     "timezone": "America/Los_Angeles",
-    "strategy": "weekly",
-    "shift_duration": "",
-    "start_time": "",
-    "handoff_time": "16:00:00",
-    "handoff_day": "friday"
+    "team_id": "PO34CI9",
+    "source_system": "pagerduty",
+    "source_schedule_id": "PVJMUIC"
   },
   {
-    "id": "PVJMUIC-P3BRVNT",
-    "name": "CS-on-call - Layer 1",
-    "description": "(Layer 1)",
+    "id": "P85QTXZ",
+    "name": "Jack On-Call Schedule",
+    "description": "",
     "timezone": "America/Los_Angeles",
-    "strategy": "daily",
-    "shift_duration": "",
-    "start_time": "",
-    "handoff_time": "10:00:00",
-    "handoff_day": "tuesday"
+    "team_id": "PD2F80U",
+    "source_system": "pagerduty",
+    "source_schedule_id": "P85QTXZ"
   },
   {
-    "id": "P85QTXZ-PE2BA4Y",
-    "name": "Jack On-Call Schedule - Layer 1",
-    "description": "(Layer 1)",
+    "id": "PGR96WL",
+    "name": "🐴 is always on call",
+    "description": "Always 😭",
     "timezone": "America/Los_Angeles",
-    "strategy": "weekly",
-    "shift_duration": "",
-    "start_time": "",
-    "handoff_time": "14:00:00",
-    "handoff_day": "friday"
-  },
-  {
-    "id": "PGR96WL-PR3J6XJ",
-    "name": "🐴 is always on call - Layer 1",
-    "description": "Always 😭 (Layer 1)",
-    "timezone": "America/Los_Angeles",
-    "strategy": "weekly",
-    "shift_duration": "",
-    "start_time": "",
-    "handoff_time": "12:00:00",
-    "handoff_day": "friday"
+    "team_id": "PV9JOXL",
+    "source_system": "pagerduty",
+    "source_schedule_id": "PGR96WL"
   }
 ]

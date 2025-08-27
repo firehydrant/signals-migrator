@@ -28,33 +28,11 @@ import {
   to = firehydrant_team.cowboy_coders
 }
 
-resource "firehydrant_on_call_schedule" "cowboy_coders_atalice_bob_is_always_on_call_layer_1" {
-  name        = "🐴 @alice.bob is always on call - Layer 1"
-  description = "Always 😭 (Layer 1)"
-  team_id     = firehydrant_team.cowboy_coders.id
-  time_zone   = "America/Los_Angeles"
-
-  # [PagerDuty] team-rocket https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
-
-  member_ids = [data.firehydrant_user.alice_bob.id]
-
-  strategy {
-    type         = "weekly"
-    handoff_day  = "friday"
-    handoff_time = "12:00:00"
-  }
-}
-
 resource "firehydrant_escalation_policy" "atalice_bob_test_service_ep" {
   name = "🐴 @alice.bob Test Service-ep"
 
   step {
     timeout = "PT30M"
-
-    targets {
-      type = "OnCallSchedule"
-      id   = firehydrant_on_call_schedule.cowboy_coders_atalice_bob_is_always_on_call_layer_1.id
-    }
   }
 
   repetitions = 0
