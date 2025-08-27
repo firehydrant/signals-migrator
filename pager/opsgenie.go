@@ -205,19 +205,51 @@ func (o *Opsgenie) saveScheduleToDB(ctx context.Context, s schedule.Schedule) er
 	}
 
 	// each Opsgenie schedule can have multiple rotations, where each rotation has participants, start and handoff date/times, and restrictions.
-	// as such, I think an opsgenie rotation best maps to a FH schedule, so let's try that.
+	// this maps directly to our structure with each rotation belonging to a schedule
+	teamID := ""
+	if s.OwnerTeam != nil {
+		teamID = s.OwnerTeam.Id
+	} else {
+		console.Warnf("No owning team found for schedule %s, skipping...\n", s.Id)
+		return nil
+	}
 
-	for _, rotation := range resp.Schedule.Rotations {
-		if err := o.saveRotationToDB(ctx, s, rotation); err != nil {
-			return fmt.Errorf("saving schedule to db: %w", err)
+	scheduleParams := store.InsertExtScheduleV2Params{
+		ID:               s.Id,
+		Name:             s.Name,
+		Description:      s.Description,
+		Timezone:         s.Timezone,
+		TeamID:           teamID,
+		SourceSystem:     "opsgenie",
+		SourceScheduleID: s.Id,
+	}
+
+	q := store.UseQueries(ctx)
+	if err := q.InsertExtScheduleV2(ctx, scheduleParams); err != nil {
+		return fmt.Errorf("saving schedule: %w", err)
+	}
+
+	// Create rotation records under the parent schedule
+	for i, rotation := range resp.Schedule.Rotations {
+		if err := o.saveRotationToDB(ctx, s.Id, rotation, i); err != nil {
+			return fmt.Errorf("saving rotation to db: %w", err)
 		}
 	}
 	return nil
 }
 
-func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r og.Rotation) error {
-	// ExtSchedule
-	desc := fmt.Sprintf("%s (%s)", s.Description, r.Name)
+func (o *Opsgenie) saveRotationToDB(ctx context.Context, scheduleID string, r og.Rotation, rotationOrder int) error {
+	schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, scheduleID)
+	if err != nil {
+		return fmt.Errorf("getting schedule info: %w", err)
+	}
+
+	rotationName := r.Name
+	if rotationName == "" {
+		rotationName = fmt.Sprintf("%srotation%d", schedule.Name, rotationOrder+1)
+	}
+
+	desc := fmt.Sprintf("%s (%s)", schedule.Description, rotationName)
 	desc = strings.TrimSpace(desc)
 
 	ogsHandoffTime := r.StartDate.Format(time.TimeOnly)
@@ -235,70 +267,56 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 		ogsStrategy = "custom"
 		ogsDuration = fmt.Sprintf("PT%dH", r.Length)
 	default:
-		return fmt.Errorf("unexpected schedule strategy %s.  skipping rotation %s of schedule %s", ogsStrategy, r.Id, s.Id)
+		return fmt.Errorf("unexpected schedule strategy %s.  skipping rotation %s of schedule %s", ogsStrategy, r.Id, scheduleID)
 	}
 
-	ogsParams := store.InsertExtScheduleParams{
-		ID:            s.Id + "-" + r.Id,
-		Name:          s.Name + " - " + r.Name,
-		Timezone:      s.Timezone,
+	rotationParams := store.InsertExtRotationParams{
+		ID:            r.Id,
+		ScheduleID:    scheduleID,
+		Name:          rotationName,
 		Description:   desc,
-		HandoffTime:   ogsHandoffTime,
-		HandoffDay:    ogsHandoffDay,
 		Strategy:      ogsStrategy,
 		ShiftDuration: ogsDuration,
+		StartTime:     "",
+		HandoffTime:   ogsHandoffTime,
+		HandoffDay:    ogsHandoffDay,
+		RotationOrder: int64(rotationOrder),
 	}
 
 	q := store.UseQueries(ctx)
-	if err := q.InsertExtSchedule(ctx, ogsParams); err != nil {
-		return fmt.Errorf("saving schedule: %w", err)
+	if err := q.InsertExtRotation(ctx, rotationParams); err != nil {
+		return fmt.Errorf("saving rotation: %w", err)
 	}
 
-	// ExtScheduleTeam
-	if s.OwnerTeam != nil {
-		if err := q.InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
-			ScheduleID: ogsParams.ID,
-			TeamID:     s.OwnerTeam.Id,
-		}); err != nil {
-			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
-				console.Warnf("Team %s not found for schedule %s, skipping...\n", s.OwnerTeam.Id, ogsParams.ID)
-			} else {
-				return fmt.Errorf("saving schedule team: %w", err)
-			}
-		}
-	} else {
-		console.Warnf("No owning team found for schedule %s, skipping...\n", ogsParams.ID)
-	}
-
-	// ExtScheduleMembers
+	// ExtRotationMembers
 	for i, p := range r.Participants {
 		// Store the order of participants as they appear in the API response
 		// This preserves the exact order from OpsGenie
-		if err := q.InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
-			ScheduleID:  ogsParams.ID,
+		if err := q.InsertExtRotationMember(ctx, store.InsertExtRotationMemberParams{
+			RotationID:  r.Id,
 			UserID:      p.Id,
 			MemberOrder: int64(i),
 		}); err != nil {
 			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
-				console.Warnf("User %s not found for schedule %s, skipping...\n", p.Id, ogsParams.ID)
+				console.Warnf("User %s not found for rotation %s, skipping...\n", p.Id, r.Id)
 			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
-				console.Warnf("User %s already exists for schedule %s, skipping duplicate...\n", p.Id, ogsParams.ID)
+				console.Warnf("User %s already exists for rotation %s, skipping duplicate...\n", p.Id, r.Id)
 			} else {
-				return fmt.Errorf("saving schedule user: %w", err)
+				return fmt.Errorf("saving rotation user: %w", err)
 			}
 		}
 	}
 
-	// ExtScheduleRestriction
+	// ExtRotationRestriction
 	// The opsgenie api, may in burn in the hell of a thousand suns, returns TimeRestriction.Restriction if the type is TimeOfDay
 	// and TimeRestriction.RestrictionList if the type is WeekdayAndTimeOfDay because... I've got nothing.  There is no excuse that
 	// works here, and I can't make it make sense for them.  At least they documented this... no wait, they didn't actually document
 	// it at all and I had to guess at this behavior from testing before digging into the source to confirm which, as it turns out,
 	// is exactly how I wanted to spend my morning so thanks for that.
 	if r.TimeRestriction != nil {
-		loc, err := time.LoadLocation(s.Timezone)
+		loc, err := time.LoadLocation(schedule.Timezone)
 		if err != nil {
-			console.Warnf("unable to parse location %s.  using UTC instead", s.Timezone)
+			console.Warnf("unable to parse location %s.  using UTC instead", schedule.Timezone)
 			loc = time.UTC
 		}
 		switch r.TimeRestriction.Type {
@@ -307,15 +325,15 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 				startTime := time.Date(0, time.January, 1, int(*tr.StartHour), int(*tr.StartMin), 0, 0, loc)
 				endTime := time.Date(0, time.January, 1, int(*tr.EndHour), int(*tr.EndMin), 0, 0, loc)
 
-				ogsRestrictionsParams := store.InsertExtScheduleRestrictionParams{
-					ScheduleID:       ogsParams.ID,
+				rotationRestrictionsParams := store.InsertExtRotationRestrictionParams{
+					RotationID:       r.Id,
 					RestrictionIndex: strconv.Itoa(i),
 					StartDay:         strings.ToLower(string(tr.StartDay)),
 					StartTime:        startTime.Format(time.TimeOnly),
 					EndDay:           strings.ToLower(string(tr.EndDay)),
 					EndTime:          endTime.Format(time.TimeOnly),
 				}
-				if err := q.InsertExtScheduleRestriction(ctx, ogsRestrictionsParams); err != nil {
+				if err := q.InsertExtRotationRestriction(ctx, rotationRestrictionsParams); err != nil {
 					return fmt.Errorf("saving time of day restriction: %w", err)
 				}
 			}
@@ -333,20 +351,20 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, s schedule.Schedule, r 
 					endDayStr = startDayStr
 				}
 
-				ogsRestrictionsParams := store.InsertExtScheduleRestrictionParams{
-					ScheduleID:       ogsParams.ID,
+				rotationRestrictionsParams := store.InsertExtRotationRestrictionParams{
+					RotationID:       r.Id,
 					RestrictionIndex: strconv.Itoa(i),
 					StartDay:         startDayStr,
 					StartTime:        startTime.Format(time.TimeOnly),
 					EndDay:           endDayStr,
 					EndTime:          endTime.Format(time.TimeOnly),
 				}
-				if err := q.InsertExtScheduleRestriction(ctx, ogsRestrictionsParams); err != nil {
+				if err := q.InsertExtRotationRestriction(ctx, rotationRestrictionsParams); err != nil {
 					return fmt.Errorf("saving time of day restriction: %w", err)
 				}
 			}
 		default:
-			console.Warnf("Unknown schedule restriction type '%s' for schedule '%s', skipping...\n", r.TimeRestriction.Type, ogsParams.ID)
+			console.Warnf("Unknown schedule restriction type '%s' for rotation '%s', skipping...\n", r.TimeRestriction.Type, r.Id)
 		}
 	}
 
