@@ -220,3 +220,112 @@ func TestRenderOnCallScheduleResource(t *testing.T) {
 	// and uses members_input with proper HCL traversals, strategy_input as object
 	golden.Assert(t, string(content), goldenFile(tfr.Filename()))
 }
+
+func TestRenderCustomStrategySchedule(t *testing.T) {
+	ctx, tfr := tfrInit(t)
+
+	// Create a team
+	teamID := "team-1"
+	teamExtID := "ext-team-1"
+	if err := store.UseQueries(ctx).InsertFhTeam(ctx, store.InsertFhTeamParams{
+		ID:   teamID,
+		Name: "Test Team",
+		Slug: "test-team",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.UseQueries(ctx).InsertExtTeam(ctx, store.InsertExtTeamParams{
+		ID:       teamExtID,
+		Name:     "Test Team",
+		Slug:     "test-team",
+		FhTeamID: sql.NullString{String: teamID, Valid: true},
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a schedule with custom strategy rotation
+	scheduleID := "schedule-1"
+	if err := store.UseQueries(ctx).InsertExtScheduleV2(ctx, store.InsertExtScheduleV2Params{
+		ID:               scheduleID,
+		Name:             "Test Schedule",
+		Description:      "Test Description",
+		Timezone:         "America/Los_Angeles",
+		TeamID:           teamExtID,
+		SourceSystem:     "test",
+		SourceScheduleID: scheduleID,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a rotation with custom strategy
+	rotationID := "rotation-1"
+	if err := store.UseQueries(ctx).InsertExtRotation(ctx, store.InsertExtRotationParams{
+		ID:            rotationID,
+		ScheduleID:    scheduleID,
+		Name:          "Custom Rotation",
+		Description:   "Custom strategy rotation",
+		Strategy:      "custom",
+		ShiftDuration: "PT93600S",
+		StartTime:     "2024-04-11T11:56:29-07:00",
+		HandoffTime:   "",
+		HandoffDay:    "",
+		RotationOrder: 0,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	// Generate Terraform
+	if err := tfr.Write(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	// Read the generated file
+	content, err := os.ReadFile(tfr.Filepath())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	contentStr := string(content)
+
+	// Verify that the rotation has start_time when using a custom strategy
+	if !strings.Contains(contentStr, `start_time  = "2024-04-11T11:56:29-07:00"`) {
+		t.Error("Rotation should have start_time for custom strategy")
+	}
+
+	// Verify that the rotation has custom strategy with shift_duration
+	if !strings.Contains(contentStr, `type           = "custom"`) {
+		t.Error("Rotation should have custom strategy type")
+	}
+	if !strings.Contains(contentStr, `shift_duration = "PT93600S"`) {
+		t.Error("Rotation should have shift_duration for custom strategy")
+	}
+
+	// Verify that the schedule does not have start_time (it should be on the rotation level)
+	// This is valid in the API if/when a schedule only has a single rotation
+	//   however for the purposes of this tool we will always structure the schedule as having a single rotation with a start_time
+	scheduleBlockStart := strings.Index(contentStr, `resource "firehydrant_on_call_schedule"`)
+	if scheduleBlockStart != -1 {
+		scheduleBlockEnd := strings.Index(contentStr[scheduleBlockStart:], "}")
+		if scheduleBlockEnd != -1 {
+			scheduleBlock := contentStr[scheduleBlockStart : scheduleBlockStart+scheduleBlockEnd]
+			if strings.Contains(scheduleBlock, `start_time`) {
+				t.Error("Schedule should not have start_time (it should be on the rotation)")
+			}
+		}
+	}
+
+	// Verify that the rotation has start_time for custom strategy
+	// Split the content to check rotation block specifically
+	rotationBlockStart := strings.Index(contentStr, `resource "firehydrant_rotation"`)
+	if rotationBlockStart != -1 {
+		rotationBlockEnd := strings.Index(contentStr[rotationBlockStart:], "}")
+		if rotationBlockEnd != -1 {
+			rotationBlock := contentStr[rotationBlockStart : rotationBlockStart+rotationBlockEnd]
+			if !strings.Contains(rotationBlock, `start_time  = "2024-04-11T11:56:29-07:00"`) {
+				t.Error("Rotation should have start_time for custom strategy")
+			}
+		}
+	}
+
+	t.Logf("Generated Terraform:\n%s", contentStr)
+}
