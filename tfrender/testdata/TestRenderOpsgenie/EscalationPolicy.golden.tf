@@ -47,12 +47,154 @@ resource "firehydrant_team" "aj_team" {
   }
 }
 
+resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
+  name        = "AJ Team_schedule"
+  description = "AJ Team schedule with multiple rotations"
+  team_id     = firehydrant_team.aj_team.id
+  time_zone   = "America/Los_Angeles"
+}
+
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_rota3" {
+  name        = "Rota3"
+  description = "Custom rotation with restrictions"
+  team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
+  time_zone   = "America/Los_Angeles"
+
+  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id]
+
+  strategy {
+    type           = "custom"
+    shift_duration = "PT2H"
+  }
+}
+
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_daytime_rotation" {
+  name        = "Daytime rotation"
+  description = "Weekly daytime rotation"
+  team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
+  time_zone   = "America/Los_Angeles"
+
+  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
+
+  strategy {
+    type         = "weekly"
+    handoff_day  = "monday"
+    handoff_time = "07:00:00"
+  }
+
+  restrictions {
+    start_day  = "monday"
+    start_time = "08:00:00"
+    end_day    = "monday"
+    end_time   = "18:00:00"
+  }
+
+  restrictions {
+    start_day  = "tuesday"
+    start_time = "08:00:00"
+    end_day    = "tuesday"
+    end_time   = "18:00:00"
+  }
+
+  restrictions {
+    start_day  = "wednesday"
+    start_time = "08:00:00"
+    end_day    = "wednesday"
+    end_time   = "18:00:00"
+  }
+
+  restrictions {
+    start_day  = "thursday"
+    start_time = "08:00:00"
+    end_day    = "thursday"
+    end_time   = "18:00:00"
+  }
+
+  restrictions {
+    start_day  = "friday"
+    start_time = "08:00:00"
+    end_day    = "friday"
+    end_time   = "18:00:00"
+  }
+}
+
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_nighttime_rotation" {
+  name        = "Nighttime rotation"
+  description = "Daily nighttime rotation"
+  team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
+  time_zone   = "America/Los_Angeles"
+
+  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
+
+  strategy {
+    type         = "daily"
+    handoff_time = "15:00:00"
+  }
+
+  restrictions {
+    start_day  = "sunday"
+    start_time = "18:00:00"
+    end_day    = "monday"
+    end_time   = "08:00:00"
+  }
+
+  restrictions {
+    start_day  = "monday"
+    start_time = "18:00:00"
+    end_day    = "tuesday"
+    end_time   = "08:00:00"
+  }
+
+  restrictions {
+    start_day  = "tuesday"
+    start_time = "18:00:00"
+    end_day    = "wednesday"
+    end_time   = "08:00:00"
+  }
+
+  restrictions {
+    start_day  = "wednesday"
+    start_time = "18:00:00"
+    end_day    = "thursday"
+    end_time   = "08:00:00"
+  }
+
+  restrictions {
+    start_day  = "thursday"
+    start_time = "18:00:00"
+    end_day    = "friday"
+    end_time   = "08:00:00"
+  }
+
+  restrictions {
+    start_day  = "friday"
+    start_time = "18:00:00"
+    end_day    = "saturday"
+    end_time   = "08:00:00"
+  }
+
+  restrictions {
+    start_day  = "saturday"
+    start_time = "18:00:00"
+    end_day    = "sunday"
+    end_time   = "08:00:00"
+  }
+}
+
 resource "firehydrant_escalation_policy" "aj_team_escalation" {
   name    = "AJ Team_escalation"
   team_id = firehydrant_team.aj_team.id
 
   step {
     timeout = "PT1M"
+
+    targets {
+      type = "OnCallSchedule"
+      id   = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
+    }
   }
 
   repetitions = 0

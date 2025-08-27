@@ -48,3 +48,24 @@ import {
 resource "firehydrant_team" "team_3_slug" {
   name = "Team 3"
 }
+
+resource "firehydrant_on_call_schedule" "team_1_slug_schedule_0" {
+  name        = "Schedule 0"
+  description = "Schedule 0 description"
+  team_id     = firehydrant_team.team_1_slug.id
+  time_zone   = "UTC"
+}
+
+resource "firehydrant_rotation" "team_1_slug_schedule_0_daily_rotation" {
+  name        = "Daily Rotation"
+  team_id     = firehydrant_team.team_1_slug.id
+  schedule_id = firehydrant_on_call_schedule.team_1_slug_schedule_0.id
+  time_zone   = "UTC"
+
+  members = [data.firehydrant_user.user_0.id]
+
+  strategy {
+    type         = "daily"
+    handoff_time = "11:00"
+  }
+}

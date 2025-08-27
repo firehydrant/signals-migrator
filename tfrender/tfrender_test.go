@@ -174,27 +174,33 @@ func TestRenderOnCallScheduleResource(t *testing.T) {
 		createTeams(t, ctx, strconv.Itoa(i), i%2 == 0)
 	}
 
-	if err := store.UseQueries(ctx).InsertExtSchedule(ctx, store.InsertExtScheduleParams{
-		ID:          "id-for-ext-schedule-0",
-		Name:        "Schedule 0",
-		Description: "Schedule 0 description",
-		HandoffTime: "11:00",
-		HandoffDay:  "wednesday",
-		Strategy:    "daily",
-		Timezone:    "UTC",
+	if err := store.UseQueries(ctx).InsertExtScheduleV2(ctx, store.InsertExtScheduleV2Params{
+		ID:               "id-for-ext-schedule-0",
+		Name:             "Schedule 0",
+		Description:      "Schedule 0 description",
+		Timezone:         "UTC",
+		TeamID:           "id-for-ext-team-1",
+		SourceSystem:     "test",
+		SourceScheduleID: "id-for-ext-schedule-0",
 	}); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := store.UseQueries(ctx).InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
-		ScheduleID: "id-for-ext-schedule-0",
-		TeamID:     "id-for-ext-team-1",
+	if err := store.UseQueries(ctx).InsertExtRotation(ctx, store.InsertExtRotationParams{
+		ID:            "id-for-ext-rotation-0",
+		ScheduleID:    "id-for-ext-schedule-0",
+		Name:          "Daily Rotation",
+		Strategy:      "daily",
+		StartTime:     "11:00",
+		HandoffTime:   "11:00",
+		HandoffDay:    "wednesday",
+		RotationOrder: 0,
 	}); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := store.UseQueries(ctx).InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
-		ScheduleID:  "id-for-ext-schedule-0",
+	if err := store.UseQueries(ctx).InsertExtRotationMember(ctx, store.InsertExtRotationMemberParams{
+		RotationID:  "id-for-ext-rotation-0",
 		UserID:      "id-for-ext-user-0",
 		MemberOrder: 0,
 	}); err != nil {
