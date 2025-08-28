@@ -321,95 +321,131 @@ func (p *PagerDuty) LoadSchedules(ctx context.Context) error {
 }
 
 func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Schedule) error {
-	for _, layer := range schedule.ScheduleLayers {
-		if err := p.saveLayerToDB(ctx, schedule, layer); err != nil {
+	// PagerDuty uses a single schedule with multiple layers.
+	//   Within PagerDuty, these layers are compressed into a single schedule, with the later layers overriding the earlier layers in case of an overlap
+	// In FireHydrant, we will have a single schedule with multiple rotations,
+	//   Each layer will be converted into a rotation, however, rotations do not override each other
+	//   members of each respective rotation will all be on call
+
+	// PagerDuty Team-Schedule Relationship:
+	// According to PagerDuty documentation: https://support.pagerduty.com/main/docs/teams#team-association-behavior
+	// - "Adding users to a schedule via API will add the users to any associated Teams"
+	// - "Associating a Team with a schedule via API will add the schedule's users to the Team"
+	// This means all teams associated with a schedule end up with the same users.
+	// Therefore, we can safely use the first team as the schedule owner without losing user information.
+
+	teamID := ""
+	if len(schedule.Teams) > 0 {
+		teamID = schedule.Teams[0].ID // Use first team as owner - all teams would have same users anyway
+	} else {
+		console.Warnf("No teams found for schedule %s, skipping...\n", schedule.ID)
+		return nil
+	}
+
+	scheduleParams := store.InsertExtScheduleV2Params{
+		ID:               schedule.ID,
+		Name:             schedule.Name,
+		Description:      schedule.Description,
+		Timezone:         schedule.TimeZone,
+		TeamID:           teamID,
+		SourceSystem:     "pagerduty",
+		SourceScheduleID: schedule.ID,
+	}
+
+	q := store.UseQueries(ctx)
+	if err := q.InsertExtScheduleV2(ctx, scheduleParams); err != nil {
+		return fmt.Errorf("saving schedule: %w", err)
+	}
+
+	// Create rotation records under the parent schedule (each layer becomes a rotation)
+	for i, layer := range schedule.ScheduleLayers {
+		if err := p.saveLayerToDB(ctx, schedule.ID, layer, i); err != nil {
 			return fmt.Errorf("saving layer to db: %w", err)
 		}
 	}
 	return nil
 }
 
-func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedule, layer pagerduty.ScheduleLayer) error {
-	desc := fmt.Sprintf("%s (%s)", schedule.Description, layer.Name)
+func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer pagerduty.ScheduleLayer, layerOrder int) error {
+	schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, scheduleID)
+	if err != nil {
+		return fmt.Errorf("getting schedule info: %w", err)
+	}
+
+	rotationName := layer.Name
+	if rotationName == "" {
+		rotationName = fmt.Sprintf("%srotation%d", schedule.Name, layerOrder+1)
+	}
+
+	desc := fmt.Sprintf("%s (%s)", schedule.Description, rotationName)
 	desc = strings.TrimSpace(desc)
 
-	s := store.InsertExtScheduleParams{
-		ID:       schedule.ID + "-" + layer.ID,
-		Name:     schedule.Name + " - " + layer.Name,
-		Timezone: schedule.TimeZone,
-
-		// Add fallback values and override them later if API provides valid information.
+	rotationParams := store.InsertExtRotationParams{
+		ID:            layer.ID,
+		ScheduleID:    scheduleID,
+		Name:          rotationName,
 		Description:   desc,
-		HandoffTime:   "11:00:00",
-		HandoffDay:    "wednesday",
 		Strategy:      "weekly",
 		ShiftDuration: "",
+		StartTime:     "",
+		HandoffTime:   "11:00:00",
+		HandoffDay:    "wednesday",
+		RotationOrder: int64(layerOrder),
 	}
 
 	switch layer.RotationTurnLengthSeconds {
 	case 60 * 60 * 24:
-		s.Strategy = "daily"
+		rotationParams.Strategy = "daily"
 	case 60 * 60 * 24 * 7:
-		s.Strategy = "weekly"
+		rotationParams.Strategy = "weekly"
 	default:
-		s.Strategy = "custom"
-		s.ShiftDuration = fmt.Sprintf("PT%dS", layer.RotationTurnLengthSeconds)
+		rotationParams.Strategy = "custom"
+		rotationParams.ShiftDuration = fmt.Sprintf("PT%dS", layer.RotationTurnLengthSeconds)
 
 		now := time.Now()
-		loc, err := time.LoadLocation(schedule.TimeZone)
+		loc, err := time.LoadLocation(schedule.Timezone)
 		if err == nil {
 			now = now.In(loc)
 		} else {
-			console.Warnf("unable to parse timezone '%v', using current machine's local time", schedule.TimeZone)
+			console.Warnf("unable to parse timezone '%v', using current machine's local time", schedule.Timezone)
 		}
-		s.StartTime = now.Format(time.RFC3339)
+		rotationParams.StartTime = now.Format(time.RFC3339)
 	}
 	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
 	if err == nil {
-		s.HandoffTime = virtualStart.Format(time.TimeOnly)
-		s.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
+		rotationParams.HandoffTime = virtualStart.Format(time.TimeOnly)
+		rotationParams.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
 	} else {
 		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
 	}
 
 	q := store.UseQueries(ctx)
-	if err := q.InsertExtSchedule(ctx, s); err != nil {
-		return fmt.Errorf("saving schedule: %w", err)
+	if err := q.InsertExtRotation(ctx, rotationParams); err != nil {
+		return fmt.Errorf("saving rotation: %w", err)
 	}
 
-	for _, team := range schedule.Teams {
-		if err := q.InsertExtScheduleTeam(ctx, store.InsertExtScheduleTeamParams{
-			ScheduleID: s.ID,
-			TeamID:     team.ID,
-		}); err != nil {
-			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
-				console.Warnf("Team %s not found for schedule %s, skipping...\n", team.ID, s.ID)
-			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
-				console.Warnf("Team %s already exists for schedule %s, skipping duplicate...\n", team.ID, s.ID)
-			} else {
-				return fmt.Errorf("saving schedule team: %w", err)
-			}
-		}
-	}
-
+	// ExtRotationMembers
+	// Add only the users specifically assigned to this schedule layer.
+	// Team members who aren't in the layer will still be on the team but won't be in this rotation.
 	for i, user := range layer.Users {
 		// Store the order of members as they appear in the API response
 		// This preserves the exact order from PagerDuty
-		if err := q.InsertExtScheduleMember(ctx, store.InsertExtScheduleMemberParams{
-			ScheduleID:  s.ID,
+		if err := q.InsertExtRotationMember(ctx, store.InsertExtRotationMemberParams{
+			RotationID:  layer.ID,
 			UserID:      user.User.ID,
 			MemberOrder: int64(i),
 		}); err != nil {
 			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
-				console.Warnf("User %s not found for schedule %s, skipping...\n", user.User.ID, s.ID)
+				console.Warnf("User %s not found for rotation %s, skipping...\n", user.User.ID, layer.ID)
 			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
-				console.Warnf("User %s already exists for schedule %s, skipping duplicate...\n", user.User.ID, s.ID)
+				console.Warnf("User %s already exists for rotation %s, skipping duplicate...\n", user.User.ID, layer.ID)
 			} else {
-				return fmt.Errorf("saving schedule user: %w", err)
+				return fmt.Errorf("saving rotation user: %w", err)
 			}
 		}
 	}
 
+	// ExtRotationRestrictions
 	for i, restriction := range layer.Restrictions {
 		switch restriction.Type {
 		case "daily_restriction":
@@ -421,15 +457,15 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 				end := start.Add(time.Duration(restriction.DurationSeconds) * time.Second)
 
 				dayStr := strings.ToLower(time.Weekday(day).String())
-				r := store.InsertExtScheduleRestrictionParams{
-					ScheduleID:       s.ID,
+				r := store.InsertExtRotationRestrictionParams{
+					RotationID:       layer.ID,
 					RestrictionIndex: fmt.Sprintf("%d-%d", i, day),
 					StartDay:         dayStr,
 					EndDay:           dayStr,
 					StartTime:        start.Format(time.TimeOnly),
 					EndTime:          end.Format(time.TimeOnly),
 				}
-				if err := q.InsertExtScheduleRestriction(ctx, r); err != nil {
+				if err := q.InsertExtRotationRestriction(ctx, r); err != nil {
 					return fmt.Errorf("saving daily restriction: %w", err)
 				}
 			}
@@ -443,19 +479,19 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, schedule pagerduty.Schedu
 			start = start.AddDate(0, 0, int(restriction.StartDayOfWeek+1))
 			end := start.Add(time.Duration(restriction.DurationSeconds) * time.Second)
 
-			r := store.InsertExtScheduleRestrictionParams{
-				ScheduleID:       s.ID,
+			r := store.InsertExtRotationRestrictionParams{
+				RotationID:       layer.ID,
 				RestrictionIndex: strconv.Itoa(i),
 				StartDay:         strings.ToLower(start.Weekday().String()),
 				EndDay:           strings.ToLower(end.Weekday().String()),
 				StartTime:        start.Format(time.TimeOnly),
 				EndTime:          end.Format(time.TimeOnly),
 			}
-			if err := q.InsertExtScheduleRestriction(ctx, r); err != nil {
+			if err := q.InsertExtRotationRestriction(ctx, r); err != nil {
 				return fmt.Errorf("saving weekly restriction: %w", err)
 			}
 		default:
-			console.Warnf("Unknown schedule restriction type '%s' for schedule '%s', skipping...\n", restriction.Type, s.ID)
+			console.Warnf("Unknown schedule restriction type '%s' for rotation '%s', skipping...\n", restriction.Type, layer.ID)
 		}
 	}
 

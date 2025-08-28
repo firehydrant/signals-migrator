@@ -38,6 +38,28 @@ func (q *Queries) DeleteUnmatchedExtUsers(ctx context.Context) error {
 	return err
 }
 
+const getExtRotation = `-- name: GetExtRotation :one
+SELECT id, schedule_id, name, description, strategy, shift_duration, start_time, handoff_time, handoff_day, rotation_order FROM ext_rotations WHERE id = ?
+`
+
+func (q *Queries) GetExtRotation(ctx context.Context, id string) (ExtRotation, error) {
+	row := q.db.QueryRowContext(ctx, getExtRotation, id)
+	var i ExtRotation
+	err := row.Scan(
+		&i.ID,
+		&i.ScheduleID,
+		&i.Name,
+		&i.Description,
+		&i.Strategy,
+		&i.ShiftDuration,
+		&i.StartTime,
+		&i.HandoffTime,
+		&i.HandoffDay,
+		&i.RotationOrder,
+	)
+	return i, err
+}
+
 const getExtSchedule = `-- name: GetExtSchedule :one
 SELECT id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day FROM ext_schedules WHERE id = ?
 `
@@ -55,6 +77,44 @@ func (q *Queries) GetExtSchedule(ctx context.Context, id string) (ExtSchedule, e
 		&i.StartTime,
 		&i.HandoffTime,
 		&i.HandoffDay,
+	)
+	return i, err
+}
+
+const getExtScheduleV2 = `-- name: GetExtScheduleV2 :one
+SELECT id, name, description, timezone, team_id, source_system, source_schedule_id FROM ext_schedules_v2 WHERE id = ?
+`
+
+func (q *Queries) GetExtScheduleV2(ctx context.Context, id string) (ExtSchedulesV2, error) {
+	row := q.db.QueryRowContext(ctx, getExtScheduleV2, id)
+	var i ExtSchedulesV2
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Timezone,
+		&i.TeamID,
+		&i.SourceSystem,
+		&i.SourceScheduleID,
+	)
+	return i, err
+}
+
+const getExtTeam = `-- name: GetExtTeam :one
+SELECT id, name, slug, fh_team_id, is_group, to_import, annotations FROM ext_teams WHERE id = ?
+`
+
+func (q *Queries) GetExtTeam(ctx context.Context, id string) (ExtTeam, error) {
+	row := q.db.QueryRowContext(ctx, getExtTeam, id)
+	var i ExtTeam
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.FhTeamID,
+		&i.IsGroup,
+		&i.ToImport,
+		&i.Annotations,
 	)
 	return i, err
 }
@@ -207,6 +267,82 @@ func (q *Queries) InsertExtMembership(ctx context.Context, arg InsertExtMembersh
 	return err
 }
 
+const insertExtRotation = `-- name: InsertExtRotation :exec
+INSERT INTO ext_rotations (id, schedule_id, name, description, strategy, shift_duration, start_time, handoff_time, handoff_day, rotation_order)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+type InsertExtRotationParams struct {
+	ID            string `json:"id"`
+	ScheduleID    string `json:"schedule_id"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Strategy      string `json:"strategy"`
+	ShiftDuration string `json:"shift_duration"`
+	StartTime     string `json:"start_time"`
+	HandoffTime   string `json:"handoff_time"`
+	HandoffDay    string `json:"handoff_day"`
+	RotationOrder int64  `json:"rotation_order"`
+}
+
+func (q *Queries) InsertExtRotation(ctx context.Context, arg InsertExtRotationParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtRotation,
+		arg.ID,
+		arg.ScheduleID,
+		arg.Name,
+		arg.Description,
+		arg.Strategy,
+		arg.ShiftDuration,
+		arg.StartTime,
+		arg.HandoffTime,
+		arg.HandoffDay,
+		arg.RotationOrder,
+	)
+	return err
+}
+
+const insertExtRotationMember = `-- name: InsertExtRotationMember :exec
+INSERT INTO ext_rotation_members (rotation_id, user_id, member_order)
+VALUES (?, ?, ?)
+`
+
+type InsertExtRotationMemberParams struct {
+	RotationID  string `json:"rotation_id"`
+	UserID      string `json:"user_id"`
+	MemberOrder int64  `json:"member_order"`
+}
+
+func (q *Queries) InsertExtRotationMember(ctx context.Context, arg InsertExtRotationMemberParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtRotationMember, arg.RotationID, arg.UserID, arg.MemberOrder)
+	return err
+}
+
+const insertExtRotationRestriction = `-- name: InsertExtRotationRestriction :exec
+INSERT INTO ext_rotation_restrictions (rotation_id, restriction_index, start_time, start_day, end_time, end_day)
+VALUES (?, ?, ?, ?, ?, ?)
+`
+
+type InsertExtRotationRestrictionParams struct {
+	RotationID       string `json:"rotation_id"`
+	RestrictionIndex string `json:"restriction_index"`
+	StartTime        string `json:"start_time"`
+	StartDay         string `json:"start_day"`
+	EndTime          string `json:"end_time"`
+	EndDay           string `json:"end_day"`
+}
+
+func (q *Queries) InsertExtRotationRestriction(ctx context.Context, arg InsertExtRotationRestrictionParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtRotationRestriction,
+		arg.RotationID,
+		arg.RestrictionIndex,
+		arg.StartTime,
+		arg.StartDay,
+		arg.EndTime,
+		arg.EndDay,
+	)
+	return err
+}
+
 const insertExtSchedule = `-- name: InsertExtSchedule :exec
 INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -293,6 +429,34 @@ type InsertExtScheduleTeamParams struct {
 
 func (q *Queries) InsertExtScheduleTeam(ctx context.Context, arg InsertExtScheduleTeamParams) error {
 	_, err := q.db.ExecContext(ctx, insertExtScheduleTeam, arg.ScheduleID, arg.TeamID)
+	return err
+}
+
+const insertExtScheduleV2 = `-- name: InsertExtScheduleV2 :exec
+INSERT INTO ext_schedules_v2 (id, name, description, timezone, team_id, source_system, source_schedule_id)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+`
+
+type InsertExtScheduleV2Params struct {
+	ID               string `json:"id"`
+	Name             string `json:"name"`
+	Description      string `json:"description"`
+	Timezone         string `json:"timezone"`
+	TeamID           string `json:"team_id"`
+	SourceSystem     string `json:"source_system"`
+	SourceScheduleID string `json:"source_schedule_id"`
+}
+
+func (q *Queries) InsertExtScheduleV2(ctx context.Context, arg InsertExtScheduleV2Params) error {
+	_, err := q.db.ExecContext(ctx, insertExtScheduleV2,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.Timezone,
+		arg.TeamID,
+		arg.SourceSystem,
+		arg.SourceScheduleID,
+	)
 	return err
 }
 
@@ -518,6 +682,143 @@ func (q *Queries) ListExtEscalationPolicySteps(ctx context.Context, escalationPo
 	return items, nil
 }
 
+const listExtRotationMembers = `-- name: ListExtRotationMembers :many
+SELECT rotation_id, user_id, member_order FROM ext_rotation_members WHERE rotation_id = ? ORDER BY member_order ASC
+`
+
+func (q *Queries) ListExtRotationMembers(ctx context.Context, rotationID string) ([]ExtRotationMember, error) {
+	rows, err := q.db.QueryContext(ctx, listExtRotationMembers, rotationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtRotationMember
+	for rows.Next() {
+		var i ExtRotationMember
+		if err := rows.Scan(&i.RotationID, &i.UserID, &i.MemberOrder); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtRotationRestrictions = `-- name: ListExtRotationRestrictions :many
+SELECT rotation_id, restriction_index, start_time, start_day, end_time, end_day FROM ext_rotation_restrictions WHERE rotation_id = ? ORDER BY restriction_index ASC
+`
+
+func (q *Queries) ListExtRotationRestrictions(ctx context.Context, rotationID string) ([]ExtRotationRestriction, error) {
+	rows, err := q.db.QueryContext(ctx, listExtRotationRestrictions, rotationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtRotationRestriction
+	for rows.Next() {
+		var i ExtRotationRestriction
+		if err := rows.Scan(
+			&i.RotationID,
+			&i.RestrictionIndex,
+			&i.StartTime,
+			&i.StartDay,
+			&i.EndTime,
+			&i.EndDay,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtRotations = `-- name: ListExtRotations :many
+SELECT id, schedule_id, name, description, strategy, shift_duration, start_time, handoff_time, handoff_day, rotation_order FROM ext_rotations ORDER BY rotation_order ASC
+`
+
+func (q *Queries) ListExtRotations(ctx context.Context) ([]ExtRotation, error) {
+	rows, err := q.db.QueryContext(ctx, listExtRotations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtRotation
+	for rows.Next() {
+		var i ExtRotation
+		if err := rows.Scan(
+			&i.ID,
+			&i.ScheduleID,
+			&i.Name,
+			&i.Description,
+			&i.Strategy,
+			&i.ShiftDuration,
+			&i.StartTime,
+			&i.HandoffTime,
+			&i.HandoffDay,
+			&i.RotationOrder,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtRotationsByScheduleID = `-- name: ListExtRotationsByScheduleID :many
+SELECT id, schedule_id, name, description, strategy, shift_duration, start_time, handoff_time, handoff_day, rotation_order FROM ext_rotations WHERE schedule_id = ? ORDER BY rotation_order ASC
+`
+
+func (q *Queries) ListExtRotationsByScheduleID(ctx context.Context, scheduleID string) ([]ExtRotation, error) {
+	rows, err := q.db.QueryContext(ctx, listExtRotationsByScheduleID, scheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtRotation
+	for rows.Next() {
+		var i ExtRotation
+		if err := rows.Scan(
+			&i.ID,
+			&i.ScheduleID,
+			&i.Name,
+			&i.Description,
+			&i.Strategy,
+			&i.ShiftDuration,
+			&i.StartTime,
+			&i.HandoffTime,
+			&i.HandoffDay,
+			&i.RotationOrder,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listExtScheduleMembers = `-- name: ListExtScheduleMembers :many
 SELECT schedule_id, user_id, member_order FROM ext_schedule_members 
 WHERE schedule_id = ?
@@ -655,6 +956,41 @@ func (q *Queries) ListExtSchedulesLikeID(ctx context.Context, id string) ([]ExtS
 	return items, nil
 }
 
+const listExtSchedulesV2 = `-- name: ListExtSchedulesV2 :many
+SELECT id, name, description, timezone, team_id, source_system, source_schedule_id FROM ext_schedules_v2
+`
+
+func (q *Queries) ListExtSchedulesV2(ctx context.Context) ([]ExtSchedulesV2, error) {
+	rows, err := q.db.QueryContext(ctx, listExtSchedulesV2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtSchedulesV2
+	for rows.Next() {
+		var i ExtSchedulesV2
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Timezone,
+			&i.TeamID,
+			&i.SourceSystem,
+			&i.SourceScheduleID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listExtTeamMemberships = `-- name: ListExtTeamMemberships :many
 SELECT ext_teams.id, ext_teams.name, ext_teams.slug, ext_teams.fh_team_id, ext_teams.is_group, ext_teams.to_import, ext_teams.annotations, ext_users.id, ext_users.name, ext_users.email, ext_users.fh_user_id, ext_users.annotations FROM ext_memberships
   JOIN ext_teams ON ext_teams.id = ext_memberships.team_id
@@ -757,6 +1093,37 @@ func (q *Queries) ListExtUsers(ctx context.Context) ([]ExtUser, error) {
 			&i.FhUserID,
 			&i.Annotations,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFhMembersByExtRotationID = `-- name: ListFhMembersByExtRotationID :many
+SELECT fh_users.id, fh_users.name, fh_users.email FROM ext_rotation_members
+  JOIN ext_users ON ext_users.id = ext_rotation_members.user_id
+  JOIN fh_users ON fh_users.id = ext_users.fh_user_id
+WHERE ext_rotation_members.rotation_id = ?
+ORDER BY ext_rotation_members.member_order ASC
+`
+
+func (q *Queries) ListFhMembersByExtRotationID(ctx context.Context, rotationID string) ([]FhUser, error) {
+	rows, err := q.db.QueryContext(ctx, listFhMembersByExtRotationID, rotationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FhUser
+	for rows.Next() {
+		var i FhUser
+		if err := rows.Scan(&i.ID, &i.Name, &i.Email); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

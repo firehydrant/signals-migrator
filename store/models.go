@@ -39,6 +39,34 @@ type ExtMembership struct {
 	TeamID string `json:"team_id"`
 }
 
+type ExtRotation struct {
+	ID            string `json:"id"`
+	ScheduleID    string `json:"schedule_id"`
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Strategy      string `json:"strategy"`
+	ShiftDuration string `json:"shift_duration"`
+	StartTime     string `json:"start_time"`
+	HandoffTime   string `json:"handoff_time"`
+	HandoffDay    string `json:"handoff_day"`
+	RotationOrder int64  `json:"rotation_order"`
+}
+
+type ExtRotationMember struct {
+	RotationID  string `json:"rotation_id"`
+	UserID      string `json:"user_id"`
+	MemberOrder int64  `json:"member_order"`
+}
+
+type ExtRotationRestriction struct {
+	RotationID       string `json:"rotation_id"`
+	RestrictionIndex string `json:"restriction_index"`
+	StartTime        string `json:"start_time"`
+	StartDay         string `json:"start_day"`
+	EndTime          string `json:"end_time"`
+	EndDay           string `json:"end_day"`
+}
+
 type ExtSchedule struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
@@ -69,6 +97,16 @@ type ExtScheduleRestriction struct {
 type ExtScheduleTeam struct {
 	ScheduleID string `json:"schedule_id"`
 	TeamID     string `json:"team_id"`
+}
+
+type ExtSchedulesV2 struct {
+	ID               string `json:"id"`
+	Name             string `json:"name"`
+	Description      string `json:"description"`
+	Timezone         string `json:"timezone"`
+	TeamID           string `json:"team_id"`
+	SourceSystem     string `json:"source_system"`
+	SourceScheduleID string `json:"source_schedule_id"`
 }
 
 type ExtTeam struct {

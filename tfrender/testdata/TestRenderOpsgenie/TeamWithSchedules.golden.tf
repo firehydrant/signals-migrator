@@ -72,13 +72,35 @@ resource "firehydrant_team" "christine_test_team" {
   name = "Christine Test Team"
 }
 
-resource "firehydrant_on_call_schedule" "customer_success_customer_success_schedule_rot1" {
-  name        = "Customer Success_schedule - Rot1"
-  description = "(Rot1)"
+resource "firehydrant_on_call_schedule" "customer_success_customer_success_schedule" {
+  name        = "Customer Success_schedule"
+  description = "Customer Success team schedule"
   team_id     = firehydrant_team.customer_success.id
   time_zone   = "America/Los_Angeles"
+}
 
-  member_ids = []
+resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule" {
+  name        = "Wong Team_schedule"
+  description = "Wong team schedule"
+  team_id     = firehydrant_team.wong_squad.id
+  time_zone   = "America/Los_Angeles"
+}
+
+resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
+  name        = "AJ Team_schedule"
+  description = "AJ team schedule"
+  team_id     = firehydrant_team.aj_team.id
+  time_zone   = "America/Los_Angeles"
+}
+
+resource "firehydrant_rotation" "customer_success_customer_success_schedule_rot1" {
+  name        = "Rot1"
+  description = "(Rot1)"
+  team_id     = firehydrant_team.customer_success.id
+  schedule_id = firehydrant_on_call_schedule.customer_success_customer_success_schedule.id
+  time_zone   = "America/Los_Angeles"
+
+  members = []
 
   strategy {
     type         = "weekly"
@@ -87,13 +109,14 @@ resource "firehydrant_on_call_schedule" "customer_success_customer_success_sched
   }
 }
 
-resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule_first" {
-  name        = "Wong Team_schedule - First"
+resource "firehydrant_rotation" "wong_squad_wong_team_schedule_first" {
+  name        = "First"
   description = "(First)"
   team_id     = firehydrant_team.wong_squad.id
+  schedule_id = firehydrant_on_call_schedule.wong_squad_wong_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = []
+  members = []
 
   strategy {
     type         = "daily"
@@ -101,13 +124,14 @@ resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule_first" {
   }
 }
 
-resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_daytime_rotation" {
-  name        = "AJ Team_schedule - Daytime rotation"
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_daytime_rotation" {
+  name        = "Daytime rotation"
   description = "(Daytime rotation)"
   team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
+  members = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
 
   strategy {
     type         = "weekly"
@@ -151,13 +175,14 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_daytime_rotati
   }
 }
 
-resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_nighttime_rotation" {
-  name        = "AJ Team_schedule - Nighttime rotation"
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_nighttime_rotation" {
+  name        = "Nighttime rotation"
   description = "(Nighttime rotation)"
   team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
+  members = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
 
   strategy {
     type         = "daily"

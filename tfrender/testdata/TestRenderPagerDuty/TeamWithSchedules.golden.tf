@@ -69,16 +69,53 @@ import {
   to = firehydrant_team.dunder_mifflin_scranton
 }
 
-resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primary_layer_2" {
-  name        = "Jen - primary - Layer 2"
+resource "firehydrant_team" "cowboy_coders" {
+  name = "🐴 Cowboy Coders"
+
+  # [PagerDuty] 🐴 Cowboy Coders https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
+}
+
+import {
+  id = "f159b173-1ffd-41ac-9254-ce8ec1142267"
+  to = firehydrant_team.cowboy_coders
+}
+
+resource "firehydrant_on_call_schedule" "jen_jen___primary" {
+  name        = "Jen - primary"
+  description = "Primary on-call schedule for Jen team"
+  team_id     = firehydrant_team.jen.id
+  time_zone   = "America/Los_Angeles"
+
+  # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
+}
+
+resource "firehydrant_on_call_schedule" "jack_team_jack_on_call_schedule" {
+  name        = "Jack On-Call Schedule"
+  description = "On-call schedule for Jack team"
+  team_id     = firehydrant_team.jack_team.id
+  time_zone   = "America/Los_Angeles"
+
+  # [PagerDuty] Jack Team https://pdt-apidocs.pagerduty.com/service-directory/PD2F80U
+}
+
+resource "firehydrant_on_call_schedule" "cowboy_coders_🐴_is_always_on_call" {
+  name        = "🐴 is always on call"
+  description = "Always on call schedule"
+  team_id     = firehydrant_team.cowboy_coders.id
+  time_zone   = "America/Los_Angeles"
+
+  # [PagerDuty] 🐴 Cowboy Coders https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
+}
+
+resource "firehydrant_rotation" "jen_jen___primary_layer_2" {
+  name        = "Layer 2"
   description = "(Layer 2)"
-  team_id     = firehydrant_team.aaaa_ipv6_migration_strategy.id
+  team_id     = firehydrant_team.jen.id
+  schedule_id = firehydrant_on_call_schedule.jen_jen___primary.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-04-10T20:39:29-07:00"
 
-  # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
-
-  member_ids = [data.firehydrant_user.kiran.id]
+  members = [data.firehydrant_user.kiran.id]
 
   strategy {
     type           = "custom"
@@ -91,18 +128,55 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
     end_day    = "friday"
     end_time   = "17:00:00"
   }
+
+  # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
 }
 
-resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primary_layer_1" {
-  name        = "Jen - primary - Layer 1"
+resource "firehydrant_rotation" "jack_team_jack_on_call_schedule_layer_1" {
+  name        = "Layer 1"
+  description = " (Layer 1)"
+  team_id     = firehydrant_team.jack_team.id
+  schedule_id = firehydrant_on_call_schedule.jack_team_jack_on_call_schedule.id
+  time_zone   = "America/Los_Angeles"
+
+  members = [data.firehydrant_user.jack.id]
+
+  strategy {
+    type         = "weekly"
+    handoff_day  = "friday"
+    handoff_time = "14:00:00"
+  }
+
+  # [PagerDuty] Jack Team https://pdt-apidocs.pagerduty.com/service-directory/PD2F80U
+}
+
+resource "firehydrant_rotation" "cowboy_coders_🐴_is_always_on_call_layer_1" {
+  name        = "Layer 1"
   description = "(Layer 1)"
-  team_id     = firehydrant_team.aaaa_ipv6_migration_strategy.id
+  team_id     = firehydrant_team.cowboy_coders.id
+  schedule_id = firehydrant_on_call_schedule.cowboy_coders_🐴_is_always_on_call.id
+  time_zone   = "America/Los_Angeles"
+
+  members = [data.firehydrant_user.horse.id]
+
+  strategy {
+    type         = "weekly"
+    handoff_day  = "friday"
+    handoff_time = "12:00:00"
+  }
+
+  # [PagerDuty] 🐴 Cowboy Coders https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
+}
+
+resource "firehydrant_rotation" "jen_jen___primary_layer_1" {
+  name        = "Layer 1"
+  description = "(Layer 1)"
+  team_id     = firehydrant_team.jen.id
+  schedule_id = firehydrant_on_call_schedule.jen_jen___primary.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-04-10T20:39:29-07:00"
 
-  # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
-
-  member_ids = [data.firehydrant_user.local.id, data.firehydrant_user.wong.id]
+  members = [data.firehydrant_user.local.id, data.firehydrant_user.wong.id]
 
   strategy {
     type           = "custom"
@@ -157,21 +231,6 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
     end_day    = "saturday"
     end_time   = "17:00:00"
   }
-}
 
-resource "firehydrant_on_call_schedule" "dunder_mifflin_scranton_jack_on_call_schedule_layer_1" {
-  name        = "Jack On-Call Schedule - Layer 1"
-  description = " (Layer 1)"
-  team_id     = firehydrant_team.dunder_mifflin_scranton.id
-  time_zone   = "America/Los_Angeles"
-
-  # [PagerDuty] Jack Team https://pdt-apidocs.pagerduty.com/service-directory/PD2F80U
-
-  member_ids = [data.firehydrant_user.jack.id]
-
-  strategy {
-    type         = "weekly"
-    handoff_day  = "friday"
-    handoff_time = "14:00:00"
-  }
+  # [PagerDuty] Jen https://pdt-apidocs.pagerduty.com/service-directory/PT54U20
 }

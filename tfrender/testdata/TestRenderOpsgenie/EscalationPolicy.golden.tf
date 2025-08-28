@@ -47,13 +47,21 @@ resource "firehydrant_team" "aj_team" {
   }
 }
 
-resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_rota3" {
-  name        = "AJ Team_schedule - Rota3"
-  description = "(Rota3)"
+resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
+  name        = "AJ Team_schedule"
+  description = "AJ Team schedule with multiple rotations"
   team_id     = firehydrant_team.aj_team.id
   time_zone   = "America/Los_Angeles"
+}
 
-  member_ids = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id]
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_rota3" {
+  name        = "Rota3"
+  description = "Custom rotation with restrictions"
+  team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
+  time_zone   = "America/Los_Angeles"
+
+  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id]
 
   strategy {
     type           = "custom"
@@ -61,13 +69,14 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_rota3" {
   }
 }
 
-resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_daytime_rotation" {
-  name        = "AJ Team_schedule - Daytime rotation"
-  description = "(Daytime rotation)"
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_daytime_rotation" {
+  name        = "Daytime rotation"
+  description = "Weekly daytime rotation"
   team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
+  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
 
   strategy {
     type         = "weekly"
@@ -111,13 +120,14 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_daytime_rotati
   }
 }
 
-resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule_nighttime_rotation" {
-  name        = "AJ Team_schedule - Nighttime rotation"
-  description = "(Nighttime rotation)"
+resource "firehydrant_rotation" "aj_team_aj_team_schedule_nighttime_rotation" {
+  name        = "Nighttime rotation"
+  description = "Daily nighttime rotation"
   team_id     = firehydrant_team.aj_team.id
+  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  member_ids = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
+  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
 
   strategy {
     type         = "daily"
@@ -183,17 +193,7 @@ resource "firehydrant_escalation_policy" "aj_team_escalation" {
 
     targets {
       type = "OnCallSchedule"
-      id   = firehydrant_on_call_schedule.aj_team_aj_team_schedule_daytime_rotation.id
-    }
-
-    targets {
-      type = "OnCallSchedule"
-      id   = firehydrant_on_call_schedule.aj_team_aj_team_schedule_nighttime_rotation.id
-    }
-
-    targets {
-      type = "OnCallSchedule"
-      id   = firehydrant_on_call_schedule.aj_team_aj_team_schedule_rota3.id
+      id   = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
     }
   }
 

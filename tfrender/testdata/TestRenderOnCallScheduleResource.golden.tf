@@ -54,8 +54,15 @@ resource "firehydrant_on_call_schedule" "team_1_slug_schedule_0" {
   description = "Schedule 0 description"
   team_id     = firehydrant_team.team_1_slug.id
   time_zone   = "UTC"
+}
 
-  member_ids = [data.firehydrant_user.user_0.id]
+resource "firehydrant_rotation" "team_1_slug_schedule_0_daily_rotation" {
+  name        = "Daily Rotation"
+  team_id     = firehydrant_team.team_1_slug.id
+  schedule_id = firehydrant_on_call_schedule.team_1_slug_schedule_0.id
+  time_zone   = "UTC"
+
+  members = [data.firehydrant_user.user_0.id]
 
   strategy {
     type         = "daily"

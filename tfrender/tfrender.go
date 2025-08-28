@@ -98,6 +98,7 @@ func (r *TFRender) Write(ctx context.Context) error {
 		r.DataFireHydrantUsers,
 		r.ResourceFireHydrantTeams,
 		r.ResourceFireHydrantOnCallSchedule,
+		r.ResourceFireHydrantRotation,
 		r.ResourceFireHydrantEscalationPolicy,
 	}
 
@@ -181,25 +182,30 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						hcl.TraverseAttr{Name: "id"},
 					})
 				case store.TARGET_TYPE_SCHEDULE:
-					schedules, err := store.UseQueries(ctx).ListExtSchedulesLikeID(ctx, fmt.Sprintf(`%s%%`, t.TargetID))
+					// Get the schedule from the new structure
+					schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, t.TargetID)
 					if err != nil {
 						console.Errorf("querying schedule '%s' for step %d of %s: %s\n", t.TargetID, s.Position, p.Name, err.Error())
 						continue
 					}
-					for _, schedule := range schedules {
-						teams, err := store.UseQueries(ctx).ListTeamsByExtScheduleID(ctx, schedule.ID)
-						if err != nil {
-							return fmt.Errorf("querying teams for schedule '%s': %w", schedule.Name, err)
-						}
-						for _, team := range teams {
-							slug := fmt.Sprintf("%s_%s", team.TFSlug(), schedule.TFSlug())
-							idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
-								hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
-								hcl.TraverseAttr{Name: slug},
-								hcl.TraverseAttr{Name: "id"},
-							})
-						}
+
+					// Get the team that owns this schedule
+					team, err := store.UseQueries(ctx).GetExtTeam(ctx, schedule.TeamID)
+					if err != nil {
+						console.Errorf("querying team for schedule '%s' in step %d of %s: %s\n", schedule.Name, s.Position, p.Name, err.Error())
+						continue
 					}
+
+					// Generate TF slug for schedule
+					scheduleSlug := strings.ToLower(strings.ReplaceAll(schedule.Name, " ", "_"))
+					scheduleSlug = strings.ReplaceAll(scheduleSlug, "-", "_")
+
+					slug := fmt.Sprintf("%s_%s", team.TFSlug(), scheduleSlug)
+					idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
+						hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
+						hcl.TraverseAttr{Name: slug},
+						hcl.TraverseAttr{Name: "id"},
+					})
 				default:
 					console.Errorf("unknown target type '%s' for step %d of %s\n", t.TargetType, s.Position, p.Name)
 					continue
@@ -223,85 +229,151 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 }
 
 func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error {
-	schedules, err := store.UseQueries(ctx).ListExtSchedules(ctx)
+	schedules, err := store.UseQueries(ctx).ListExtSchedulesV2(ctx)
 	if err != nil {
 		return fmt.Errorf("querying schedules: %w", err)
 	}
 
 	for _, s := range schedules {
-		teams, err := store.UseQueries(ctx).ListTeamsByExtScheduleID(ctx, s.ID)
+		// Get the team that owns this schedule
+		team, err := store.UseQueries(ctx).GetExtTeam(ctx, s.TeamID)
 		if err != nil {
-			return fmt.Errorf("querying teams for schedule '%s': %w", s.Name, err)
+			return fmt.Errorf("querying team for schedule '%s': %w", s.Name, err)
 		}
-		for _, t := range teams {
-			r.root.AppendNewline()
 
-			b := r.root.AppendNewBlock("resource", []string{
-				"firehydrant_on_call_schedule",
-				fmt.Sprintf("%s_%s", t.TFSlug(), s.TFSlug()),
-			}).Body()
-			b.SetAttributeValue("name", cty.StringVal(s.Name))
-			if s.Description != "" {
-				b.SetAttributeValue("description", cty.StringVal(s.Description))
-			}
-			b.SetAttributeTraversal("team_id", hcl.Traversal{
-				hcl.TraverseRoot{Name: "firehydrant_team"},
-				hcl.TraverseAttr{Name: t.TFSlug()},
+		r.root.AppendNewline()
+
+		// Generate TF slug for schedule (similar to how teams do it)
+		scheduleSlug := strings.ToLower(strings.ReplaceAll(s.Name, " ", "_"))
+		scheduleSlug = strings.ReplaceAll(scheduleSlug, "-", "_")
+
+		b := r.root.AppendNewBlock("resource", []string{
+			"firehydrant_on_call_schedule",
+			fmt.Sprintf("%s_%s", team.TFSlug(), scheduleSlug),
+		}).Body()
+		b.SetAttributeValue("name", cty.StringVal(s.Name))
+		if s.Description != "" {
+			b.SetAttributeValue("description", cty.StringVal(s.Description))
+		}
+		b.SetAttributeTraversal("team_id", hcl.Traversal{
+			hcl.TraverseRoot{Name: "firehydrant_team"},
+			hcl.TraverseAttr{Name: team.TFSlug()},
+			hcl.TraverseAttr{Name: "id"},
+		})
+		b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
+
+		if team.Annotations != "" {
+			b.AppendNewline()
+			r.AppendComment(b, team.Annotations)
+		}
+	}
+	return nil
+}
+
+func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
+	rotations, err := store.UseQueries(ctx).ListExtRotations(ctx)
+	if err != nil {
+		return fmt.Errorf("querying rotations: %w", err)
+	}
+
+	for _, rotation := range rotations {
+		// Get the schedule that owns this rotation
+		schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, rotation.ScheduleID)
+		if err != nil {
+			return fmt.Errorf("querying schedule for rotation '%s': %w", rotation.Name, err)
+		}
+
+		// Get the team that owns the schedule
+		team, err := store.UseQueries(ctx).GetExtTeam(ctx, schedule.TeamID)
+		if err != nil {
+			return fmt.Errorf("querying team for rotation '%s': %w", rotation.Name, err)
+		}
+
+		r.root.AppendNewline()
+
+		// Generate TF slug for rotation (similar to how teams do it)
+		rotationSlug := strings.ToLower(strings.ReplaceAll(rotation.Name, " ", "_"))
+		rotationSlug = strings.ReplaceAll(rotationSlug, "-", "_")
+
+		// Generate TF slug for schedule
+		scheduleSlug := strings.ToLower(strings.ReplaceAll(schedule.Name, " ", "_"))
+		scheduleSlug = strings.ReplaceAll(scheduleSlug, "-", "_")
+
+		b := r.root.AppendNewBlock("resource", []string{
+			"firehydrant_rotation",
+			fmt.Sprintf("%s_%s_%s", team.TFSlug(), scheduleSlug, rotationSlug),
+		}).Body()
+		b.SetAttributeValue("name", cty.StringVal(rotation.Name))
+		if rotation.Description != "" {
+			b.SetAttributeValue("description", cty.StringVal(rotation.Description))
+		}
+		b.SetAttributeTraversal("team_id", hcl.Traversal{
+			hcl.TraverseRoot{Name: "firehydrant_team"},
+			hcl.TraverseAttr{Name: team.TFSlug()},
+			hcl.TraverseAttr{Name: "id"},
+		})
+		b.SetAttributeTraversal("schedule_id", hcl.Traversal{
+			hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
+			hcl.TraverseAttr{Name: fmt.Sprintf("%s_%s", team.TFSlug(), scheduleSlug)},
+			hcl.TraverseAttr{Name: "id"},
+		})
+		b.SetAttributeValue("time_zone", cty.StringVal(schedule.Timezone))
+
+		// Add start_time if rotation has custom strategy
+		if rotation.Strategy == "custom" && rotation.StartTime != "" {
+			b.SetAttributeValue("start_time", cty.StringVal(rotation.StartTime))
+		}
+
+		// Add members
+		members, err := store.UseQueries(ctx).ListFhMembersByExtRotationID(ctx, rotation.ID)
+		if err != nil {
+			return fmt.Errorf("querying members for rotation '%s': %w", rotation.Name, err)
+		}
+
+		memberList := []hclwrite.Tokens{}
+		for _, m := range members {
+			member := hcl.Traversal{
+				hcl.TraverseRoot{Name: "data"},
+				hcl.TraverseAttr{Name: "firehydrant_user"},
+				hcl.TraverseAttr{Name: m.TFSlug()},
 				hcl.TraverseAttr{Name: "id"},
-			})
-			b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
-			if s.Strategy == "custom" && s.StartTime != "" {
-				b.SetAttributeValue("start_time", cty.StringVal(s.StartTime))
 			}
+			memberList = append(memberList, hclwrite.TokensForTraversal(member))
+		}
 
-			if t.Annotations != "" {
-				b.AppendNewline()
-				r.AppendComment(b, t.Annotations)
-			}
+		b.AppendNewline()
+		b.SetAttributeRaw("members", hclwrite.TokensForTuple(memberList))
 
-			members, err := store.UseQueries(ctx).ListFhMembersByExtScheduleID(ctx, s.ID)
-			if err != nil {
-				return fmt.Errorf("querying members for schedule '%s': %w", s.Name, err)
-			}
+		// Add strategy
+		b.AppendNewline()
+		strategy := b.AppendNewBlock("strategy", []string{}).Body()
+		strategy.SetAttributeValue("type", cty.StringVal(rotation.Strategy))
+		if rotation.Strategy == "weekly" {
+			strategy.SetAttributeValue("handoff_day", cty.StringVal(rotation.HandoffDay))
+		}
+		if rotation.Strategy == "custom" {
+			strategy.SetAttributeValue("shift_duration", cty.StringVal(rotation.ShiftDuration))
+		} else {
+			strategy.SetAttributeValue("handoff_time", cty.StringVal(rotation.HandoffTime))
+		}
 
-			memberList := []hclwrite.Tokens{}
-			for _, m := range members {
-				member := hcl.Traversal{
-					hcl.TraverseRoot{Name: "data"},
-					hcl.TraverseAttr{Name: "firehydrant_user"},
-					hcl.TraverseAttr{Name: m.TFSlug()},
-					hcl.TraverseAttr{Name: "id"},
-				}
-				memberList = append(memberList, hclwrite.TokensForTraversal(member))
-			}
-
+		// Add restrictions
+		restrictions, err := store.UseQueries(ctx).ListExtRotationRestrictions(ctx, rotation.ID)
+		if err != nil {
+			return fmt.Errorf("querying restrictions for rotation '%s': %w", rotation.Name, err)
+		}
+		for _, restriction := range restrictions {
 			b.AppendNewline()
-			b.SetAttributeRaw("member_ids", hclwrite.TokensForTuple(memberList))
+			restrictionBlock := b.AppendNewBlock("restrictions", []string{}).Body()
+			restrictionBlock.SetAttributeValue("start_day", cty.StringVal(restriction.StartDay))
+			restrictionBlock.SetAttributeValue("start_time", cty.StringVal(restriction.StartTime))
+			restrictionBlock.SetAttributeValue("end_day", cty.StringVal(restriction.EndDay))
+			restrictionBlock.SetAttributeValue("end_time", cty.StringVal(restriction.EndTime))
+		}
 
+		if team.Annotations != "" {
 			b.AppendNewline()
-			strategy := b.AppendNewBlock("strategy", []string{}).Body()
-			strategy.SetAttributeValue("type", cty.StringVal(s.Strategy))
-			if s.Strategy == "weekly" {
-				strategy.SetAttributeValue("handoff_day", cty.StringVal(s.HandoffDay))
-			}
-			if s.Strategy == "custom" {
-				strategy.SetAttributeValue("shift_duration", cty.StringVal(s.ShiftDuration))
-			} else {
-				strategy.SetAttributeValue("handoff_time", cty.StringVal(s.HandoffTime))
-			}
-
-			restrictions, err := store.UseQueries(ctx).ListExtScheduleRestrictionsByExtScheduleID(ctx, s.ID)
-			if err != nil {
-				return fmt.Errorf("querying restrictions for schedule '%s': %w", s.Name, err)
-			}
-			for _, r := range restrictions {
-				b.AppendNewline()
-				restriction := b.AppendNewBlock("restrictions", []string{}).Body()
-				restriction.SetAttributeValue("start_day", cty.StringVal(r.StartDay))
-				restriction.SetAttributeValue("start_time", cty.StringVal(r.StartTime))
-				restriction.SetAttributeValue("end_day", cty.StringVal(r.EndDay))
-				restriction.SetAttributeValue("end_time", cty.StringVal(r.EndTime))
-			}
+			r.AppendComment(b, team.Annotations)
 		}
 	}
 	return nil

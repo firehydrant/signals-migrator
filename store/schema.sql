@@ -95,6 +95,51 @@ CREATE TABLE IF NOT EXISTS ext_schedule_members (
   FOREIGN KEY (user_id) REFERENCES ext_users(id)
 ) STRICT;
 
+CREATE TABLE IF NOT EXISTS ext_schedules_v2 (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  timezone TEXT NOT NULL,
+  team_id TEXT NOT NULL, 
+  source_system TEXT NOT NULL,
+  source_schedule_id TEXT NOT NULL,
+  FOREIGN KEY (team_id) REFERENCES ext_teams(id)
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_rotations (
+  id TEXT PRIMARY KEY,
+  schedule_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  strategy TEXT NOT NULL,
+  shift_duration TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  handoff_time TEXT NOT NULL,
+  handoff_day TEXT NOT NULL,
+  rotation_order INTEGER NOT NULL DEFAULT 0,
+  FOREIGN KEY (schedule_id) REFERENCES ext_schedules_v2(id) ON DELETE CASCADE
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_rotation_members (
+  rotation_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  member_order INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (rotation_id, user_id),
+  FOREIGN KEY (rotation_id) REFERENCES ext_rotations(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES ext_users(id)
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_rotation_restrictions (
+  rotation_id TEXT NOT NULL,
+  restriction_index TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  start_day TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  end_day TEXT NOT NULL,
+  PRIMARY KEY (rotation_id, restriction_index),
+  FOREIGN KEY (rotation_id) REFERENCES ext_rotations(id) ON DELETE CASCADE
+) STRICT;
+
 CREATE TABLE IF NOT EXISTS ext_escalation_policies (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,

@@ -77,16 +77,43 @@ func TestOpsgenie(t *testing.T) {
 	t.Run("LoadSchedules", func(t *testing.T) {
 		ctx, og := setup(t)
 
+		// Load teams first since schedules reference teams
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+
 		if err := og.LoadSchedules(ctx); err != nil {
 			t.Fatalf("error loading schedules: %s", err)
 		}
 
-		s, err := store.UseQueries(ctx).ListExtSchedules(ctx)
+		s, err := store.UseQueries(ctx).ListExtSchedulesV2(ctx)
 		if err != nil {
 			t.Fatalf("error loading schedules: %s", err)
 		}
 		t.Logf("found %d schedules", len(s))
 		assertJSON(t, s)
+	})
+
+	t.Run("LoadRotations", func(t *testing.T) {
+		ctx, og := setup(t)
+
+		// Load teams first since schedules reference teams
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+
+		if err := og.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		// Get rotations for the schedule
+		scheduleID := "3fee43f2-02da-49be-ab50-c88ed13aecc3"
+		rotations, err := store.UseQueries(ctx).ListExtRotationsByScheduleID(ctx, scheduleID)
+		if err != nil {
+			t.Fatalf("error loading rotations: %s", err)
+		}
+		t.Logf("found %d rotations", len(rotations))
+		assertJSON(t, rotations)
 	})
 
 	t.Run("LoadSchedulesPreservesMemberOrder", func(t *testing.T) {
@@ -102,19 +129,19 @@ func TestOpsgenie(t *testing.T) {
 			t.Fatalf("error loading schedules: %s", err)
 		}
 
-		// Check that schedule members are ordered correctly
-		// For schedule 3fee43f2-02da-49be-ab50-c88ed13aecc3-b1b5f7f6-728b-47bd-af02-c3e1c33bf219
+		// Check that rotation members are ordered correctly
+		// For rotation b1b5f7f6-728b-47bd-af02-c3e1c33bf219
 		// we expect users in order based on the API response
-		scheduleID := "3fee43f2-02da-49be-ab50-c88ed13aecc3-b1b5f7f6-728b-47bd-af02-c3e1c33bf219"
-		members, err := store.UseQueries(ctx).ListExtScheduleMembers(ctx, scheduleID)
+		rotationID := "b1b5f7f6-728b-47bd-af02-c3e1c33bf219"
+		members, err := store.UseQueries(ctx).ListExtRotationMembers(ctx, rotationID)
 		if err != nil {
-			t.Fatalf("error loading schedule members: %s", err)
+			t.Fatalf("error loading rotation members: %s", err)
 		}
 
 		// Verify that members are ordered by member_order
 		for i, member := range members {
 			if member.MemberOrder != int64(i) {
-				t.Errorf("schedule %s member at position %d: expected order %d, got %d", scheduleID, i, i, member.MemberOrder)
+				t.Errorf("rotation %s member at position %d: expected order %d, got %d", rotationID, i, i, member.MemberOrder)
 			}
 		}
 
@@ -122,7 +149,7 @@ func TestOpsgenie(t *testing.T) {
 		if len(members) > 0 {
 			for i := 1; i < len(members); i++ {
 				if members[i].MemberOrder <= members[i-1].MemberOrder {
-					t.Errorf("schedule %s: member order is not sequential at position %d", scheduleID, i)
+					t.Errorf("rotation %s: member order is not sequential at position %d", rotationID, i)
 				}
 			}
 		}

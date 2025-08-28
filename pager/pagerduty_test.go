@@ -256,7 +256,7 @@ func TestPagerDuty(t *testing.T) {
 		if err := pd.LoadSchedules(ctx); err != nil {
 			t.Fatalf("error loading schedules: %s", err)
 		}
-		schedules, err := store.UseQueries(ctx).ListExtSchedules(ctx)
+		schedules, err := store.UseQueries(ctx).ListExtSchedulesV2(ctx)
 		if err != nil {
 			t.Fatalf("error loading schedules: %s", err)
 		}
@@ -280,23 +280,23 @@ func TestPagerDuty(t *testing.T) {
 			t.Fatalf("error loading schedules: %s", err)
 		}
 
-		// Check that schedule members are ordered correctly
-		// For schedule P3D7DLW-PSQ0VRL, we expect users in order: PXI6XNI, P2C9LBA
-		members, err := store.UseQueries(ctx).ListExtScheduleMembers(ctx, "P3D7DLW-PSQ0VRL")
+		// Check that rotation members are ordered correctly
+		// For rotation PSQ0VRL (which was a layer), we expect users in order: PXI6XNI, P2C9LBA
+		members, err := store.UseQueries(ctx).ListExtRotationMembers(ctx, "PSQ0VRL")
 		if err != nil {
-			t.Fatalf("error loading schedule members: %s", err)
+			t.Fatalf("error loading rotation members: %s", err)
 		}
 
 		expectedOrder := []string{"PXI6XNI", "P2C9LBA"}
 		if len(members) != len(expectedOrder) {
-			t.Fatalf("schedule P3D7DLW-PSQ0VRL: expected %d members, got %d", len(expectedOrder), len(members))
+			t.Fatalf("rotation PSQ0VRL: expected %d members, got %d", len(expectedOrder), len(members))
 		}
 		for i, member := range members {
 			if member.UserID != expectedOrder[i] {
-				t.Errorf("schedule P3D7DLW-PSQ0VRL member at position %d: expected %s, got %s", i, expectedOrder[i], member.UserID)
+				t.Errorf("rotation PSQ0VRL member at position %d: expected %s, got %s", i, expectedOrder[i], member.UserID)
 			}
 			if member.MemberOrder != int64(i) {
-				t.Errorf("schedule P3D7DLW-PSQ0VRL member at position %d: expected order %d, got %d", i, i, member.MemberOrder)
+				t.Errorf("rotation PSQ0VRL member at position %d: expected order %d, got %d", i, i, member.MemberOrder)
 			}
 		}
 	})
@@ -318,24 +318,24 @@ func TestPagerDuty(t *testing.T) {
 		}
 
 		// First, verify the expected order from the database
-		// For schedule P3D7DLW-PSQ0VRL, we expect users in order: PXI6XNI, P2C9LBA
-		members, err := store.UseQueries(ctx).ListExtScheduleMembers(ctx, "P3D7DLW-PSQ0VRL")
+		// For rotation PSQ0VRL (which was a layer), we expect users in order: PXI6XNI, P2C9LBA
+		members, err := store.UseQueries(ctx).ListExtRotationMembers(ctx, "PSQ0VRL")
 		if err != nil {
-			t.Fatalf("error loading schedule members: %s", err)
+			t.Fatalf("error loading rotation members: %s", err)
 		}
 
 		expectedOrder := []string{"PXI6XNI", "P2C9LBA"}
 		if len(members) != len(expectedOrder) {
-			t.Fatalf("schedule P3D7DLW-PSQ0VRL: expected %d members, got %d", len(expectedOrder), len(members))
+			t.Fatalf("rotation PSQ0VRL: expected %d members, got %d", len(expectedOrder), len(members))
 		}
 
 		// Verify database order
 		for i, member := range members {
 			if member.UserID != expectedOrder[i] {
-				t.Errorf("schedule P3D7DLW-PSQ0VRL member at position %d: expected %s, got %s", i, expectedOrder[i], member.UserID)
+				t.Errorf("rotation PSQ0VRL member at position %d: expected %s, got %s", i, expectedOrder[i], member.UserID)
 			}
 			if member.MemberOrder != int64(i) {
-				t.Errorf("schedule P3D7DLW-PSQ0VRL member at position %d: expected order %d, got %d", i, i, member.MemberOrder)
+				t.Errorf("rotation PSQ0VRL member at position %d: expected order %d, got %d", i, i, member.MemberOrder)
 			}
 		}
 
@@ -410,45 +410,45 @@ func TestPagerDuty(t *testing.T) {
 		tfContentStr := string(tfContent)
 		t.Logf("Generated Terraform file:\n%s", tfContentStr)
 
-		// Extract the on-call schedule resource for P3D7DLW-PSQ0VRL
-		// Look for the schedule resource that contains the expected member order
-		scheduleRegex := regexp.MustCompile(`resource "firehydrant_on_call_schedule" "[^"]*" \{[\s\S]*?\}`)
-		scheduleMatches := scheduleRegex.FindAllString(tfContentStr, -1)
+		// Extract the rotation resources for P3D7DLW-PSQ0VRL
+		// Look for the rotation resource that contains the expected member order
+		rotationRegex := regexp.MustCompile(`resource "firehydrant_rotation" "[^"]*" \{[\s\S]*?\}`)
+		rotationMatches := rotationRegex.FindAllString(tfContentStr, -1)
 
-		if len(scheduleMatches) == 0 {
-			t.Fatal("No firehydrant_on_call_schedule resources found in Terraform file")
+		if len(rotationMatches) == 0 {
+			t.Fatal("No firehydrant_rotation resources found in Terraform file")
 		}
 
-		// Find the schedule that contains our expected users
-		// Looking for the schedule that contains both acme_success_eng (P2C9LBA) and acme_eng (PXI6XNI)
-		var targetSchedule string
-		for _, schedule := range scheduleMatches {
-			if strings.Contains(schedule, "acme_success_eng") && strings.Contains(schedule, "acme_eng") {
-				targetSchedule = schedule
+		// Find the rotation that contains our expected users
+		// Looking for the rotation that contains both acme_success_eng (P2C9LBA) and acme_eng (PXI6XNI)
+		var targetRotation string
+		for _, rotation := range rotationMatches {
+			if strings.Contains(rotation, "acme_success_eng") && strings.Contains(rotation, "acme_eng") {
+				targetRotation = rotation
 				break
 			}
 		}
 
-		if targetSchedule == "" {
-			t.Fatal("No schedule found containing both acme_success_eng and acme_eng users")
+		if targetRotation == "" {
+			t.Fatal("No rotation found containing both acme_success_eng and acme_eng users")
 		}
 
-		t.Logf("Found target schedule:\n%s", targetSchedule)
+		t.Logf("Found target rotation:\n%s", targetRotation)
 
-		// Extract the member_ids array from the Terraform resource
-		memberIDsRegex := regexp.MustCompile(`member_ids = \[([^\]]*)\]`)
-		memberIDsMatch := memberIDsRegex.FindStringSubmatch(targetSchedule)
+		// Extract the members array from the Terraform resource
+		membersRegex := regexp.MustCompile(`members = \[([^\]]*)\]`)
+		membersMatch := membersRegex.FindStringSubmatch(targetRotation)
 
-		if len(memberIDsMatch) < 2 {
-			t.Fatal("No member_ids found in schedule resource")
+		if len(membersMatch) < 2 {
+			t.Fatal("No members found in rotation resource")
 		}
 
-		memberIDsStr := memberIDsMatch[1]
-		t.Logf("Member IDs string: %s", memberIDsStr)
+		membersStr := membersMatch[1]
+		t.Logf("Members string: %s", membersStr)
 
-		// Extract individual user references from the member_ids array
+		// Extract individual user references from the members array
 		userRefRegex := regexp.MustCompile(`data\.firehydrant_user\.([^\.]+)\.id`)
-		userRefMatches := userRefRegex.FindAllStringSubmatch(memberIDsStr, -1)
+		userRefMatches := userRefRegex.FindAllStringSubmatch(membersStr, -1)
 
 		if len(userRefMatches) != len(expectedOrder) {
 			t.Errorf("Expected %d user references in Terraform, got %d", len(expectedOrder), len(userRefMatches))
@@ -483,13 +483,13 @@ func TestPagerDuty(t *testing.T) {
 			}
 		}
 
-		// Additional verification: Check that the schedule resource contains the correct structure
-		if !strings.Contains(targetSchedule, "firehydrant_on_call_schedule") {
-			t.Error("Schedule resource should contain firehydrant_on_call_schedule")
+		// Additional verification: Check that the rotation resource contains the correct structure
+		if !strings.Contains(targetRotation, "firehydrant_rotation") {
+			t.Error("Rotation resource should contain firehydrant_rotation")
 		}
 
-		if !strings.Contains(targetSchedule, "member_ids") {
-			t.Error("Schedule resource should contain member_ids")
+		if !strings.Contains(targetRotation, "members") {
+			t.Error("Rotation resource should contain members")
 		}
 
 		t.Logf("✅ Terraform output order verification completed successfully")
@@ -499,6 +499,11 @@ func TestPagerDuty(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)
 		data := map[string]any{}
+
+		// Load teams first since schedules reference teams
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
 
 		if err := pd.LoadSchedules(ctx); err != nil {
 			t.Fatalf("error loading schedules: %s", err)
