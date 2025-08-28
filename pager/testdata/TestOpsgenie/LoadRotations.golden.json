@@ -1,0 +1,50 @@
+[
+  {
+    "id": "b1b5f7f6-728b-47bd-af02-c3e1c33bf219",
+    "schedule_id": "3fee43f2-02da-49be-ab50-c88ed13aecc3",
+    "name": "Rot1",
+    "description": "(Rot1)",
+    "strategy": "weekly",
+    "shift_duration": "",
+    "start_time": "",
+    "handoff_time": "04:45:32",
+    "handoff_day": "tuesday",
+    "rotation_order": 0
+  },
+  {
+    "id": "daily-length-2",
+    "schedule_id": "3fee43f2-02da-49be-ab50-c88ed13aecc3",
+    "name": "Daily Length 2",
+    "description": "(Daily Length 2)",
+    "strategy": "custom",
+    "shift_duration": "PT48H",
+    "start_time": "",
+    "handoff_time": "09:00:00",
+    "handoff_day": "tuesday",
+    "rotation_order": 1
+  },
+  {
+    "id": "weekly-length-3",
+    "schedule_id": "3fee43f2-02da-49be-ab50-c88ed13aecc3",
+    "name": "Weekly Length 3",
+    "description": "(Weekly Length 3)",
+    "strategy": "custom",
+    "shift_duration": "PT504H",
+    "start_time": "",
+    "handoff_time": "09:00:00",
+    "handoff_day": "tuesday",
+    "rotation_order": 2
+  },
+  {
+    "id": "hourly-length-5",
+    "schedule_id": "3fee43f2-02da-49be-ab50-c88ed13aecc3",
+    "name": "Hourly Length 5",
+    "description": "(Hourly Length 5)",
+    "strategy": "custom",
+    "shift_duration": "PT5H",
+    "start_time": "",
+    "handoff_time": "09:00:00",
+    "handoff_day": "tuesday",
+    "rotation_order": 3
+  }
+]

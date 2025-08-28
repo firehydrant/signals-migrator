@@ -94,6 +94,28 @@ func TestOpsgenie(t *testing.T) {
 		assertJSON(t, s)
 	})
 
+	t.Run("LoadRotations", func(t *testing.T) {
+		ctx, og := setup(t)
+
+		// Load teams first since schedules reference teams
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+
+		if err := og.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		// Get rotations for the schedule
+		scheduleID := "3fee43f2-02da-49be-ab50-c88ed13aecc3"
+		rotations, err := store.UseQueries(ctx).ListExtRotationsByScheduleID(ctx, scheduleID)
+		if err != nil {
+			t.Fatalf("error loading rotations: %s", err)
+		}
+		t.Logf("found %d rotations", len(rotations))
+		assertJSON(t, rotations)
+	})
+
 	t.Run("LoadSchedulesPreservesMemberOrder", func(t *testing.T) {
 		ctx, og := setup(t)
 

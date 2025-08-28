@@ -256,18 +256,43 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, scheduleID string, r og
 	ogsHandoffDay := strings.ToLower(r.StartDate.Weekday().String())
 
 	var ogsStrategy, ogsDuration string
-	switch r.Type {
-	case og.Daily:
-		ogsStrategy = "daily"
-		ogsDuration = ""
-	case og.Weekly:
-		ogsStrategy = "weekly"
-		ogsDuration = ""
-	case og.Hourly:
+	rotationLength := r.Length
+	// Opsgenie's concept of rotation duration is different from FireHydrant's
+	//   Opsgenie includes a rotation type and a rotation length for each rotation
+	//   Type is the type of rotation (daily, weekly, hourly)
+	//   Length is the number of times that interval repeats for a given shift
+	//   For example, a daily rotation with a length of 2 would be a 2 day shift
+	// Our daily shift is always exactly 24 hours, with no variable length, weekly always 7 days, etc.
+	// Therefore, any Opsgenie rotation with a length > 1 is a custom rotation in FH, and we need to calculate the duration.
+
+	// If length > 1, convert to custom strategy with calculated duration
+	if rotationLength > 1 {
 		ogsStrategy = "custom"
-		ogsDuration = fmt.Sprintf("PT%dH", r.Length)
-	default:
-		return fmt.Errorf("unexpected schedule strategy %s.  skipping rotation %s of schedule %s", ogsStrategy, r.Id, scheduleID)
+		switch r.Type {
+		case og.Daily:
+			ogsDuration = fmt.Sprintf("PT%dH", 24*rotationLength)
+		case og.Weekly:
+			ogsDuration = fmt.Sprintf("PT%dH", 168*rotationLength)
+		case og.Hourly:
+			ogsDuration = fmt.Sprintf("PT%dH", rotationLength)
+		default:
+			return fmt.Errorf("unexpected schedule strategy %s.  skipping rotation %s of schedule %s", r.Type, r.Id, scheduleID)
+		}
+	} else {
+		// Length == 1, use standard strategies
+		switch r.Type {
+		case og.Daily:
+			ogsStrategy = "daily"
+			ogsDuration = ""
+		case og.Weekly:
+			ogsStrategy = "weekly"
+			ogsDuration = ""
+		case og.Hourly:
+			ogsStrategy = "custom"
+			ogsDuration = fmt.Sprintf("PT%dH", rotationLength)
+		default:
+			return fmt.Errorf("unexpected schedule strategy %s.  skipping rotation %s of schedule %s", r.Type, r.Id, scheduleID)
+		}
 	}
 
 	rotationParams := store.InsertExtRotationParams{
