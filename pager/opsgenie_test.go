@@ -179,4 +179,87 @@ func TestOpsgenie(t *testing.T) {
 		t.Logf("found %d escalation policies", len(s))
 		assertJSON(t, s)
 	})
+
+	t.Run("LoadEscalationPoliciesWithTargets", func(t *testing.T) {
+		ctx, og := setup(t)
+
+		if err := og.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := og.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := og.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		if err := og.LoadEscalationPolicies(ctx); err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+
+		policies, err := store.UseQueries(ctx).ListExtEscalationPolicies(ctx)
+		if err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+
+		// Policy should have both user and schedule targets
+		var targetPolicy *store.ExtEscalationPolicy
+		for _, policy := range policies {
+			if policy.Name == "Customer Success_escalation" {
+				targetPolicy = &policy
+				break
+			}
+		}
+
+		if targetPolicy == nil {
+			t.Fatal("Could not find 'Customer Success_escalation' policy")
+		}
+
+		steps, err := store.UseQueries(ctx).ListExtEscalationPolicySteps(ctx, targetPolicy.ID)
+		if err != nil {
+			t.Fatalf("error loading escalation policy steps: %s", err)
+		}
+
+		if len(steps) != 2 {
+			t.Fatalf("Expected 2 steps, got %d", len(steps))
+		}
+
+		for i, step := range steps {
+			targets, err := store.UseQueries(ctx).ListExtEscalationPolicyStepTargets(ctx, step.ID)
+			if err != nil {
+				t.Fatalf("error loading targets for step %d: %s", i, err)
+			}
+
+			if len(targets) != 1 {
+				t.Fatalf("Expected 1 target for step %d, got %d", i, len(targets))
+			}
+
+			target := targets[0]
+			switch i {
+			case 0:
+				if target.TargetType != store.TARGET_TYPE_USER {
+					t.Errorf("Step 0: Expected target type USER, got %s", target.TargetType)
+				}
+				if target.TargetID != "b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4" {
+					t.Errorf("Step 0: Expected user target ID 'b5b92115-bfe7-43eb-8c2a-e467f2e5ddc4', got %s", target.TargetID)
+				}
+			case 1:
+				if target.TargetType != store.TARGET_TYPE_SCHEDULE {
+					t.Errorf("Step 1: Expected target type SCHEDULE, got %s", target.TargetType)
+				}
+				if target.TargetID != "3fee43f2-02da-49be-ab50-c88ed13aecc3" {
+					t.Errorf("Step 1: Expected schedule target ID '3fee43f2-02da-49be-ab50-c88ed13aecc3', got %s", target.TargetID)
+				}
+
+				schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, target.TargetID)
+				if err != nil {
+					t.Errorf("Step 1: Could not resolve schedule target '%s': %s", target.TargetID, err)
+				} else {
+					t.Logf("Step 1: Successfully resolved schedule target to '%s'", schedule.Name)
+				}
+			}
+		}
+
+		t.Logf("✅ Escalation policy targeting verification completed successfully")
+	})
 }

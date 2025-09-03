@@ -113,50 +113,9 @@ SELECT fh_users.* FROM ext_memberships
   LEFT JOIN fh_teams ON fh_teams.id = ext_teams.fh_team_id
 WHERE ext_teams.id = ?;
 
--- name: GetExtSchedule :one
-SELECT * FROM ext_schedules WHERE id = ?;
 
--- name: ListExtSchedules :many
-SELECT * FROM ext_schedules;
 
--- name: ListExtSchedulesLikeID :many
-SELECT * FROM ext_schedules WHERE id LIKE ?;
 
--- name: InsertExtSchedule :exec
-INSERT INTO ext_schedules (id, name, description, timezone, strategy, shift_duration, start_time, handoff_time, handoff_day)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-
--- name: ListExtScheduleRestrictionsByExtScheduleID :many
-SELECT * FROM ext_schedule_restrictions WHERE schedule_id = ?;
-
--- name: InsertExtScheduleRestriction :exec
-INSERT INTO ext_schedule_restrictions (schedule_id, restriction_index, start_time, start_day, end_time, end_day)
-VALUES (?, ?, ?, ?, ?, ?);
-
--- name: ListTeamsByExtScheduleID :many
-SELECT linked_teams.* FROM linked_teams
-  JOIN ext_schedule_teams ON linked_teams.id = ext_schedule_teams.team_id
-WHERE ext_schedule_teams.schedule_id = ?;
-
--- name: InsertExtScheduleTeam :exec
-INSERT INTO ext_schedule_teams (schedule_id, team_id)
-VALUES (?, ?);
-
--- name: ListFhMembersByExtScheduleID :many
-SELECT fh_users.* FROM ext_schedule_members
-  JOIN ext_users ON ext_users.id = ext_schedule_members.user_id
-  JOIN fh_users ON fh_users.id = ext_users.fh_user_id
-WHERE ext_schedule_members.schedule_id = ?
-ORDER BY ext_schedule_members.member_order ASC;
-
--- name: InsertExtScheduleMember :exec
-INSERT INTO ext_schedule_members (schedule_id, user_id, member_order)
-VALUES (?, ?, ?);
-
--- name: ListExtScheduleMembers :many
-SELECT * FROM ext_schedule_members 
-WHERE schedule_id = ?
-ORDER BY member_order ASC;
 
 -- name: ListExtEscalationPolicies :many
 SELECT * FROM ext_escalation_policies;

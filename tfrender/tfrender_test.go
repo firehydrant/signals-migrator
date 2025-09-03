@@ -335,3 +335,95 @@ func TestRenderCustomStrategySchedule(t *testing.T) {
 
 	t.Logf("Generated Terraform:\n%s", contentStr)
 }
+
+func TestEscalationPolicyTargets(t *testing.T) {
+	ctx, tfr := tfrInit(t)
+
+	createUsers(t, ctx, "alice")
+	createUsers(t, ctx, "bob")
+	createTeams(t, ctx, "engineering", true)
+
+	if err := store.UseQueries(ctx).InsertExtScheduleV2(ctx, store.InsertExtScheduleV2Params{
+		ID:               "schedule-1",
+		Name:             "Primary On-Call",
+		Description:      "Primary on-call schedule",
+		Timezone:         "America/New_York",
+		TeamID:           "id-for-ext-team-engineering",
+		SourceSystem:     "test",
+		SourceScheduleID: "schedule-1",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.UseQueries(ctx).InsertExtEscalationPolicy(ctx, store.InsertExtEscalationPolicyParams{
+		ID:          "ep-1",
+		Name:        "Test Escalation Policy",
+		Description: "Test escalation policy with targets",
+		TeamID:      sql.NullString{String: "id-for-ext-team-engineering", Valid: true},
+		RepeatLimit: 3,
+		ToImport:    1, // Mark for import
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.UseQueries(ctx).InsertExtEscalationPolicyStep(ctx, store.InsertExtEscalationPolicyStepParams{
+		ID:                 "step-1",
+		EscalationPolicyID: "ep-1",
+		Position:           0,
+		Timeout:            "PT15M",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	targets := []struct {
+		targetType string
+		targetID   string
+	}{
+		{store.TARGET_TYPE_USER, "id-for-ext-user-alice"},
+		{store.TARGET_TYPE_SCHEDULE, "schedule-1"},
+	}
+
+	for _, target := range targets {
+		if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, store.InsertExtEscalationPolicyStepTargetParams{
+			EscalationPolicyStepID: "step-1",
+			TargetType:             target.targetType,
+			TargetID:               target.targetID,
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := tfr.Write(ctx); err != nil {
+		t.Fatal(err)
+	}
+
+	content, err := os.ReadFile(tfr.Filepath())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	contentStr := string(content)
+
+	if !strings.Contains(contentStr, `targets {
+      type = "User"
+      id   = data.firehydrant_user.user_alice.id
+    }`) {
+		t.Error("Missing user target in escalation policy")
+	}
+
+	if !strings.Contains(contentStr, `targets {
+      type = "OnCallSchedule"
+      id   = firehydrant_on_call_schedule.team_engineering_slug_primary_on_call.id
+    }`) {
+		t.Error("Missing schedule target in escalation policy")
+	}
+
+	if !strings.Contains(contentStr, `resource "firehydrant_escalation_policy" "test_escalation_policy"`) {
+		t.Error("Escalation policy resource not found")
+	}
+
+	if !strings.Contains(contentStr, `step {
+    timeout = "PT15M"`) {
+		t.Error("Escalation policy step not found")
+	}
+}

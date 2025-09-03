@@ -540,4 +540,75 @@ func TestPagerDuty(t *testing.T) {
 
 		assertJSON(t, data)
 	})
+
+	t.Run("LoadEscalationPoliciesWithTargets", func(t *testing.T) {
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		if err := pd.LoadEscalationPolicies(ctx); err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+
+		policies, err := store.UseQueries(ctx).ListExtEscalationPolicies(ctx)
+		if err != nil {
+			t.Fatalf("error loading escalation policies: %s", err)
+		}
+
+		// Policy shoudl have user and schedule targets
+		var targetPolicy *store.ExtEscalationPolicy
+		for _, policy := range policies {
+			if policy.Name == "Endeavour" {
+				targetPolicy = &policy
+				break
+			}
+		}
+
+		if targetPolicy == nil {
+			t.Fatal("Could not find 'Endeavour' policy")
+		}
+
+		steps, err := store.UseQueries(ctx).ListExtEscalationPolicySteps(ctx, targetPolicy.ID)
+		if err != nil {
+			t.Fatalf("error loading escalation policy steps: %s", err)
+		}
+
+		if len(steps) != 1 {
+			t.Fatalf("Expected 1 step, got %d", len(steps))
+		}
+
+		step := steps[0]
+		targets, err := store.UseQueries(ctx).ListExtEscalationPolicyStepTargets(ctx, step.ID)
+		if err != nil {
+			t.Fatalf("error loading targets for step: %s", err)
+		}
+
+		if len(targets) != 1 {
+			t.Fatalf("Expected 1 target for step, got %d", len(targets))
+		}
+
+		target := targets[0]
+		if target.TargetType != store.TARGET_TYPE_USER {
+			t.Errorf("Expected target type USER, got %s", target.TargetType)
+		}
+		if target.TargetID != "P4CMCAU" {
+			t.Errorf("Expected user target ID 'P4CMCAU', got %s", target.TargetID)
+		}
+
+		if step.Timeout != "PT1M" {
+			t.Errorf("Expected timeout 'PT1M', got %s", step.Timeout)
+		}
+
+		t.Logf("✅ PagerDuty escalation policy targeting verification completed successfully")
+	})
 }
