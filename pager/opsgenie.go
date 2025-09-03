@@ -556,15 +556,15 @@ func (o *Opsgenie) saveEscalationPolicyStepToDB(ctx context.Context, policyID st
 	// review should certainly be required here.
 
 	if t.TargetType == store.TARGET_TYPE_SCHEDULE {
-		schedules, err := store.UseQueries(ctx).ListExtSchedulesLikeID(ctx, fmt.Sprintf(`%s%%`, rule.Recipient.Id))
+		schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, rule.Recipient.Id)
 		if err != nil {
-			return fmt.Errorf("getting schedules starting with ID %s: %w", rule.Recipient.Id, err)
+			console.Errorf("Failed to resolve schedule target '%s' for escalation policy step '%s': %s\n", rule.Recipient.Id, stepID, err.Error())
+			return fmt.Errorf("resolving schedule target '%s': %w", rule.Recipient.Id, err)
 		}
-		for _, schedule := range schedules {
-			t.TargetID = schedule.ID
-			if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, t); err != nil {
-				return fmt.Errorf("saving escalation policy step target: %w", err)
-			}
+
+		t.TargetID = schedule.ID
+		if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, t); err != nil {
+			return fmt.Errorf("saving escalation policy step target: %w", err)
 		}
 	} else {
 		if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, t); err != nil {

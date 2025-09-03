@@ -66,10 +66,6 @@ func (r *ExtEscalationPolicy) TFSlug() string {
 	return strings.ReplaceAll(slug.Make(r.Name), "-", "_")
 }
 
-func (s *ExtSchedule) TFSlug() string {
-	return strings.ReplaceAll(slug.Make(s.Name), "-", "_")
-}
-
 func (t *ExtTeam) TFSlug() string {
 	if t.Slug == "" {
 		return strings.ReplaceAll(slug.Make(t.Name), "-", "_")
