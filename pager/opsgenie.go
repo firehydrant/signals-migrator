@@ -562,7 +562,6 @@ func (o *Opsgenie) saveEscalationPolicyStepToDB(ctx context.Context, policyID st
 			return fmt.Errorf("resolving schedule target '%s': %w", rule.Recipient.Id, err)
 		}
 
-		// Store the V2 schedule ID directly
 		t.TargetID = schedule.ID
 		if err := store.UseQueries(ctx).InsertExtEscalationPolicyStepTarget(ctx, t); err != nil {
 			return fmt.Errorf("saving escalation policy step target: %w", err)
