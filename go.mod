@@ -1,15 +1,13 @@
 module github.com/firehydrant/signals-migrator
 
-go 1.23.0
-
-toolchain go1.24.1
+go 1.24.2
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.8.0
 	github.com/charmbracelet/huh v0.7.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240328185852-590ecabc34b9
 	github.com/fatih/color v1.18.0
-	github.com/firehydrant/terraform-provider-firehydrant v0.14.0
+	github.com/firehydrant/terraform-provider-firehydrant v0.14.2
 	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
@@ -39,7 +37,7 @@ require (
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
@@ -67,11 +65,11 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
-	golang.org/x/mod v0.25.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
-	golang.org/x/tools v0.34.0 // indirect
+	golang.org/x/mod v0.26.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/tools v0.35.0 // indirect
 	modernc.org/libc v1.66.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
