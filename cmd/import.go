@@ -87,7 +87,7 @@ func importAction(cliCtx *cli.Context) error {
 	}
 	console.Infof("Imported schedules from %s.\n", providerName)
 
-	if err := importEscalationPolicies(ctx, provider, fh); err != nil {
+	if err := importEscalationPolicies(ctx, provider); err != nil {
 		return fmt.Errorf("importing escalation policies: %w", err)
 	}
 	console.Infof("Imported escalation policies from %s.\n", providerName)
@@ -107,7 +107,7 @@ func importAction(cliCtx *cli.Context) error {
 // which rows to import. We mark the selected rows from users in `to_import` field and delete
 // the ones that we will not import to FireHydrant. This is done to simplify the state management
 // between queries and filtering.
-func importEscalationPolicies(ctx context.Context, provider pager.Pager, fh *firehydrant.Client) error {
+func importEscalationPolicies(ctx context.Context, provider pager.Pager) error {
 	if err := provider.LoadEscalationPolicies(ctx); err != nil {
 		return fmt.Errorf("unable to load escalation policies: %w", err)
 	}
@@ -230,7 +230,7 @@ func importTeams(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 	for _, t := range toImport {
 		selected, fhTeam, err := console.Selectf(options, func(t store.FhTeam) string {
 			return fmt.Sprintf("%s %s", t.ID, t.Name)
-		}, fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", t.Name)) //nolint:govet
+		}, "%s", fmt.Sprintf("Which FireHydrant team should '%s' be imported to?", t.Name)) //nolint:govet
 		if err != nil {
 			return fmt.Errorf("selecting FireHydrant team for '%s': %w", t.Name, err)
 		}
@@ -341,7 +341,7 @@ func importUsers(ctx context.Context, provider pager.Pager, fh *firehydrant.Clie
 	for i, u := range toImport {
 		selected, fhUser, err := console.Selectf(matchOpts, func(u store.FhUser) string {
 			return fmt.Sprintf("%*s  %s", namePad, u.Name, u.Email)
-		}, fmt.Sprintf("[%03d/%03d] Which FireHydrant user should '%s' be imported to?", i+1, len(toImport), u.Name)) //nolint:govet
+		}, "%s", fmt.Sprintf("[%03d/%03d] Which FireHydrant user should '%s' be imported to?", i+1, len(toImport), u.Name)) //nolint:govet
 		if err != nil {
 			return fmt.Errorf("selecting FireHydrant user for '%s': %w", u.Name, err)
 		}
