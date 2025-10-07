@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.8.0"
+      version = ">= 0.14.7"
     }
   }
 }
@@ -34,17 +34,7 @@ resource "firehydrant_on_call_schedule" "team_rocket_🐴_@alice.bob_is_always_o
   team_id     = firehydrant_team.team_rocket.id
   time_zone   = "America/Los_Angeles"
 
-  # [PagerDuty] team-rocket https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
-}
-
-resource "firehydrant_rotation" "team_rocket_🐴_@alice.bob_is_always_on_call_layer_1" {
-  name        = "Layer 1"
-  description = "Always on call rotation"
-  team_id     = firehydrant_team.team_rocket.id
-  schedule_id = firehydrant_on_call_schedule.team_rocket_🐴_@alice.bob_is_always_on_call.id
-  time_zone   = "America/Los_Angeles"
-
-  members = [data.firehydrant_user.alice_bob.id]
+  member_ids = [data.firehydrant_user.alice_bob.id]
 
   strategy {
     type         = "weekly"

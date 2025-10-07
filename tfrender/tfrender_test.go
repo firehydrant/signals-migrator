@@ -306,20 +306,6 @@ func TestRenderCustomStrategySchedule(t *testing.T) {
 		t.Error("Rotation should have shift_duration for custom strategy")
 	}
 
-	// Verify that the schedule does not have start_time (it should be on the rotation level)
-	// This is valid in the API if/when a schedule only has a single rotation
-	//   however for the purposes of this tool we will always structure the schedule as having a single rotation with a start_time
-	scheduleBlockStart := strings.Index(contentStr, `resource "firehydrant_on_call_schedule"`)
-	if scheduleBlockStart != -1 {
-		scheduleBlockEnd := strings.Index(contentStr[scheduleBlockStart:], "}")
-		if scheduleBlockEnd != -1 {
-			scheduleBlock := contentStr[scheduleBlockStart : scheduleBlockStart+scheduleBlockEnd]
-			if strings.Contains(scheduleBlock, `start_time`) {
-				t.Error("Schedule should not have start_time (it should be on the rotation)")
-			}
-		}
-	}
-
 	// Verify that the rotation has start_time for custom strategy
 	// Split the content to check rotation block specifically
 	rotationBlockStart := strings.Index(contentStr, `resource "firehydrant_rotation"`)
