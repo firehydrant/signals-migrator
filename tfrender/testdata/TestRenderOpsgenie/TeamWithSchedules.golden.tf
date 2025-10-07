@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.8.0"
+      version = ">= 0.14.7"
     }
   }
 }
@@ -77,30 +77,8 @@ resource "firehydrant_on_call_schedule" "customer_success_customer_success_sched
   description = "Customer Success team schedule"
   team_id     = firehydrant_team.customer_success.id
   time_zone   = "America/Los_Angeles"
-}
 
-resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule" {
-  name        = "Wong Team_schedule"
-  description = "Wong team schedule"
-  team_id     = firehydrant_team.wong_squad.id
-  time_zone   = "America/Los_Angeles"
-}
-
-resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
-  name        = "AJ Team_schedule"
-  description = "AJ team schedule"
-  team_id     = firehydrant_team.aj_team.id
-  time_zone   = "America/Los_Angeles"
-}
-
-resource "firehydrant_rotation" "customer_success_customer_success_schedule_rot1" {
-  name        = "Rot1"
-  description = "(Rot1)"
-  team_id     = firehydrant_team.customer_success.id
-  schedule_id = firehydrant_on_call_schedule.customer_success_customer_success_schedule.id
-  time_zone   = "America/Los_Angeles"
-
-  members = []
+  member_ids = []
 
   strategy {
     type         = "weekly"
@@ -109,14 +87,13 @@ resource "firehydrant_rotation" "customer_success_customer_success_schedule_rot1
   }
 }
 
-resource "firehydrant_rotation" "wong_squad_wong_team_schedule_first" {
-  name        = "First"
-  description = "(First)"
+resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule" {
+  name        = "Wong Team_schedule"
+  description = "Wong team schedule"
   team_id     = firehydrant_team.wong_squad.id
-  schedule_id = firehydrant_on_call_schedule.wong_squad_wong_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  members = []
+  member_ids = []
 
   strategy {
     type         = "daily"
@@ -124,14 +101,13 @@ resource "firehydrant_rotation" "wong_squad_wong_team_schedule_first" {
   }
 }
 
-resource "firehydrant_rotation" "aj_team_aj_team_schedule_daytime_rotation" {
-  name        = "Daytime rotation"
-  description = "(Daytime rotation)"
+resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
+  name        = "AJ Team_schedule"
+  description = "AJ team schedule"
   team_id     = firehydrant_team.aj_team.id
-  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  members = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
+  member_ids = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
 
   strategy {
     type         = "weekly"

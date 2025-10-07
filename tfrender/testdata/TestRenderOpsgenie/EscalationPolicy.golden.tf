@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.8.0"
+      version = ">= 0.14.7"
     }
   }
 }
@@ -52,16 +52,8 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
   description = "AJ Team schedule with multiple rotations"
   team_id     = firehydrant_team.aj_team.id
   time_zone   = "America/Los_Angeles"
-}
 
-resource "firehydrant_rotation" "aj_team_aj_team_schedule_rota3" {
-  name        = "Rota3"
-  description = "Custom rotation with restrictions"
-  team_id     = firehydrant_team.aj_team.id
-  schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
-  time_zone   = "America/Los_Angeles"
-
-  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id]
+  member_ids = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id]
 
   strategy {
     type           = "custom"

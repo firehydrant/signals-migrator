@@ -33,7 +33,7 @@ type TFRender struct {
 func fhProviderVersion() string {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return ">= 0.8.0"
+		return ">= 0.14.7"
 	}
 
 	// Recommend version which is used in the migration tool
@@ -52,7 +52,7 @@ func fhProviderVersion() string {
 		}
 	}
 
-	return ">= 0.8.0"
+	return ">= 0.14.7"
 }
 
 func New(name string) (*TFRender, error) {
@@ -260,7 +260,18 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			hcl.TraverseAttr{Name: team.TFSlug()},
 			hcl.TraverseAttr{Name: "id"},
 		})
-		b.SetAttributeValue("time_zone", cty.StringVal(s.Timezone))
+		rotations, err := store.UseQueries(ctx).ListExtRotationsByScheduleID(ctx, s.ID)
+		if err != nil {
+			return fmt.Errorf("querying rotations: %w", err)
+		}
+
+		//if there are no rotations for this schedule, it won't be valid, but leaving the shell of it in place seems like the right thing to do
+		if len(rotations) > 0 {
+			err = renderRotationData(ctx, rotations[0], b, false)
+			if err != nil {
+				return fmt.Errorf("rendering rotation data '%s': %w", rotations[0].Name, err)
+			}
+		}
 
 		if team.Annotations != "" {
 			b.AppendNewline()
@@ -281,6 +292,16 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 		schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, rotation.ScheduleID)
 		if err != nil {
 			return fmt.Errorf("querying schedule for rotation '%s': %w", rotation.Name, err)
+		}
+
+		// if this is the first rotation returned when getting rotations for this schedule ID, then
+		// it was already included in the schedule definition, so don't render it separately.
+		ro, err := store.UseQueries(ctx).ListExtRotationsByScheduleID(ctx, schedule.ID)
+		if err != nil {
+			return fmt.Errorf("querying rotation list '%s': %w", rotation.Name, err)
+		}
+		if len(ro) > 0 && ro[0].ID == rotation.ID {
+			continue
 		}
 
 		// Get the team that owns the schedule
@@ -317,64 +338,90 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 			hcl.TraverseAttr{Name: fmt.Sprintf("%s_%s", team.TFSlug(), scheduleSlug)},
 			hcl.TraverseAttr{Name: "id"},
 		})
-		b.SetAttributeValue("time_zone", cty.StringVal(schedule.Timezone))
 
-		// Add start_time if rotation has custom strategy
-		if rotation.Strategy == "custom" && rotation.StartTime != "" {
-			b.SetAttributeValue("start_time", cty.StringVal(rotation.StartTime))
-		}
-
-		// Add members
-		members, err := store.UseQueries(ctx).ListFhMembersByExtRotationID(ctx, rotation.ID)
+		err = renderRotationData(ctx, rotation, b, true)
 		if err != nil {
-			return fmt.Errorf("querying members for rotation '%s': %w", rotation.Name, err)
-		}
-
-		memberList := []hclwrite.Tokens{}
-		for _, m := range members {
-			member := hcl.Traversal{
-				hcl.TraverseRoot{Name: "data"},
-				hcl.TraverseAttr{Name: "firehydrant_user"},
-				hcl.TraverseAttr{Name: m.TFSlug()},
-				hcl.TraverseAttr{Name: "id"},
-			}
-			memberList = append(memberList, hclwrite.TokensForTraversal(member))
-		}
-
-		b.AppendNewline()
-		b.SetAttributeRaw("members", hclwrite.TokensForTuple(memberList))
-
-		// Add strategy
-		b.AppendNewline()
-		strategy := b.AppendNewBlock("strategy", []string{}).Body()
-		strategy.SetAttributeValue("type", cty.StringVal(rotation.Strategy))
-		if rotation.Strategy == "weekly" {
-			strategy.SetAttributeValue("handoff_day", cty.StringVal(rotation.HandoffDay))
-		}
-		if rotation.Strategy == "custom" {
-			strategy.SetAttributeValue("shift_duration", cty.StringVal(rotation.ShiftDuration))
-		} else {
-			strategy.SetAttributeValue("handoff_time", cty.StringVal(rotation.HandoffTime))
-		}
-
-		// Add restrictions
-		restrictions, err := store.UseQueries(ctx).ListExtRotationRestrictions(ctx, rotation.ID)
-		if err != nil {
-			return fmt.Errorf("querying restrictions for rotation '%s': %w", rotation.Name, err)
-		}
-		for _, restriction := range restrictions {
-			b.AppendNewline()
-			restrictionBlock := b.AppendNewBlock("restrictions", []string{}).Body()
-			restrictionBlock.SetAttributeValue("start_day", cty.StringVal(restriction.StartDay))
-			restrictionBlock.SetAttributeValue("start_time", cty.StringVal(restriction.StartTime))
-			restrictionBlock.SetAttributeValue("end_day", cty.StringVal(restriction.EndDay))
-			restrictionBlock.SetAttributeValue("end_time", cty.StringVal(restriction.EndTime))
+			return fmt.Errorf("rendering rotation data '%s': %w", rotation.Name, err)
 		}
 
 		if team.Annotations != "" {
 			b.AppendNewline()
 			r.AppendComment(b, team.Annotations)
 		}
+	}
+	return nil
+}
+
+func renderRotationData(ctx context.Context, rotation store.ExtRotation, body *hclwrite.Body, useMembers bool) error {
+	// Get the schedule that owns this rotation
+	schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, rotation.ScheduleID)
+	if err != nil {
+		return fmt.Errorf("querying schedule for rotation '%s': %w", rotation.Name, err)
+	}
+
+	body.SetAttributeValue("time_zone", cty.StringVal(schedule.Timezone))
+
+	// Add start_time if rotation has custom strategy
+	if rotation.Strategy == "custom" && rotation.StartTime != "" {
+		body.SetAttributeValue("start_time", cty.StringVal(rotation.StartTime))
+	}
+
+	// Add members
+	members, err := store.UseQueries(ctx).ListFhMembersByExtRotationID(ctx, rotation.ID)
+	if err != nil {
+		return fmt.Errorf("querying members for rotation '%s': %w", rotation.Name, err)
+	}
+
+	memberList := []hclwrite.Tokens{}
+	for _, m := range members {
+		member := hcl.Traversal{
+			hcl.TraverseRoot{Name: "data"},
+			hcl.TraverseAttr{Name: "firehydrant_user"},
+			hcl.TraverseAttr{Name: m.TFSlug()},
+			hcl.TraverseAttr{Name: "id"},
+		}
+		memberList = append(memberList, hclwrite.TokensForTraversal(member))
+	}
+
+	body.AppendNewline()
+
+	// This is dumb and I hate it
+	// We originally used members as part of the on_call_schedule resource, then the functionality changed and we needed to indicate
+	// that we were using the right implementation, so members became member_ids.  But then rotations didn't have this legacy, so used members
+	// from the beginning.  So now we need to support one for schedules and the other for rotations, but both take the same data.
+	membersName := ""
+	if useMembers {
+		membersName = "members"
+	} else {
+		membersName = "member_ids"
+	}
+	body.SetAttributeRaw(membersName, hclwrite.TokensForTuple(memberList))
+
+	// Add strategy
+	body.AppendNewline()
+	strategy := body.AppendNewBlock("strategy", []string{}).Body()
+	strategy.SetAttributeValue("type", cty.StringVal(rotation.Strategy))
+	if rotation.Strategy == "weekly" {
+		strategy.SetAttributeValue("handoff_day", cty.StringVal(rotation.HandoffDay))
+	}
+	if rotation.Strategy == "custom" {
+		strategy.SetAttributeValue("shift_duration", cty.StringVal(rotation.ShiftDuration))
+	} else {
+		strategy.SetAttributeValue("handoff_time", cty.StringVal(rotation.HandoffTime))
+	}
+
+	// Add restrictions
+	restrictions, err := store.UseQueries(ctx).ListExtRotationRestrictions(ctx, rotation.ID)
+	if err != nil {
+		return fmt.Errorf("querying restrictions for rotation '%s': %w", rotation.Name, err)
+	}
+	for _, restriction := range restrictions {
+		body.AppendNewline()
+		restrictionBlock := body.AppendNewBlock("restrictions", []string{}).Body()
+		restrictionBlock.SetAttributeValue("start_day", cty.StringVal(restriction.StartDay))
+		restrictionBlock.SetAttributeValue("start_time", cty.StringVal(restriction.StartTime))
+		restrictionBlock.SetAttributeValue("end_day", cty.StringVal(restriction.EndDay))
+		restrictionBlock.SetAttributeValue("end_time", cty.StringVal(restriction.EndTime))
 	}
 	return nil
 }
