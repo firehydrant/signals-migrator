@@ -297,7 +297,10 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 		// if this is the first rotation returned when getting rotations for this schedule ID, then
 		// it was already included in the schedule definition, so don't render it separately.
 		ro, err := store.UseQueries(ctx).ListExtRotationsByScheduleID(ctx, schedule.ID)
-		if ro[0].ID == rotation.ID {
+		if err != nil {
+			return fmt.Errorf("querying rotation list '%s': %w", rotation.Name, err)
+		}
+		if len(ro) > 0 && ro[0].ID == rotation.ID {
 			continue
 		}
 
