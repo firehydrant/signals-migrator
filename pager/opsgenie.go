@@ -225,6 +225,11 @@ func (o *Opsgenie) saveScheduleToDB(ctx context.Context, s schedule.Schedule) er
 	}
 
 	q := store.UseQueries(ctx)
+
+	if _, err := q.GetExtTeam(ctx, teamID); err != nil {
+		console.Warnf("Schedule %q (%s) belongs to a team that isn't imported.  Skipping...\n", s.Name, s.Id)
+		return nil
+	}
 	if err := q.InsertExtScheduleV2(ctx, scheduleParams); err != nil {
 		return fmt.Errorf("saving schedule: %w", err)
 	}
@@ -302,7 +307,7 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, scheduleID string, r og
 		Description:   desc,
 		Strategy:      ogsStrategy,
 		ShiftDuration: ogsDuration,
-		StartTime:     "",
+		StartTime:     r.StartDate.Format(time.RFC3339),
 		HandoffTime:   ogsHandoffTime,
 		HandoffDay:    ogsHandoffDay,
 		RotationOrder: int64(rotationOrder),
