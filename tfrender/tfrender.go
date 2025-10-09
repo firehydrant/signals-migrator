@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"strconv"
 	"strings"
 
 	"github.com/firehydrant/signals-migrator/console"
@@ -121,6 +122,11 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 	if err != nil {
 		return fmt.Errorf("querying escalation policies: %w", err)
 	}
+	var defaultPolicy bool
+	if len(policies) == 1 {
+		defaultPolicy = true
+	}
+
 	for _, p := range policies {
 		r.root.AppendNewline()
 
@@ -222,6 +228,7 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 
 		b.AppendNewline()
 		b.SetAttributeValue("repetitions", cty.NumberIntVal(p.RepeatLimit))
+		b.SetAttributeValue("default", cty.StringVal(strconv.FormatBool(defaultPolicy)))
 
 		// TODO: add policy handoff
 	}
