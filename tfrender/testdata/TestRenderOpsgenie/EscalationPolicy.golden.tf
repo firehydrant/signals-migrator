@@ -190,4 +190,5 @@ resource "firehydrant_escalation_policy" "aj_team_escalation" {
   }
 
   repetitions = 0
+  default     = "true"
 }
