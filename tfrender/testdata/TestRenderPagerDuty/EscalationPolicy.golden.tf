@@ -58,6 +58,7 @@ resource "firehydrant_escalation_policy" "atalice_bob_test_service_ep" {
   }
 
   repetitions = 0
+  default     = "false"
 }
 
 resource "firehydrant_escalation_policy" "notify_atalice_bob" {
@@ -73,4 +74,5 @@ resource "firehydrant_escalation_policy" "notify_atalice_bob" {
   }
 
   repetitions = 0
+  default     = "false"
 }
