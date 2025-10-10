@@ -322,6 +322,30 @@ func (q *Queries) InsertExtRotationRestriction(ctx context.Context, arg InsertEx
 	return err
 }
 
+const insertExtScheduleOverride = `-- name: InsertExtScheduleOverride :exec
+INSERT INTO ext_schedule_overrides (id, schedule_id, username, start_time, end_time)
+VALUES (?, ?, ?, ?, ?)
+`
+
+type InsertExtScheduleOverrideParams struct {
+	ID         string `json:"id"`
+	ScheduleID string `json:"schedule_id"`
+	Username   string `json:"username"`
+	StartTime  string `json:"start_time"`
+	EndTime    string `json:"end_time"`
+}
+
+func (q *Queries) InsertExtScheduleOverride(ctx context.Context, arg InsertExtScheduleOverrideParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtScheduleOverride,
+		arg.ID,
+		arg.ScheduleID,
+		arg.Username,
+		arg.StartTime,
+		arg.EndTime,
+	)
+	return err
+}
+
 const insertExtScheduleV2 = `-- name: InsertExtScheduleV2 :exec
 INSERT INTO ext_schedules_v2 (id, name, description, timezone, team_id, source_system, source_schedule_id)
 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -695,6 +719,39 @@ func (q *Queries) ListExtRotationsByScheduleID(ctx context.Context, scheduleID s
 			&i.HandoffTime,
 			&i.HandoffDay,
 			&i.RotationOrder,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExtScheduleOverridesByExtScheduleID = `-- name: ListExtScheduleOverridesByExtScheduleID :many
+SELECT id, schedule_id, username, start_time, end_time FROM ext_schedule_overrides WHERE schedule_id = ?
+`
+
+func (q *Queries) ListExtScheduleOverridesByExtScheduleID(ctx context.Context, scheduleID string) ([]ExtScheduleOverride, error) {
+	rows, err := q.db.QueryContext(ctx, listExtScheduleOverridesByExtScheduleID, scheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ExtScheduleOverride
+	for rows.Next() {
+		var i ExtScheduleOverride
+		if err := rows.Scan(
+			&i.ID,
+			&i.ScheduleID,
+			&i.Username,
+			&i.StartTime,
+			&i.EndTime,
 		); err != nil {
 			return nil, err
 		}

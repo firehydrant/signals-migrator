@@ -85,6 +85,14 @@ type ExtScheduleMember struct {
 	MemberOrder int64  `json:"member_order"`
 }
 
+type ExtScheduleOverride struct {
+	ID         string `json:"id"`
+	ScheduleID string `json:"schedule_id"`
+	Username   string `json:"username"`
+	StartTime  string `json:"start_time"`
+	EndTime    string `json:"end_time"`
+}
+
 type ExtScheduleRestriction struct {
 	ScheduleID       string `json:"schedule_id"`
 	RestrictionIndex string `json:"restriction_index"`

@@ -196,3 +196,10 @@ SELECT fh_users.* FROM ext_rotation_members
   JOIN fh_users ON fh_users.id = ext_users.fh_user_id
 WHERE ext_rotation_members.rotation_id = ?
 ORDER BY ext_rotation_members.member_order ASC;
+
+-- name: ListExtScheduleOverridesByExtScheduleID :many
+SELECT * FROM ext_schedule_overrides WHERE schedule_id = ?;
+
+-- name: InsertExtScheduleOverride :exec
+INSERT INTO ext_schedule_overrides (id, schedule_id, username, start_time, end_time)
+VALUES (?, ?, ?, ?, ?);

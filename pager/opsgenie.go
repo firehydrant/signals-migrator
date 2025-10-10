@@ -240,6 +240,30 @@ func (o *Opsgenie) saveScheduleToDB(ctx context.Context, s schedule.Schedule) er
 			return fmt.Errorf("saving rotation to db: %w", err)
 		}
 	}
+
+	overrides, err := o.scheduleClient.ListScheduleOverride(ctx, &schedule.ListScheduleOverrideRequest{
+		ScheduleIdentifierType: schedule.Id,
+		ScheduleIdentifier:     s.Id,
+	})
+	if err != nil {
+		return fmt.Errorf("getting schedule overrides: %w", err)
+	}
+
+	for _, override := range overrides.ScheduleOverride {
+		if override.EndDate.After(time.Now()) {
+			err := q.InsertExtScheduleOverride(ctx, store.InsertExtScheduleOverrideParams{
+				ID:         override.Alias,
+				ScheduleID: s.Id,
+				Username:   override.User.Username,
+				StartTime:  override.StartDate.Format(time.RFC1123Z),
+				EndTime:    override.EndDate.Format(time.RFC1123Z),
+			})
+			if err != nil {
+				return fmt.Errorf("saving override to db: %w", err)
+			}
+		}
+	}
+
 	return nil
 }
 

@@ -284,6 +284,18 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			b.AppendNewline()
 			r.AppendComment(b, team.Annotations)
 		}
+
+		overrides, err := store.UseQueries(ctx).ListExtScheduleOverridesByExtScheduleID(ctx, s.ID)
+		if err != nil {
+			return fmt.Errorf("querying overrides: %w", err)
+		}
+		if len(overrides) > 0 {
+			b.AppendNewline()
+			r.AppendComment(b, "Overrides found for this schedule:")
+			for _, override := range overrides {
+				r.AppendComment(b, fmt.Sprintf("User: %s		Starting: %s		Ending: %s", override.Username, override.StartTime, override.EndTime))
+			}
+		}
 	}
 	return nil
 }
