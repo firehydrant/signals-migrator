@@ -529,7 +529,7 @@ func (o *Opsgenie) saveEscalationPolicyStepToDB(ctx context.Context, policyID st
 	// We only support recepients of User or Schedule and only the 'default' NotifyType.  Anything else we're just logging and skipping.
 
 	if rule.NotifyType != og.Default {
-		console.Warnf("Escalation policy step target is '%s' notify type '%s' for policy '%s' step %d, skipping...\n",
+		console.Errorf("Escalation policy step target is '%s' notify type '%s' for policy '%s' step %d.\nWe currently do not support this notify type, skipping...\n",
 			rule.Recipient.Type,
 			rule.NotifyType,
 			policyID,
