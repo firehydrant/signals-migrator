@@ -1,0 +1,33 @@
+{
+    "data": [
+        {
+            "alias": "OverrideAlias",
+            "user": {
+                "type": "user",
+                "id": "4b26961a-alp7-49d2-a1fe-0973013e3c3b",
+                "username": "user2@opsgenie.com"
+            },
+            "startDate": "2017-05-15T09:00:00Z",
+            "endDate": "2017-05-15T15:00:00Z",
+            "rotations": [
+                {
+                    "id": "34793506-dd3e-4e04-bba1-acb4284bae98",
+                    "name": "Rot1"
+                }
+            ]
+        },
+        {
+            "alias": "OverrideAlias2",
+            "user": {
+                "type": "user",
+                "id": "e58d6ee3-37bd-432f-9ded-64808b761ae0",
+                "username": "admin@example.net"
+            },
+            "startDate": "3025-10-11T18:30:00Z",
+            "endDate": "3025-10-12T18:30:00Z",
+            "rotations": []
+        }
+    ],
+    "took": 0.19,
+    "requestId": "f5d09376-912a-4f73-9a43-5ca53alp808e"
+}

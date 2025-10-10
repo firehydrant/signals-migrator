@@ -53,4 +53,6 @@ INSERT INTO ext_rotation_restrictions VALUES('rotation-aj-team-nighttime','4','1
 INSERT INTO ext_rotation_restrictions VALUES('rotation-aj-team-nighttime','5','18:00:00','friday','08:00:00','saturday');
 INSERT INTO ext_rotation_restrictions VALUES('rotation-aj-team-nighttime','6','18:00:00','saturday','08:00:00','sunday');
 
+INSERT INTO ext_schedule_overrides VALUES('xxxxxxxx-ab52-44f3-848e-a16bcc584fb7', 'schedule-aj-team', 'admin@example.net', 'Tues, 11 Oct 3025 18:30:00 +0000', 'Wed, 12 Oct 3025 18:30:00 +0000');
+
 COMMIT;

@@ -106,6 +106,15 @@ CREATE TABLE IF NOT EXISTS ext_schedules_v2 (
   FOREIGN KEY (team_id) REFERENCES ext_teams(id)
 ) STRICT;
 
+CREATE TABLE IF NOT EXISTS ext_schedule_overrides (
+  id TEXT PRIMARY KEY,
+  schedule_id TEXT NOT NULL,
+  username TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL,
+  FOREIGN KEY (schedule_id) REFERENCES ext_schedules_v2(id)
+) STRICT;
+
 CREATE TABLE IF NOT EXISTS ext_rotations (
   id TEXT PRIMARY KEY,
   schedule_id TEXT NOT NULL,
