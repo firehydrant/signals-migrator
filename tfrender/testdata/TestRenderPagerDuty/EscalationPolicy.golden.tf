@@ -28,10 +28,10 @@ import {
   to = firehydrant_team.cowboy_coders
 }
 
-resource "firehydrant_on_call_schedule" "team_rocket_🐴_@alice.bob_is_always_on_call" {
+resource "firehydrant_on_call_schedule" "cowboy_coders_🐴_@alice.bob_is_always_on_call" {
   name        = "🐴 @alice.bob is always on call"
   description = "Always on call schedule"
-  team_id     = firehydrant_team.team_rocket.id
+  team_id     = firehydrant_team.cowboy_coders.id
   time_zone   = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.alice_bob.id]
@@ -53,7 +53,7 @@ resource "firehydrant_escalation_policy" "atalice_bob_test_service_ep" {
 
     targets {
       type = "OnCallSchedule"
-      id   = firehydrant_on_call_schedule.team_rocket_🐴_@alice.bob_is_always_on_call.id
+      id   = firehydrant_on_call_schedule.cowboy_coders_🐴_@alice.bob_is_always_on_call.id
     }
   }
 
