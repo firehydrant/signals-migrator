@@ -201,12 +201,19 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 						console.Errorf("querying team for schedule '%s' in step %d of %s: %s\n", schedule.Name, s.Position, p.Name, err.Error())
 						continue
 					}
+					// the slug we want is the slug of the LinkedTeam, not the slug of the ExtTeam
+					// I blame Wilson and the tragically misnamed var on the second line of ResourceFireHydrantTeams()
+					linkedTeam, err := store.UseQueries(ctx).GetTeamByExtID(ctx, team.ID)
+					if err != nil {
+						return fmt.Errorf("querying linked_team for team '%s': %w", team.ID, err)
+					}
+					teamSlug := linkedTeam.TFSlug()
 
 					// Generate TF slug for schedule
 					scheduleSlug := strings.ToLower(strings.ReplaceAll(schedule.Name, " ", "_"))
 					scheduleSlug = strings.ReplaceAll(scheduleSlug, "-", "_")
 
-					slug := fmt.Sprintf("%s_%s", team.TFSlug(), scheduleSlug)
+					slug := fmt.Sprintf("%s_%s", teamSlug, scheduleSlug)
 					idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
 						hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
 						hcl.TraverseAttr{Name: slug},
@@ -248,6 +255,14 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			return fmt.Errorf("querying team for schedule '%s': %w", s.Name, err)
 		}
 
+		// the slug we want is the slug of the LinkedTeam, not the slug of the ExtTeam
+		// I blame Wilson and the tragically misnamed var on the second line of ResourceFireHydrantTeams()
+		linkedTeam, err := store.UseQueries(ctx).GetTeamByExtID(ctx, team.ID)
+		if err != nil {
+			return fmt.Errorf("querying linked_team for team '%s': %w", team.ID, err)
+		}
+		teamSlug := linkedTeam.TFSlug()
+
 		r.root.AppendNewline()
 
 		// Generate TF slug for schedule (similar to how teams do it)
@@ -256,7 +271,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 
 		b := r.root.AppendNewBlock("resource", []string{
 			"firehydrant_on_call_schedule",
-			fmt.Sprintf("%s_%s", team.TFSlug(), scheduleSlug),
+			fmt.Sprintf("%s_%s", teamSlug, scheduleSlug),
 		}).Body()
 		b.SetAttributeValue("name", cty.StringVal(s.Name))
 		if s.Description != "" {
@@ -264,7 +279,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 		}
 		b.SetAttributeTraversal("team_id", hcl.Traversal{
 			hcl.TraverseRoot{Name: "firehydrant_team"},
-			hcl.TraverseAttr{Name: team.TFSlug()},
+			hcl.TraverseAttr{Name: teamSlug},
 			hcl.TraverseAttr{Name: "id"},
 		})
 		rotations, err := store.UseQueries(ctx).ListExtRotationsByScheduleID(ctx, s.ID)
@@ -274,7 +289,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 
 		//if there are no rotations for this schedule, it won't be valid, but leaving the shell of it in place seems like the right thing to do
 		if len(rotations) > 0 {
-			err = renderRotationData(ctx, rotations[0], b, false)
+			err = renderRotationData(ctx, rotations[0], r, b, false)
 			if err != nil {
 				return fmt.Errorf("rendering rotation data '%s': %w", rotations[0].Name, err)
 			}
@@ -295,6 +310,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 			for _, override := range overrides {
 				r.AppendComment(b, fmt.Sprintf("User: %s		Starting: %s		Ending: %s", override.Username, override.StartTime, override.EndTime))
 			}
+			r.AppendComment(b, "You can see documention for adding overrides here: https://docs.firehydrant.com/docs/signals-on-call-schedules#overrides")
 		}
 	}
 	return nil
@@ -328,6 +344,13 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("querying team for rotation '%s': %w", rotation.Name, err)
 		}
+		// the slug we want is the slug of the LinkedTeam, not the slug of the ExtTeam
+		// I blame Wilson and the tragically misnamed var on the second line of ResourceFireHydrantTeams()
+		linkedTeam, err := store.UseQueries(ctx).GetTeamByExtID(ctx, team.ID)
+		if err != nil {
+			return fmt.Errorf("querying linked_team for team '%s': %w", team.ID, err)
+		}
+		teamSlug := linkedTeam.TFSlug()
 
 		r.root.AppendNewline()
 
@@ -341,7 +364,7 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 
 		b := r.root.AppendNewBlock("resource", []string{
 			"firehydrant_rotation",
-			fmt.Sprintf("%s_%s_%s", team.TFSlug(), scheduleSlug, rotationSlug),
+			fmt.Sprintf("%s_%s_%s", teamSlug, scheduleSlug, rotationSlug),
 		}).Body()
 		b.SetAttributeValue("name", cty.StringVal(rotation.Name))
 		if rotation.Description != "" {
@@ -349,16 +372,16 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 		}
 		b.SetAttributeTraversal("team_id", hcl.Traversal{
 			hcl.TraverseRoot{Name: "firehydrant_team"},
-			hcl.TraverseAttr{Name: team.TFSlug()},
+			hcl.TraverseAttr{Name: teamSlug},
 			hcl.TraverseAttr{Name: "id"},
 		})
 		b.SetAttributeTraversal("schedule_id", hcl.Traversal{
 			hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
-			hcl.TraverseAttr{Name: fmt.Sprintf("%s_%s", team.TFSlug(), scheduleSlug)},
+			hcl.TraverseAttr{Name: fmt.Sprintf("%s_%s", teamSlug, scheduleSlug)},
 			hcl.TraverseAttr{Name: "id"},
 		})
 
-		err = renderRotationData(ctx, rotation, b, true)
+		err = renderRotationData(ctx, rotation, r, b, true)
 		if err != nil {
 			return fmt.Errorf("rendering rotation data '%s': %w", rotation.Name, err)
 		}
@@ -371,7 +394,7 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 	return nil
 }
 
-func renderRotationData(ctx context.Context, rotation store.ExtRotation, body *hclwrite.Body, useMembers bool) error {
+func renderRotationData(ctx context.Context, rotation store.ExtRotation, r *TFRender, body *hclwrite.Body, useMembers bool) error {
 	// Get the schedule that owns this rotation
 	schedule, err := store.UseQueries(ctx).GetExtScheduleV2(ctx, rotation.ScheduleID)
 	if err != nil {
@@ -383,6 +406,7 @@ func renderRotationData(ctx context.Context, rotation store.ExtRotation, body *h
 	// Add start_time if rotation has custom strategy
 	if rotation.Strategy == "custom" && rotation.StartTime != "" {
 		body.SetAttributeValue("start_time", cty.StringVal(rotation.StartTime))
+		r.AppendComment(body, "Note: Start time must be within 30 days.")
 	}
 
 	// Add members

@@ -152,6 +152,7 @@ resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
 
   # Overrides found for this schedule:
   # User: admin@example.net		Starting: Tues, 11 Oct 3025 18:30:00 +0000		Ending: Wed, 12 Oct 3025 18:30:00 +0000
+  # You can see documention for adding overrides here: https://docs.firehydrant.com/docs/signals-on-call-schedules#overrides
 }
 
 resource "firehydrant_rotation" "aj_team_aj_team_schedule_nighttime_rotation" {

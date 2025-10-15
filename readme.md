@@ -48,6 +48,12 @@ We support importing from various providers. Refer to individual documentation f
 | Import escalation policies | :white_check_mark: | :white_check_mark: | :x: |
 | Import scheduling strategy | :white_check_mark: | :white_check_mark: | :x: |
 
+## Provider Notes
+
+### OpsGenie
+- When creating schedules or rotations with a custom strategy, a start time must be added.  We will attempt to add this based on the start time provided to us by Opsgenie, but this will fail to apply if that date is more than 30 days in the past.  If that happens, choose an appropriate start time less than 30 days in the past and update the terraform accordingly before applying
+- When creating multiple escalation policies for a team, one of them should be selected as the default before applying.  To do so, update the `default = "false"` line at the end of the escalation policy resource definition in the terraform file before applying. 
+
 ## Developing
 
 A devcontainer setup has been prepared to be used in VS Code. Run `direnv allow` to auto-load `.env` file.
