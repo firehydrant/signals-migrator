@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/huh v0.8.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240328185852-590ecabc34b9
 	github.com/fatih/color v1.18.0
-	github.com/firehydrant/terraform-provider-firehydrant v0.14.7
+	github.com/firehydrant/terraform-provider-firehydrant v0.14.10
 	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
