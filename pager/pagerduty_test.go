@@ -264,6 +264,39 @@ func TestPagerDuty(t *testing.T) {
 		assertJSON(t, schedules)
 	})
 
+	t.Run("LoadSchedulesSkipsScheduleWithMissingTeam", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+
+		// Simulate user not selecting any teams for import — delete all teams
+		if err := store.UseQueries(ctx).DeleteExtTeamUnimported(ctx); err != nil {
+			t.Fatalf("error deleting unimported teams: %s", err)
+		}
+
+		// LoadSchedules should not error — it should skip schedules whose teams are missing
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("expected no error loading schedules with missing teams, got: %s", err)
+		}
+
+		schedules, err := store.UseQueries(ctx).ListExtSchedulesV2(ctx)
+		if err != nil {
+			t.Fatalf("error listing schedules: %s", err)
+		}
+		if len(schedules) != 0 {
+			t.Errorf("expected 0 schedules when all teams are missing, got %d", len(schedules))
+		}
+	})
+
 	t.Run("LoadSchedulesPreservesMemberOrder", func(t *testing.T) {
 		ctx, pd := setup(t)
 

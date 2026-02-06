@@ -334,9 +334,21 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 	// This means all teams associated with a schedule end up with the same users.
 	// Therefore, we can safely use the first team as the schedule owner without losing user information.
 
+	q := store.UseQueries(ctx)
+
 	teamID := ""
 	if len(schedule.Teams) > 0 {
-		teamID = schedule.Teams[0].ID // Use first team as owner - all teams would have same users anyway
+		// Find the first team that exists in ext_teams (user may have excluded some teams from import)
+		for _, t := range schedule.Teams {
+			if _, err := q.GetExtTeam(ctx, t.ID); err == nil {
+				teamID = t.ID
+				break
+			}
+		}
+		if teamID == "" {
+			console.Warnf("Schedule %q (%s) belongs to a team that isn't imported.  Skipping...\n", schedule.Name, schedule.ID)
+			return nil
+		}
 	} else {
 		console.Warnf("No teams found for schedule %s, skipping...\n", schedule.ID)
 		return nil
@@ -352,8 +364,11 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 		SourceScheduleID: schedule.ID,
 	}
 
-	q := store.UseQueries(ctx)
 	if err := q.InsertExtScheduleV2(ctx, scheduleParams); err != nil {
+		if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
+			console.Warnf("Schedule %q (%s) references a missing team, skipping...\n", schedule.Name, schedule.ID)
+			return nil
+		}
 		return fmt.Errorf("saving schedule: %w", err)
 	}
 
