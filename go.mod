@@ -1,6 +1,6 @@
 module github.com/firehydrant/signals-migrator
 
-go 1.24.2
+go 1.25
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.8.0
@@ -13,7 +13,7 @@ require (
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/victorops/go-victorops v1.0.7
-	github.com/zclconf/go-cty v1.17.0
+	github.com/zclconf/go-cty v1.18.0
 	modernc.org/sqlite v1.40.1
 )
 
