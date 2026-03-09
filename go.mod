@@ -4,7 +4,7 @@ go 1.25
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.8.0
-	github.com/charmbracelet/huh v0.8.0
+	github.com/charmbracelet/huh v1.0.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240328185852-590ecabc34b9
 	github.com/fatih/color v1.18.0
 	github.com/firehydrant/terraform-provider-firehydrant v0.14.7
