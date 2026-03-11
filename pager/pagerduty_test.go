@@ -264,6 +264,62 @@ func TestPagerDuty(t *testing.T) {
 		assertJSON(t, schedules)
 	})
 
+	t.Run("LoadSchedulesDailyRestrictionCrossingMidnight", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		// Layer PC1DX4O has a daily_restriction starting at 17:00:00 with duration 36000s (10h),
+		// which means it ends at 03:00:00 the NEXT day. Each restriction's EndDay should be
+		// the day after its StartDay.
+		restrictions, err := store.UseQueries(ctx).ListExtRotationRestrictions(ctx, "PC1DX4O")
+		if err != nil {
+			t.Fatalf("error loading restrictions: %s", err)
+		}
+
+		if len(restrictions) != 7 {
+			t.Fatalf("expected 7 daily restrictions (one per day), got %d", len(restrictions))
+		}
+
+		// Expected: each restriction's EndDay should be the next day
+		expectedDays := []struct{ start, end string }{
+			{"sunday", "monday"},
+			{"monday", "tuesday"},
+			{"tuesday", "wednesday"},
+			{"wednesday", "thursday"},
+			{"thursday", "friday"},
+			{"friday", "saturday"},
+			{"saturday", "sunday"},
+		}
+
+		for i, r := range restrictions {
+			if r.StartDay != expectedDays[i].start {
+				t.Errorf("restriction %d: expected StartDay %q, got %q", i, expectedDays[i].start, r.StartDay)
+			}
+			if r.EndDay != expectedDays[i].end {
+				t.Errorf("restriction %d: expected EndDay %q, got %q", i, expectedDays[i].end, r.EndDay)
+			}
+			if r.StartTime != "17:00:00" {
+				t.Errorf("restriction %d: expected StartTime 17:00:00, got %s", i, r.StartTime)
+			}
+			if r.EndTime != "03:00:00" {
+				t.Errorf("restriction %d: expected EndTime 03:00:00, got %s", i, r.EndTime)
+			}
+		}
+	})
+
 	t.Run("LoadSchedulesSkipsScheduleWithMissingTeam", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)

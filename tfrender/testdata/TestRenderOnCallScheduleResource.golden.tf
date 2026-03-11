@@ -59,6 +59,7 @@ resource "firehydrant_on_call_schedule" "team_1_slug_schedule_0" {
 
   strategy {
     type         = "daily"
+    handoff_day  = "wednesday"
     handoff_time = "11:00"
   }
 }
