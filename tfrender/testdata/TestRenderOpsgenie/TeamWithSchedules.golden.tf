@@ -97,6 +97,7 @@ resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule" {
 
   strategy {
     type         = "daily"
+    handoff_day  = "monday"
     handoff_time = "08:00:00"
   }
 }
@@ -166,6 +167,7 @@ resource "firehydrant_rotation" "aj_team_aj_team_schedule_nighttime_rotation" {
 
   strategy {
     type         = "daily"
+    handoff_day  = "wednesday"
     handoff_time = "15:00:00"
   }
 

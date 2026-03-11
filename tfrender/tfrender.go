@@ -444,7 +444,7 @@ func renderRotationData(ctx context.Context, rotation store.ExtRotation, r *TFRe
 	body.AppendNewline()
 	strategy := body.AppendNewBlock("strategy", []string{}).Body()
 	strategy.SetAttributeValue("type", cty.StringVal(rotation.Strategy))
-	if rotation.Strategy == "weekly" {
+	if rotation.Strategy == "weekly" || rotation.Strategy == "daily" {
 		strategy.SetAttributeValue("handoff_day", cty.StringVal(rotation.HandoffDay))
 	}
 	if rotation.Strategy == "custom" {

@@ -472,11 +472,15 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 				end := start.Add(time.Duration(restriction.DurationSeconds) * time.Second)
 
 				dayStr := strings.ToLower(time.Weekday(day).String())
+				endDayStr := dayStr
+				if end.Day() != start.Day() {
+					endDayStr = strings.ToLower(time.Weekday((day + 1) % 7).String())
+				}
 				r := store.InsertExtRotationRestrictionParams{
 					RotationID:       layer.ID,
 					RestrictionIndex: fmt.Sprintf("%d-%d", i, day),
 					StartDay:         dayStr,
-					EndDay:           dayStr,
+					EndDay:           endDayStr,
 					StartTime:        start.Format(time.TimeOnly),
 					EndTime:          end.Format(time.TimeOnly),
 				}
