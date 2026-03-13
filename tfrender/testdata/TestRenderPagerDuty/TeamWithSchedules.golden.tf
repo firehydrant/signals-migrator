@@ -148,7 +148,12 @@ resource "firehydrant_rotation" "aaaa_ipv6_migration_strategy_jen___primary_laye
   start_time  = "2024-04-10T20:39:29-07:00"
   # Note: Start time must be within 30 days.
 
-  members = [data.firehydrant_user.local.id, data.firehydrant_user.wong.id]
+  members {
+    user_id = data.firehydrant_user.local.id
+  }
+  members {
+    user_id = data.firehydrant_user.wong.id
+  }
 
   strategy {
     type           = "custom"
