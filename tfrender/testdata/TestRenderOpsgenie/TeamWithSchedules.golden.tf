@@ -163,7 +163,15 @@ resource "firehydrant_rotation" "aj_team_aj_team_schedule_nighttime_rotation" {
   schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  members = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
+  members {
+    user_id = data.firehydrant_user.mika.id
+  }
+  members {
+    user_id = data.firehydrant_user.local.id
+  }
+  members {
+    user_id = data.firehydrant_user.kiran.id
+  }
 
   strategy {
     type         = "daily"

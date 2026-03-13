@@ -415,30 +415,33 @@ func renderRotationData(ctx context.Context, rotation store.ExtRotation, r *TFRe
 		return fmt.Errorf("querying members for rotation '%s': %w", rotation.Name, err)
 	}
 
-	memberList := []hclwrite.Tokens{}
-	for _, m := range members {
-		member := hcl.Traversal{
-			hcl.TraverseRoot{Name: "data"},
-			hcl.TraverseAttr{Name: "firehydrant_user"},
-			hcl.TraverseAttr{Name: m.TFSlug()},
-			hcl.TraverseAttr{Name: "id"},
-		}
-		memberList = append(memberList, hclwrite.TokensForTraversal(member))
-	}
-
 	body.AppendNewline()
 
-	// This is dumb and I hate it
-	// We originally used members as part of the on_call_schedule resource, then the functionality changed and we needed to indicate
-	// that we were using the right implementation, so members became member_ids.  But then rotations didn't have this legacy, so used members
-	// from the beginning.  So now we need to support one for schedules and the other for rotations, but both take the same data.
-	membersName := ""
 	if useMembers {
-		membersName = "members"
+		// Rotation resources use nested "members" blocks with user_id attribute.
+		for _, m := range members {
+			body.AppendNewBlock("members", nil).Body().
+				SetAttributeTraversal("user_id", hcl.Traversal{
+					hcl.TraverseRoot{Name: "data"},
+					hcl.TraverseAttr{Name: "firehydrant_user"},
+					hcl.TraverseAttr{Name: m.TFSlug()},
+					hcl.TraverseAttr{Name: "id"},
+				})
+		}
 	} else {
-		membersName = "member_ids"
+		// Schedule resources use a flat "member_ids" list.
+		memberList := []hclwrite.Tokens{}
+		for _, m := range members {
+			member := hcl.Traversal{
+				hcl.TraverseRoot{Name: "data"},
+				hcl.TraverseAttr{Name: "firehydrant_user"},
+				hcl.TraverseAttr{Name: m.TFSlug()},
+				hcl.TraverseAttr{Name: "id"},
+			}
+			memberList = append(memberList, hclwrite.TokensForTraversal(member))
+		}
+		body.SetAttributeRaw("member_ids", hclwrite.TokensForTuple(memberList))
 	}
-	body.SetAttributeRaw(membersName, hclwrite.TokensForTuple(memberList))
 
 	// Add strategy
 	body.AppendNewline()
