@@ -500,10 +500,8 @@ func TestPagerDuty(t *testing.T) {
 		t.Logf("Generated Terraform file:\n%s", tfContentStr)
 
 		// Extract the rotation resources for P3D7DLW-PSQ0VRL
-		// Look for the rotation resource that contains the expected member order.
-		// The regex matches from the resource declaration to a closing brace at the start of a line
-		// (top-level block boundary), which correctly spans nested blocks like members { ... }.
-		rotationRegex := regexp.MustCompile(`resource "firehydrant_rotation" "[^"]*" \{[\s\S]*?\n\}`)
+		// Look for the rotation resource that contains the expected member order
+		rotationRegex := regexp.MustCompile(`resource "firehydrant_rotation" "[^"]*" \{[\s\S]*?\}`)
 		rotationMatches := rotationRegex.FindAllString(tfContentStr, -1)
 
 		if len(rotationMatches) == 0 {
@@ -526,12 +524,20 @@ func TestPagerDuty(t *testing.T) {
 
 		t.Logf("Found target rotation:\n%s", targetRotation)
 
-		// Extract user references from the nested members blocks:
-		//   members {
-		//     user_id = data.firehydrant_user.<slug>.id
-		//   }
+		// Extract the members array from the Terraform resource
+		membersRegex := regexp.MustCompile(`members = \[([^\]]*)\]`)
+		membersMatch := membersRegex.FindStringSubmatch(targetRotation)
+
+		if len(membersMatch) < 2 {
+			t.Fatal("No members found in rotation resource")
+		}
+
+		membersStr := membersMatch[1]
+		t.Logf("Members string: %s", membersStr)
+
+		// Extract individual user references from the members array
 		userRefRegex := regexp.MustCompile(`data\.firehydrant_user\.([^\.]+)\.id`)
-		userRefMatches := userRefRegex.FindAllStringSubmatch(targetRotation, -1)
+		userRefMatches := userRefRegex.FindAllStringSubmatch(membersStr, -1)
 
 		if len(userRefMatches) != len(expectedOrder) {
 			t.Errorf("Expected %d user references in Terraform, got %d", len(expectedOrder), len(userRefMatches))
