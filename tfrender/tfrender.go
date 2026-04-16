@@ -13,6 +13,7 @@ import (
 
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
+	"github.com/gosimple/slug"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -34,7 +35,7 @@ type TFRender struct {
 func fhProviderVersion() string {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return ">= 0.14.7"
+		return ">= 0.15.0"
 	}
 
 	// Recommend version which is used in the migration tool
@@ -53,7 +54,14 @@ func fhProviderVersion() string {
 		}
 	}
 
-	return ">= 0.14.7"
+	return ">= 0.15.0"
+}
+
+// tfScheduleSlug produces a Terraform-safe identifier from a schedule or
+// rotation name. slug.Make handles non-ASCII characters (emojis, accented
+// letters) that the Terraform HCL parser otherwise rejects in resource labels.
+func tfScheduleSlug(name string) string {
+	return strings.ReplaceAll(slug.Make(name), "-", "_")
 }
 
 func New(name string) (*TFRender, error) {
@@ -209,14 +217,11 @@ func (r *TFRender) ResourceFireHydrantEscalationPolicy(ctx context.Context) erro
 					}
 					teamSlug := linkedTeam.TFSlug()
 
-					// Generate TF slug for schedule
-					scheduleSlug := strings.ToLower(strings.ReplaceAll(schedule.Name, " ", "_"))
-					scheduleSlug = strings.ReplaceAll(scheduleSlug, "-", "_")
-
-					slug := fmt.Sprintf("%s_%s", teamSlug, scheduleSlug)
+					scheduleSlug := tfScheduleSlug(schedule.Name)
+					resourceSlug := fmt.Sprintf("%s_%s", teamSlug, scheduleSlug)
 					idTraversals = append(idTraversals, hcl.Traversal{ //nolint:staticcheck // See "safeguard" below
 						hcl.TraverseRoot{Name: "firehydrant_on_call_schedule"},
-						hcl.TraverseAttr{Name: slug},
+						hcl.TraverseAttr{Name: resourceSlug},
 						hcl.TraverseAttr{Name: "id"},
 					})
 				default:
@@ -265,9 +270,7 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 
 		r.root.AppendNewline()
 
-		// Generate TF slug for schedule (similar to how teams do it)
-		scheduleSlug := strings.ToLower(strings.ReplaceAll(s.Name, " ", "_"))
-		scheduleSlug = strings.ReplaceAll(scheduleSlug, "-", "_")
+		scheduleSlug := tfScheduleSlug(s.Name)
 
 		b := r.root.AppendNewBlock("resource", []string{
 			"firehydrant_on_call_schedule",
@@ -354,13 +357,8 @@ func (r *TFRender) ResourceFireHydrantRotation(ctx context.Context) error {
 
 		r.root.AppendNewline()
 
-		// Generate TF slug for rotation (similar to how teams do it)
-		rotationSlug := strings.ToLower(strings.ReplaceAll(rotation.Name, " ", "_"))
-		rotationSlug = strings.ReplaceAll(rotationSlug, "-", "_")
-
-		// Generate TF slug for schedule
-		scheduleSlug := strings.ToLower(strings.ReplaceAll(schedule.Name, " ", "_"))
-		scheduleSlug = strings.ReplaceAll(scheduleSlug, "-", "_")
+		rotationSlug := tfScheduleSlug(rotation.Name)
+		scheduleSlug := tfScheduleSlug(schedule.Name)
 
 		b := r.root.AppendNewBlock("resource", []string{
 			"firehydrant_rotation",
@@ -415,30 +413,33 @@ func renderRotationData(ctx context.Context, rotation store.ExtRotation, r *TFRe
 		return fmt.Errorf("querying members for rotation '%s': %w", rotation.Name, err)
 	}
 
-	memberList := []hclwrite.Tokens{}
-	for _, m := range members {
-		member := hcl.Traversal{
-			hcl.TraverseRoot{Name: "data"},
-			hcl.TraverseAttr{Name: "firehydrant_user"},
-			hcl.TraverseAttr{Name: m.TFSlug()},
-			hcl.TraverseAttr{Name: "id"},
-		}
-		memberList = append(memberList, hclwrite.TokensForTraversal(member))
-	}
-
 	body.AppendNewline()
 
-	// This is dumb and I hate it
-	// We originally used members as part of the on_call_schedule resource, then the functionality changed and we needed to indicate
-	// that we were using the right implementation, so members became member_ids.  But then rotations didn't have this legacy, so used members
-	// from the beginning.  So now we need to support one for schedules and the other for rotations, but both take the same data.
-	membersName := ""
 	if useMembers {
-		membersName = "members"
+		// Rotation resources use nested "members" blocks with user_id attribute.
+		for _, m := range members {
+			body.AppendNewBlock("members", nil).Body().
+				SetAttributeTraversal("user_id", hcl.Traversal{
+					hcl.TraverseRoot{Name: "data"},
+					hcl.TraverseAttr{Name: "firehydrant_user"},
+					hcl.TraverseAttr{Name: m.TFSlug()},
+					hcl.TraverseAttr{Name: "id"},
+				})
+		}
 	} else {
-		membersName = "member_ids"
+		// Schedule resources use a flat "member_ids" list.
+		memberList := []hclwrite.Tokens{}
+		for _, m := range members {
+			member := hcl.Traversal{
+				hcl.TraverseRoot{Name: "data"},
+				hcl.TraverseAttr{Name: "firehydrant_user"},
+				hcl.TraverseAttr{Name: m.TFSlug()},
+				hcl.TraverseAttr{Name: "id"},
+			}
+			memberList = append(memberList, hclwrite.TokensForTraversal(member))
+		}
+		body.SetAttributeRaw("member_ids", hclwrite.TokensForTuple(memberList))
 	}
-	body.SetAttributeRaw(membersName, hclwrite.TokensForTuple(memberList))
 
 	// Add strategy
 	body.AppendNewline()

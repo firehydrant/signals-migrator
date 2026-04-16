@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/huh v0.8.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20240328185852-590ecabc34b9
 	github.com/fatih/color v1.18.0
-	github.com/firehydrant/terraform-provider-firehydrant v0.14.7
+	github.com/firehydrant/terraform-provider-firehydrant v0.15.0
 	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23
@@ -17,7 +17,10 @@ require (
 	modernc.org/sqlite v1.46.1
 )
 
-require gotest.tools/v3 v3.5.2
+require (
+	github.com/firehydrant/firehydrant-go-sdk v1.7.1
+	gotest.tools/v3 v3.5.2
+)
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
@@ -36,9 +39,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
-	github.com/firehydrant/firehydrant-go-sdk v1.4.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

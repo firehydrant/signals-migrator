@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.14.7"
+      version = ">= 0.15.0"
     }
   }
 }
@@ -80,7 +80,7 @@ import {
   to = firehydrant_team.cowboy_coders
 }
 
-resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen___primary" {
+resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primary" {
   name        = "Jen - primary"
   description = "Primary on-call schedule for Jen team"
   team_id     = firehydrant_team.aaaa_ipv6_migration_strategy.id
@@ -122,7 +122,7 @@ resource "firehydrant_on_call_schedule" "dunder_mifflin_scranton_jack_on_call_sc
   # [PagerDuty] Jack Team https://pdt-apidocs.pagerduty.com/service-directory/PD2F80U
 }
 
-resource "firehydrant_on_call_schedule" "cowboy_coders_🐴_is_always_on_call" {
+resource "firehydrant_on_call_schedule" "cowboy_coders_is_always_on_call" {
   name        = "🐴 is always on call"
   description = "Always on call schedule"
   team_id     = firehydrant_team.cowboy_coders.id
@@ -139,16 +139,21 @@ resource "firehydrant_on_call_schedule" "cowboy_coders_🐴_is_always_on_call" {
   # [PagerDuty] 🐴 Cowboy Coders https://pdt-apidocs.pagerduty.com/service-directory/PV9JOXL
 }
 
-resource "firehydrant_rotation" "aaaa_ipv6_migration_strategy_jen___primary_layer_1" {
+resource "firehydrant_rotation" "aaaa_ipv6_migration_strategy_jen_primary_layer_1" {
   name        = "Layer 1"
   description = "(Layer 1)"
   team_id     = firehydrant_team.aaaa_ipv6_migration_strategy.id
-  schedule_id = firehydrant_on_call_schedule.aaaa_ipv6_migration_strategy_jen___primary.id
+  schedule_id = firehydrant_on_call_schedule.aaaa_ipv6_migration_strategy_jen_primary.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-04-10T20:39:29-07:00"
   # Note: Start time must be within 30 days.
 
-  members = [data.firehydrant_user.local.id, data.firehydrant_user.wong.id]
+  members {
+    user_id = data.firehydrant_user.local.id
+  }
+  members {
+    user_id = data.firehydrant_user.wong.id
+  }
 
   strategy {
     type           = "custom"

@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.14.7"
+      version = ">= 0.15.0"
     }
   }
 }
@@ -68,7 +68,18 @@ resource "firehydrant_rotation" "aj_team_aj_team_schedule_daytime_rotation" {
   schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
+  members {
+    user_id = data.firehydrant_user.fh_eng.id
+  }
+  members {
+    user_id = data.firehydrant_user.fh_demo.id
+  }
+  members {
+    user_id = data.firehydrant_user.fh_success.id
+  }
+  members {
+    user_id = data.firehydrant_user.jsmith.id
+  }
 
   strategy {
     type         = "weekly"
@@ -119,7 +130,18 @@ resource "firehydrant_rotation" "aj_team_aj_team_schedule_nighttime_rotation" {
   schedule_id = firehydrant_on_call_schedule.aj_team_aj_team_schedule.id
   time_zone   = "America/Los_Angeles"
 
-  members = [data.firehydrant_user.fh_eng.id, data.firehydrant_user.fh_demo.id, data.firehydrant_user.fh_success.id, data.firehydrant_user.jsmith.id]
+  members {
+    user_id = data.firehydrant_user.fh_eng.id
+  }
+  members {
+    user_id = data.firehydrant_user.fh_demo.id
+  }
+  members {
+    user_id = data.firehydrant_user.fh_success.id
+  }
+  members {
+    user_id = data.firehydrant_user.jsmith.id
+  }
 
   strategy {
     type         = "daily"

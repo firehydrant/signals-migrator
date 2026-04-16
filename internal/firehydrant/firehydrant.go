@@ -8,7 +8,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
+	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
+	"github.com/firehydrant/firehydrant-go-sdk/models/components"
+	"github.com/firehydrant/firehydrant-go-sdk/models/operations"
 	"github.com/firehydrant/signals-migrator/console"
 	"github.com/firehydrant/signals-migrator/store"
 	"github.com/firehydrant/terraform-provider-firehydrant/firehydrant"
@@ -17,7 +21,8 @@ import (
 // firehyrant.Client is technically a kind of Pager, but it does not necessarily
 // satisfy the Pager interface, since that's not what we're using it for.
 type Client struct {
-	client firehydrant.Client
+	client *firehydrant.APIClient
+	sdk    *fhsdk.FireHydrant
 
 	apiKey string
 	apiURL string
@@ -32,8 +37,15 @@ func NewClient(apiKey string, apiURL string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("initializing FireHydrant client: %w", err)
 	}
+	sdk := fhsdk.New(
+		fhsdk.WithServerURL(strings.TrimSuffix(apiURL, "v1/")),
+		fhsdk.WithSecurity(components.Security{
+			APIKey: apiKey,
+		}),
+	)
 	return &Client{
 		client: client,
+		sdk:    sdk,
 		apiKey: apiKey,
 		apiURL: apiURL,
 	}, nil
@@ -46,23 +58,39 @@ func (c *Client) ListTeams(ctx context.Context) ([]store.FhTeam, error) {
 		return stored, nil
 	}
 
+	// Dedupe by ID across pages: laddertruck's TeamReader sorts by name only,
+	// which is unstable when teams share a name and can return the same row on
+	// multiple pages.
 	teams := []store.FhTeam{}
-	opts := &firehydrant.TeamQuery{}
-	resp, err := c.client.Teams().List(ctx, opts)
-	if err != nil {
-		return nil, fmt.Errorf("fetching teams from FireHydrant: %w", err)
-	}
-	for _, t := range resp.Teams {
-		team := store.FhTeam{
-			ID:   t.ID,
-			Name: t.Name,
-			Slug: t.Slug,
+	seen := map[string]bool{}
+	page := 1
+	for {
+		resp, err := c.sdk.Teams.ListTeams(ctx, operations.ListTeamsRequest{Page: &page})
+		if err != nil {
+			return nil, fmt.Errorf("fetching teams from FireHydrant: %w", err)
 		}
+		for _, t := range resp.GetData() {
+			id := *t.GetID()
+			if seen[id] {
+				continue
+			}
+			seen[id] = true
+			team := store.FhTeam{
+				ID:   id,
+				Name: *t.GetName(),
+				Slug: *t.GetSlug(),
+			}
 
-		if err := q.InsertFhTeam(ctx, store.InsertFhTeamParams(team)); err != nil {
-			return nil, fmt.Errorf("storing teams to database: %w", err)
+			if err := q.InsertFhTeam(ctx, store.InsertFhTeamParams(team)); err != nil {
+				return nil, fmt.Errorf("storing teams to database: %w", err)
+			}
+			teams = append(teams, team)
 		}
-		teams = append(teams, team)
+		pg := resp.GetPagination()
+		if pg == nil || pg.GetNext() == nil || *pg.GetNext() == 0 {
+			break
+		}
+		page = *pg.GetNext()
 	}
 	return teams, nil
 }
@@ -76,7 +104,11 @@ func (c *Client) ListUsers(ctx context.Context) ([]store.FhUser, error) {
 		return stored, nil
 	}
 
+	// Dedupe by ID across pages: laddertruck's UserReader sorts by name only,
+	// which is unstable when users share a name and can return the same row on
+	// multiple pages.
 	users := []store.FhUser{}
+	seen := map[string]bool{}
 	opts := firehydrant.GetUserParams{}
 	for {
 		resp, err := c.client.GetUsers(ctx, opts)
@@ -84,6 +116,10 @@ func (c *Client) ListUsers(ctx context.Context) ([]store.FhUser, error) {
 			return nil, fmt.Errorf("fetching users from FireHydrant: %w", err)
 		}
 		for _, u := range resp.Users {
+			if seen[u.ID] {
+				continue
+			}
+			seen[u.ID] = true
 			users = append(users, store.FhUser{
 				ID:    u.ID,
 				Name:  u.Name,
