@@ -58,7 +58,11 @@ func (c *Client) ListTeams(ctx context.Context) ([]store.FhTeam, error) {
 		return stored, nil
 	}
 
+	// Dedupe by ID across pages: laddertruck's TeamReader sorts by name only,
+	// which is unstable when teams share a name and can return the same row on
+	// multiple pages.
 	teams := []store.FhTeam{}
+	seen := map[string]bool{}
 	page := 1
 	for {
 		resp, err := c.sdk.Teams.ListTeams(ctx, operations.ListTeamsRequest{Page: &page})
@@ -66,8 +70,13 @@ func (c *Client) ListTeams(ctx context.Context) ([]store.FhTeam, error) {
 			return nil, fmt.Errorf("fetching teams from FireHydrant: %w", err)
 		}
 		for _, t := range resp.GetData() {
+			id := *t.GetID()
+			if seen[id] {
+				continue
+			}
+			seen[id] = true
 			team := store.FhTeam{
-				ID:   *t.GetID(),
+				ID:   id,
 				Name: *t.GetName(),
 				Slug: *t.GetSlug(),
 			}
@@ -95,7 +104,11 @@ func (c *Client) ListUsers(ctx context.Context) ([]store.FhUser, error) {
 		return stored, nil
 	}
 
+	// Dedupe by ID across pages: laddertruck's UserReader sorts by name only,
+	// which is unstable when users share a name and can return the same row on
+	// multiple pages.
 	users := []store.FhUser{}
+	seen := map[string]bool{}
 	opts := firehydrant.GetUserParams{}
 	for {
 		resp, err := c.client.GetUsers(ctx, opts)
@@ -103,6 +116,10 @@ func (c *Client) ListUsers(ctx context.Context) ([]store.FhUser, error) {
 			return nil, fmt.Errorf("fetching users from FireHydrant: %w", err)
 		}
 		for _, u := range resp.Users {
+			if seen[u.ID] {
+				continue
+			}
+			seen[u.ID] = true
 			users = append(users, store.FhUser{
 				ID:    u.ID,
 				Name:  u.Name,
