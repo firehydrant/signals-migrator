@@ -17,7 +17,10 @@ require (
 	modernc.org/sqlite v1.46.1
 )
 
-require gotest.tools/v3 v3.5.2
+require (
+	github.com/firehydrant/firehydrant-go-sdk v1.7.1
+	gotest.tools/v3 v3.5.2
+)
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
@@ -37,7 +40,6 @@ require (
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
-	github.com/firehydrant/firehydrant-go-sdk v1.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

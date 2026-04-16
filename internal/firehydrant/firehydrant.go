@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	fhsdk "github.com/firehydrant/firehydrant-go-sdk"
 	"github.com/firehydrant/firehydrant-go-sdk/models/components"
@@ -37,7 +38,7 @@ func NewClient(apiKey string, apiURL string) (*Client, error) {
 		return nil, fmt.Errorf("initializing FireHydrant client: %w", err)
 	}
 	sdk := fhsdk.New(
-		fhsdk.WithServerURL(apiURL),
+		fhsdk.WithServerURL(strings.TrimSuffix(apiURL, "v1/")),
 		fhsdk.WithSecurity(components.Security{
 			APIKey: apiKey,
 		}),
