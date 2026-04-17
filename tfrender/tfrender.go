@@ -401,10 +401,13 @@ func renderRotationData(ctx context.Context, rotation store.ExtRotation, r *TFRe
 
 	body.SetAttributeValue("time_zone", cty.StringVal(schedule.Timezone))
 
-	// Add start_time if rotation has custom strategy
-	if rotation.Strategy == "custom" && rotation.StartTime != "" {
+	// Anchor the rotation at the source system's virtual start so assignments
+	// match regardless of when terraform apply runs. FireHydrant rejects a
+	// start_time more than 1 month in the past; callers need to refresh the
+	// source data if the virtual start is older than that window.
+	if rotation.StartTime != "" {
 		body.SetAttributeValue("start_time", cty.StringVal(rotation.StartTime))
-		r.AppendComment(body, "Note: Start time must be within 30 days.")
+		r.AppendComment(body, "Note: Start time must be within 1 month of apply.")
 	}
 
 	// Add members

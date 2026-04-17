@@ -413,7 +413,7 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 		Description:   desc,
 		Strategy:      "weekly",
 		ShiftDuration: "",
-		StartTime:     "",
+		StartTime:     layer.RotationVirtualStart,
 		HandoffTime:   "11:00:00",
 		HandoffDay:    "wednesday",
 		RotationOrder: int64(layerOrder),
@@ -427,15 +427,6 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	default:
 		rotationParams.Strategy = "custom"
 		rotationParams.ShiftDuration = fmt.Sprintf("PT%dS", layer.RotationTurnLengthSeconds)
-
-		now := time.Now()
-		loc, err := time.LoadLocation(schedule.Timezone)
-		if err == nil {
-			now = now.In(loc)
-		} else {
-			console.Warnf("unable to parse timezone '%v', using current machine's local time", schedule.Timezone)
-		}
-		rotationParams.StartTime = now.Format(time.RFC3339)
 	}
 	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
 	if err == nil {

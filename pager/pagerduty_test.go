@@ -355,6 +355,35 @@ func TestPagerDuty(t *testing.T) {
 		}
 	})
 
+	t.Run("LoadSchedulesPreservesVirtualStart", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		// Jack's active layer PE2BA4Y has rotation_virtual_start 2023-06-02T14:00:00-07:00 in
+		// the fixture. The migrator must persist this as StartTime so the rendered TF anchors
+		// the rotation at PagerDuty's virtual start instead of drifting with apply time.
+		r, err := store.UseQueries(ctx).GetExtRotation(ctx, "PE2BA4Y")
+		if err != nil {
+			t.Fatalf("error loading rotation PE2BA4Y: %s", err)
+		}
+		if r.StartTime != "2023-06-02T14:00:00-07:00" {
+			t.Errorf("expected StartTime from rotation_virtual_start, got %q", r.StartTime)
+		}
+	})
+
 	t.Run("LoadSchedulesSkipsScheduleWithMissingTeam", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)
