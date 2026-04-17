@@ -372,11 +372,22 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 		return fmt.Errorf("saving schedule: %w", err)
 	}
 
-	// Create rotation records under the parent schedule (each layer becomes a rotation)
-	for i, layer := range schedule.ScheduleLayers {
-		if err := p.saveLayerToDB(ctx, schedule.ID, layer, i); err != nil {
+	// Create rotation records under the parent schedule (each layer becomes a rotation).
+	// PagerDuty keeps ended/replaced layers in the schedule_layers response with a non-null
+	// `end` timestamp. Skip those so they don't show up as extra FireHydrant rotations.
+	now := time.Now()
+	order := 0
+	for _, layer := range schedule.ScheduleLayers {
+		if layer.End != "" {
+			if end, err := time.Parse(time.RFC3339, layer.End); err == nil && end.Before(now) {
+				console.Warnf("Schedule layer %q (%s) ended at %s, skipping...\n", layer.Name, layer.ID, layer.End)
+				continue
+			}
+		}
+		if err := p.saveLayerToDB(ctx, schedule.ID, layer, order); err != nil {
 			return fmt.Errorf("saving layer to db: %w", err)
 		}
+		order++
 	}
 	return nil
 }

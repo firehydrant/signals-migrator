@@ -320,6 +320,41 @@ func TestPagerDuty(t *testing.T) {
 		}
 	})
 
+	t.Run("LoadSchedulesSkipsEndedLayers", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		// Jack's schedule (P85QTXZ) has two layers in the fixture: PDEADPL with a past
+		// `end` timestamp and PE2BA4Y still active. Only the active one should become a rotation.
+		rotations, err := store.UseQueries(ctx).ListExtRotationsByScheduleID(ctx, "P85QTXZ")
+		if err != nil {
+			t.Fatalf("error loading rotations: %s", err)
+		}
+		if len(rotations) != 1 {
+			t.Fatalf("expected 1 rotation for P85QTXZ (ended layer should be filtered), got %d", len(rotations))
+		}
+		if rotations[0].ID != "PE2BA4Y" {
+			t.Errorf("expected active rotation PE2BA4Y, got %s", rotations[0].ID)
+		}
+
+		if _, err := store.UseQueries(ctx).GetExtRotation(ctx, "PDEADPL"); err == nil {
+			t.Error("ended layer PDEADPL should not be imported as a rotation")
+		}
+	})
+
 	t.Run("LoadSchedulesSkipsScheduleWithMissingTeam", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)
