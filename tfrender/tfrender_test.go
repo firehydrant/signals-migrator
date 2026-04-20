@@ -191,7 +191,7 @@ func TestRenderOnCallScheduleResource(t *testing.T) {
 		ScheduleID:    "id-for-ext-schedule-0",
 		Name:          "Daily Rotation",
 		Strategy:      "daily",
-		StartTime:     "11:00",
+		StartTime:     "",
 		HandoffTime:   "11:00",
 		HandoffDay:    "wednesday",
 		RotationOrder: 0,

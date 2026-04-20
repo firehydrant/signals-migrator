@@ -201,6 +201,28 @@
       "name": "Jack On-Call Schedule",
       "schedule_layers": [
         {
+          "end": "2020-01-01T00:00:00Z",
+          "id": "PDEADPL",
+          "name": "Jack retired layer",
+          "rendered_coverage_percentage": null,
+          "rendered_schedule_entries": [],
+          "restrictions": [],
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2019-01-01T00:00:00Z",
+          "start": "2019-01-01T00:00:00Z",
+          "users": [
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/P4CMCAU",
+                "id": "P4CMCAU",
+                "self": "https://api.pagerduty.com/users/P4CMCAU",
+                "summary": "Jack T.",
+                "type": "user_reference"
+              }
+            }
+          ]
+        },
+        {
           "end": null,
           "id": "PE2BA4Y",
           "name": "Layer 1",
