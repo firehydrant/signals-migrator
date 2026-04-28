@@ -339,6 +339,10 @@ func (o *Opsgenie) saveRotationToDB(ctx context.Context, scheduleID string, r og
 
 	q := store.UseQueries(ctx)
 	if err := q.InsertExtRotation(ctx, rotationParams); err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint") {
+			console.Warnf("Rotation %s already exists (duplicate rotation ID across schedules), skipping...\n", r.Id)
+			return nil
+		}
 		return fmt.Errorf("saving rotation: %w", err)
 	}
 
