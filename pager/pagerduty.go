@@ -526,9 +526,11 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	return nil
 }
 
-// fhStartTimeWindow is the safety margin we keep under FireHydrant's 1-month
-// start_time acceptance window. Rolling the virtual_start to within this many
-// days of `now` leaves room for the gap between TF generation and apply.
+// fhStartTimeWindow is the maximum age we'll allow a rolled virtual_start to
+// have. FireHydrant rejects rotation start_time older than 30 days; we
+// deliberately stop 5 days short of that limit so a TF generated today still
+// applies cleanly if the customer waits a few days before running
+// `terraform apply`.
 const fhStartTimeWindow = 25 * 24 * time.Hour
 
 // rollVirtualStartForward advances virtualStart by whole turn-length cycles
