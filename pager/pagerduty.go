@@ -419,6 +419,7 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 		RotationOrder: int64(layerOrder),
 	}
 
+	turn := time.Duration(layer.RotationTurnLengthSeconds) * time.Second
 	switch layer.RotationTurnLengthSeconds {
 	case 60 * 60 * 24:
 		rotationParams.Strategy = "daily"
@@ -432,6 +433,12 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	if err == nil {
 		rotationParams.HandoffTime = virtualStart.Format(time.TimeOnly)
 		rotationParams.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
+		// FireHydrant rejects rotation start_time older than 1 month. Roll
+		// virtual_start forward in whole rotation cycles so the anchor lands
+		// inside that window while preserving rotation phase — whoever PD has
+		// on call now will still be on call after rollforward.
+		rolled := rollVirtualStartForward(virtualStart, turn, time.Now())
+		rotationParams.StartTime = rolled.Format(time.RFC3339)
 	} else {
 		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
 	}
@@ -517,6 +524,29 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	}
 
 	return nil
+}
+
+// fhStartTimeWindow is the safety margin we keep under FireHydrant's 1-month
+// start_time acceptance window. Rolling the virtual_start to within this many
+// days of `now` leaves room for the gap between TF generation and apply.
+const fhStartTimeWindow = 25 * 24 * time.Hour
+
+// rollVirtualStartForward advances virtualStart by whole turn-length cycles
+// until it sits within FireHydrant's start_time acceptance window. Because the
+// step is the rotation's own period, the rotation phase (which user is on call
+// now) is preserved. Returns virtualStart unchanged when turn is non-positive
+// or when virtualStart is already inside the window.
+func rollVirtualStartForward(virtualStart time.Time, turn time.Duration, now time.Time) time.Time {
+	if turn <= 0 {
+		return virtualStart
+	}
+	cutoff := now.Add(-fhStartTimeWindow)
+	if !virtualStart.Before(cutoff) {
+		return virtualStart
+	}
+	gap := cutoff.Sub(virtualStart)
+	steps := int64(gap/turn) + 1
+	return virtualStart.Add(time.Duration(steps) * turn)
 }
 
 func (p *PagerDuty) LoadEscalationPolicies(ctx context.Context) error {
