@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/firehydrant/signals-migrator/pager"
 	"github.com/firehydrant/signals-migrator/store"
@@ -355,7 +356,7 @@ func TestPagerDuty(t *testing.T) {
 		}
 	})
 
-	t.Run("LoadSchedulesPreservesVirtualStart", func(t *testing.T) {
+	t.Run("LoadSchedulesRollsVirtualStartIntoFireHydrantWindow", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)
 
@@ -372,15 +373,39 @@ func TestPagerDuty(t *testing.T) {
 			t.Fatalf("error loading schedules: %s", err)
 		}
 
-		// Jack's active layer PE2BA4Y has rotation_virtual_start 2023-06-02T14:00:00-07:00 in
-		// the fixture. The migrator must persist this as StartTime so the rendered TF anchors
-		// the rotation at PagerDuty's virtual start instead of drifting with apply time.
+		// Jack's active layer PE2BA4Y has rotation_virtual_start 2023-06-02T14:00:00-07:00
+		// (a Friday) and a 1-week turn. FireHydrant rejects start_time older than 1 month,
+		// so the migrator rolls the anchor forward in whole 7-day cycles. The rolled value
+		// must (a) sit within ~1 month of now, (b) preserve weekday + time-of-day, and
+		// (c) differ from the original by an integer number of weeks.
 		r, err := store.UseQueries(ctx).GetExtRotation(ctx, "PE2BA4Y")
 		if err != nil {
 			t.Fatalf("error loading rotation PE2BA4Y: %s", err)
 		}
-		if r.StartTime != "2023-06-02T14:00:00-07:00" {
-			t.Errorf("expected StartTime from rotation_virtual_start, got %q", r.StartTime)
+
+		original, err := time.Parse(time.RFC3339, "2023-06-02T14:00:00-07:00")
+		if err != nil {
+			t.Fatalf("parsing original virtual_start: %s", err)
+		}
+		got, err := time.Parse(time.RFC3339, r.StartTime)
+		if err != nil {
+			t.Fatalf("parsing rolled StartTime %q: %s", r.StartTime, err)
+		}
+
+		if got.Weekday() != original.Weekday() {
+			t.Errorf("weekday changed: original=%s rolled=%s", original.Weekday(), got.Weekday())
+		}
+		if got.Hour() != original.Hour() || got.Minute() != original.Minute() || got.Second() != original.Second() {
+			t.Errorf("time-of-day changed: original=%s rolled=%s",
+				original.Format(time.TimeOnly), got.Format(time.TimeOnly))
+		}
+		delta := got.Sub(original)
+		week := 7 * 24 * time.Hour
+		if delta < 0 || delta%week != 0 {
+			t.Errorf("rolled value is not a non-negative multiple of one week from original: delta=%s", delta)
+		}
+		if cutoff := time.Now().Add(-26 * 24 * time.Hour); got.Before(cutoff) {
+			t.Errorf("rolled StartTime %s is older than 26 days, FireHydrant will reject it", r.StartTime)
 		}
 	})
 
