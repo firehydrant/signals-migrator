@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -293,31 +294,17 @@ func TestRenderCustomStrategySchedule(t *testing.T) {
 
 	contentStr := string(content)
 
-	// Verify that the rotation has start_time when using a custom strategy
-	if !strings.Contains(contentStr, `start_time  = "2024-04-11T11:56:29-07:00"`) {
-		t.Error("Rotation should have start_time for custom strategy")
-	}
-
-	// Verify that the rotation has custom strategy with shift_duration
-	if !strings.Contains(contentStr, `type           = "custom"`) {
-		t.Error("Rotation should have custom strategy type")
-	}
-	if !strings.Contains(contentStr, `shift_duration = "PT93600S"`) {
-		t.Error("Rotation should have shift_duration for custom strategy")
-	}
-
-	// Verify that the rotation has start_time for custom strategy
-	// Split the content to check rotation block specifically
-	rotationBlockStart := strings.Index(contentStr, `resource "firehydrant_rotation"`)
-	if rotationBlockStart != -1 {
-		rotationBlockEnd := strings.Index(contentStr[rotationBlockStart:], "}")
-		if rotationBlockEnd != -1 {
-			rotationBlock := contentStr[rotationBlockStart : rotationBlockStart+rotationBlockEnd]
-			if !strings.Contains(rotationBlock, `start_time  = "2024-04-11T11:56:29-07:00"`) {
-				t.Error("Rotation should have start_time for custom strategy")
-			}
+	// HCL column-aligns `=`, so assert presence of each attribute via a regex
+	// that tolerates any amount of whitespace between key and value.
+	mustMatch := func(label, pattern string) {
+		t.Helper()
+		if !regexp.MustCompile(pattern).MatchString(contentStr) {
+			t.Errorf("%s: pattern %q not found in:\n%s", label, pattern, contentStr)
 		}
 	}
+	mustMatch("custom strategy start_time", `start_time\s+=\s+"2024-04-11T11:56:29-07:00"`)
+	mustMatch("custom strategy type", `type\s+=\s+"custom"`)
+	mustMatch("custom strategy shift_duration", `shift_duration\s+=\s+"PT93600S"`)
 
 	t.Logf("Generated Terraform:\n%s", contentStr)
 }

@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.15.0"
+      version = ">= 0.16.0"
     }
   }
 }
@@ -73,10 +73,12 @@ resource "firehydrant_team" "christine_test_team" {
 }
 
 resource "firehydrant_on_call_schedule" "customer_success_customer_success_schedule" {
-  name        = "Customer Success_schedule"
-  description = "Customer Success team schedule"
-  team_id     = firehydrant_team.customer_success.id
-  time_zone   = "America/Los_Angeles"
+  name                 = "Customer Success_schedule"
+  description          = "Customer Success team schedule"
+  team_id              = firehydrant_team.customer_success.id
+  rotation_name        = "Rot1"
+  rotation_description = "(Rot1)"
+  time_zone            = "America/Los_Angeles"
 
   member_ids = []
 
@@ -88,10 +90,12 @@ resource "firehydrant_on_call_schedule" "customer_success_customer_success_sched
 }
 
 resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule" {
-  name        = "Wong Team_schedule"
-  description = "Wong team schedule"
-  team_id     = firehydrant_team.wong_squad.id
-  time_zone   = "America/Los_Angeles"
+  name                 = "Wong Team_schedule"
+  description          = "Wong team schedule"
+  team_id              = firehydrant_team.wong_squad.id
+  rotation_name        = "First"
+  rotation_description = "(First)"
+  time_zone            = "America/Los_Angeles"
 
   member_ids = []
 
@@ -103,10 +107,12 @@ resource "firehydrant_on_call_schedule" "wong_squad_wong_team_schedule" {
 }
 
 resource "firehydrant_on_call_schedule" "aj_team_aj_team_schedule" {
-  name        = "AJ Team_schedule"
-  description = "AJ team schedule"
-  team_id     = firehydrant_team.aj_team.id
-  time_zone   = "America/Los_Angeles"
+  name                 = "AJ Team_schedule"
+  description          = "AJ team schedule"
+  team_id              = firehydrant_team.aj_team.id
+  rotation_name        = "Daytime rotation"
+  rotation_description = "(Daytime rotation)"
+  time_zone            = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.mika.id, data.firehydrant_user.local.id, data.firehydrant_user.kiran.id]
 

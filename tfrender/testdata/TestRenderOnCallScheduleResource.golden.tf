@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.15.0"
+      version = ">= 0.16.0"
     }
   }
 }
@@ -50,10 +50,11 @@ resource "firehydrant_team" "team_3_slug" {
 }
 
 resource "firehydrant_on_call_schedule" "team_1_slug_schedule_0" {
-  name        = "Schedule 0"
-  description = "Schedule 0 description"
-  team_id     = firehydrant_team.team_1_slug.id
-  time_zone   = "UTC"
+  name          = "Schedule 0"
+  description   = "Schedule 0 description"
+  team_id       = firehydrant_team.team_1_slug.id
+  rotation_name = "Daily Rotation"
+  time_zone     = "UTC"
 
   member_ids = [data.firehydrant_user.user_0.id]
 
