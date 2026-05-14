@@ -35,7 +35,7 @@ type TFRender struct {
 func fhProviderVersion() string {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return ">= 0.15.0"
+		return ">= 0.15.1"
 	}
 
 	// Recommend version which is used in the migration tool
@@ -54,7 +54,7 @@ func fhProviderVersion() string {
 		}
 	}
 
-	return ">= 0.15.0"
+	return ">= 0.15.1"
 }
 
 // tfScheduleSlug produces a Terraform-safe identifier from a schedule or
@@ -292,9 +292,20 @@ func (r *TFRender) ResourceFireHydrantOnCallSchedule(ctx context.Context) error 
 
 		//if there are no rotations for this schedule, it won't be valid, but leaving the shell of it in place seems like the right thing to do
 		if len(rotations) > 0 {
-			err = renderRotationData(ctx, rotations[0], r, b, false)
+			first := rotations[0]
+			// Override the auto-generated rotation name FH would otherwise inherit
+			// from the schedule. Without this the source-system layer name (e.g.
+			// "Layer 6") is lost and the first rotation shows up in FH under the
+			// schedule's own name, indistinguishable from the schedule itself.
+			if first.Name != "" && first.Name != s.Name {
+				b.SetAttributeValue("rotation_name", cty.StringVal(first.Name))
+			}
+			if first.Description != "" && first.Description != s.Description {
+				b.SetAttributeValue("rotation_description", cty.StringVal(first.Description))
+			}
+			err = renderRotationData(ctx, first, r, b, false)
 			if err != nil {
-				return fmt.Errorf("rendering rotation data '%s': %w", rotations[0].Name, err)
+				return fmt.Errorf("rendering rotation data '%s': %w", first.Name, err)
 			}
 		}
 

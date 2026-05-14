@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.15.0"
+      version = ">= 0.15.1"
     }
   }
 }

@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.15.0"
+      version = ">= 0.15.1"
     }
   }
 }
@@ -81,11 +81,13 @@ import {
 }
 
 resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primary" {
-  name        = "Jen - primary"
-  description = "Primary on-call schedule for Jen team"
-  team_id     = firehydrant_team.aaaa_ipv6_migration_strategy.id
-  time_zone   = "America/Los_Angeles"
-  start_time  = "2024-04-10T20:39:29-07:00"
+  name                 = "Jen - primary"
+  description          = "Primary on-call schedule for Jen team"
+  team_id              = firehydrant_team.aaaa_ipv6_migration_strategy.id
+  rotation_name        = "Layer 2"
+  rotation_description = "(Layer 2)"
+  time_zone            = "America/Los_Angeles"
+  start_time           = "2024-04-10T20:39:29-07:00"
   # Note: Start time must be within 1 month of apply.
 
   member_ids = [data.firehydrant_user.kiran.id]
@@ -106,10 +108,12 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
 }
 
 resource "firehydrant_on_call_schedule" "dunder_mifflin_scranton_jack_on_call_schedule" {
-  name        = "Jack On-Call Schedule"
-  description = "On-call schedule for Jack team"
-  team_id     = firehydrant_team.dunder_mifflin_scranton.id
-  time_zone   = "America/Los_Angeles"
+  name                 = "Jack On-Call Schedule"
+  description          = "On-call schedule for Jack team"
+  team_id              = firehydrant_team.dunder_mifflin_scranton.id
+  rotation_name        = "Layer 1"
+  rotation_description = " (Layer 1)"
+  time_zone            = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.jack.id]
 
@@ -123,10 +127,12 @@ resource "firehydrant_on_call_schedule" "dunder_mifflin_scranton_jack_on_call_sc
 }
 
 resource "firehydrant_on_call_schedule" "cowboy_coders_is_always_on_call" {
-  name        = "🐴 is always on call"
-  description = "Always on call schedule"
-  team_id     = firehydrant_team.cowboy_coders.id
-  time_zone   = "America/Los_Angeles"
+  name                 = "🐴 is always on call"
+  description          = "Always on call schedule"
+  team_id              = firehydrant_team.cowboy_coders.id
+  rotation_name        = "Layer 1"
+  rotation_description = "(Layer 1)"
+  time_zone            = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.horse.id]
 

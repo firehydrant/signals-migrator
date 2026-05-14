@@ -2,7 +2,7 @@ terraform {
   required_providers {
     firehydrant = {
       source  = "firehydrant/firehydrant"
-      version = ">= 0.15.0"
+      version = ">= 0.15.1"
     }
   }
 }
@@ -29,10 +29,12 @@ import {
 }
 
 resource "firehydrant_on_call_schedule" "cowboy_coders_atalice_bob_is_always_on_call" {
-  name        = "🐴 @alice.bob is always on call"
-  description = "Always on call schedule"
-  team_id     = firehydrant_team.cowboy_coders.id
-  time_zone   = "America/Los_Angeles"
+  name                 = "🐴 @alice.bob is always on call"
+  description          = "Always on call schedule"
+  team_id              = firehydrant_team.cowboy_coders.id
+  rotation_name        = "Layer 1"
+  rotation_description = "Always on call rotation"
+  time_zone            = "America/Los_Angeles"
 
   member_ids = [data.firehydrant_user.alice_bob.id]
 
