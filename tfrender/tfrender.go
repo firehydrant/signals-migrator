@@ -35,7 +35,7 @@ type TFRender struct {
 func fhProviderVersion() string {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return ">= 0.16.0"
+		return ">= 0.15.1"
 	}
 
 	// Recommend version which is used in the migration tool
@@ -54,7 +54,7 @@ func fhProviderVersion() string {
 		}
 	}
 
-	return ">= 0.16.0"
+	return ">= 0.15.1"
 }
 
 // tfScheduleSlug produces a Terraform-safe identifier from a schedule or
