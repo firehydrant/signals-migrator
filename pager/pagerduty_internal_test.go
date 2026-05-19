@@ -1,8 +1,11 @@
 package pager
 
 import (
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/PagerDuty/go-pagerduty"
 )
 
 func TestRollVirtualStartForward(t *testing.T) {
@@ -85,6 +88,118 @@ func TestRollVirtualStartForward(t *testing.T) {
 			}
 			if gotOffset != tc.wantOffset {
 				t.Errorf("offset: got %d, want %d", gotOffset, tc.wantOffset)
+			}
+		})
+	}
+}
+
+func TestRotateUsersForward(t *testing.T) {
+	user := func(id string) pagerduty.UserReference {
+		return pagerduty.UserReference{User: pagerduty.APIObject{ID: id}}
+	}
+	ids := func(users []pagerduty.UserReference) []string {
+		out := make([]string, len(users))
+		for i, u := range users {
+			out[i] = u.User.ID
+		}
+		return out
+	}
+
+	tests := []struct {
+		name   string
+		input  []string
+		cursor int
+		want   []string
+	}{
+		{
+			name:   "cursor zero leaves order unchanged",
+			input:  []string{"a", "b", "c"},
+			cursor: 0,
+			want:   []string{"a", "b", "c"},
+		},
+		{
+			name:   "negative cursor leaves order unchanged",
+			input:  []string{"a", "b", "c"},
+			cursor: -1,
+			want:   []string{"a", "b", "c"},
+		},
+		{
+			name:   "cursor one shifts head by one",
+			input:  []string{"a", "b", "c"},
+			cursor: 1,
+			want:   []string{"b", "c", "a"},
+		},
+		{
+			name:   "cursor two shifts head by two",
+			input:  []string{"a", "b", "c"},
+			cursor: 2,
+			want:   []string{"c", "a", "b"},
+		},
+		{
+			name:   "cursor equal to length wraps to no-op",
+			input:  []string{"a", "b", "c"},
+			cursor: 3,
+			want:   []string{"a", "b", "c"},
+		},
+		{
+			name:   "cursor greater than length wraps",
+			input:  []string{"a", "b", "c"},
+			cursor: 4,
+			want:   []string{"b", "c", "a"},
+		},
+		{
+			name:   "cursor much greater than length wraps via modulo",
+			input:  []string{"a", "b", "c", "d", "e", "f", "g"},
+			cursor: 152, // matches the multi-year case in TestRollVirtualStartForward
+			want:   []string{"f", "g", "a", "b", "c", "d", "e"},
+		},
+		{
+			name:   "single user stays in place regardless of cursor",
+			input:  []string{"only"},
+			cursor: 99,
+			want:   []string{"only"},
+		},
+		{
+			name:   "empty input stays empty",
+			input:  []string{},
+			cursor: 5,
+			want:   []string{},
+		},
+		{
+			name:   "two users alternate",
+			input:  []string{"a", "b"},
+			cursor: 1,
+			want:   []string{"b", "a"},
+		},
+		{
+			// Mirrors the production scenario this PR exists to fix: a PagerDuty
+			// weekly layer with seven users whose virtual_start is one full
+			// cycle in the past. The cursor offset of 1 must put the
+			// second-in-PD-order user at index 0 in the emitted FH rotation.
+			name:   "weekly layer with seven users and cursor of one puts second-in-PD user first",
+			input:  []string{"user_a", "user_b", "user_c", "user_d", "user_e", "user_f", "user_g"},
+			cursor: 1,
+			want:   []string{"user_b", "user_c", "user_d", "user_e", "user_f", "user_g", "user_a"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			input := make([]pagerduty.UserReference, len(tc.input))
+			for i, id := range tc.input {
+				input[i] = user(id)
+			}
+
+			// Snapshot the input so we can prove the helper never mutates it.
+			inputSnapshot := append([]pagerduty.UserReference{}, input...)
+
+			got := rotateUsersForward(input, tc.cursor)
+
+			if !reflect.DeepEqual(ids(got), tc.want) {
+				t.Errorf("rotated order: got %v, want %v", ids(got), tc.want)
+			}
+			if !reflect.DeepEqual(input, inputSnapshot) {
+				t.Errorf("input was mutated: got %v, want %v", ids(input), ids(inputSnapshot))
 			}
 		})
 	}

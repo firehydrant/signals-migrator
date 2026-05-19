@@ -455,11 +455,7 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	// ExtRotationMembers
 	// Add only the users specifically assigned to this schedule layer.
 	// Team members who aren't in the layer will still be on the team but won't be in this rotation.
-	users := layer.Users
-	if n := len(users); n > 0 && cursorOffset > 0 {
-		cursor := cursorOffset % n
-		users = append(append([]pagerduty.UserReference{}, layer.Users[cursor:]...), layer.Users[:cursor]...)
-	}
+	users := rotateUsersForward(layer.Users, cursorOffset)
 	for i, user := range users {
 		if err := q.InsertExtRotationMember(ctx, store.InsertExtRotationMemberParams{
 			RotationID:  layer.ID,
@@ -531,6 +527,30 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	}
 
 	return nil
+}
+
+// rotateUsersForward returns users reordered so that users[cursor mod len(users)]
+// becomes the first element. Used to compensate for FireHydrant's empty-window
+// scheduler: rolling virtual_start forward by N cycles shifts FH's effective
+// cursor by N positions, so we pre-rotate the member list by the same amount
+// to keep PagerDuty's currently-on-call user at FireHydrant's index 0.
+//
+// Returns users unchanged when cursor is non-positive, when the list has fewer
+// than two elements, or when cursor mod len(users) is 0. Otherwise allocates a
+// fresh slice — never mutates the input.
+func rotateUsersForward(users []pagerduty.UserReference, cursor int) []pagerduty.UserReference {
+	n := len(users)
+	if cursor <= 0 || n < 2 {
+		return users
+	}
+	c := cursor % n
+	if c == 0 {
+		return users
+	}
+	rotated := make([]pagerduty.UserReference, n)
+	copy(rotated, users[c:])
+	copy(rotated[n-c:], users[:c])
+	return rotated
 }
 
 // rollVirtualStartForward advances virtualStart by whole turn-length cycles
