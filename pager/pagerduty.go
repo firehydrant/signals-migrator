@@ -429,15 +429,19 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 		rotationParams.Strategy = "custom"
 		rotationParams.ShiftDuration = fmt.Sprintf("PT%dS", layer.RotationTurnLengthSeconds)
 	}
+	cursorOffset := 0
 	virtualStart, err := time.Parse(time.RFC3339, layer.RotationVirtualStart)
 	if err == nil {
 		rotationParams.HandoffTime = virtualStart.Format(time.TimeOnly)
 		rotationParams.HandoffDay = strings.ToLower(virtualStart.Weekday().String())
-		// FireHydrant rejects rotation start_time older than 1 month. Roll
-		// virtual_start forward in whole rotation cycles so the anchor lands
-		// inside that window while preserving rotation phase — whoever PD has
-		// on call now will still be on call after rollforward.
-		rolled := rollVirtualStartForward(virtualStart, turn, time.Now())
+		// FireHydrant's empty-window scheduler advances time without rotating
+		// the cursor when a cycle has no generatable shifts (e.g. when
+		// virtual_start lies in the past). Roll virtual_start forward to the
+		// most recent cycle boundary at-or-before now, and capture the number
+		// of cycles advanced — we use it below to rotate the member list so
+		// PagerDuty's currently-on-call user lands at index 0 in FireHydrant.
+		var rolled time.Time
+		rolled, cursorOffset = rollVirtualStartForward(virtualStart, turn, time.Now())
 		rotationParams.StartTime = rolled.Format(time.RFC3339)
 	} else {
 		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
@@ -451,9 +455,12 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	// ExtRotationMembers
 	// Add only the users specifically assigned to this schedule layer.
 	// Team members who aren't in the layer will still be on the team but won't be in this rotation.
-	for i, user := range layer.Users {
-		// Store the order of members as they appear in the API response
-		// This preserves the exact order from PagerDuty
+	users := layer.Users
+	if n := len(users); n > 0 && cursorOffset > 0 {
+		cursor := cursorOffset % n
+		users = append(append([]pagerduty.UserReference{}, layer.Users[cursor:]...), layer.Users[:cursor]...)
+	}
+	for i, user := range users {
 		if err := q.InsertExtRotationMember(ctx, store.InsertExtRotationMemberParams{
 			RotationID:  layer.ID,
 			UserID:      user.User.ID,
@@ -526,29 +533,26 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 	return nil
 }
 
-// fhStartTimeWindow is the maximum age we'll allow a rolled virtual_start to
-// have. FireHydrant rejects rotation start_time older than 30 days; we
-// deliberately stop 5 days short of that limit so a TF generated today still
-// applies cleanly if the customer waits a few days before running
-// `terraform apply`.
-const fhStartTimeWindow = 25 * 24 * time.Hour
-
 // rollVirtualStartForward advances virtualStart by whole turn-length cycles
-// until it sits within FireHydrant's start_time acceptance window. Because the
-// step is the rotation's own period, the rotation phase (which user is on call
-// now) is preserved. Returns virtualStart unchanged when turn is non-positive
-// or when virtualStart is already inside the window.
-func rollVirtualStartForward(virtualStart time.Time, turn time.Duration, now time.Time) time.Time {
-	if turn <= 0 {
-		return virtualStart
+// to land on the most recent cycle boundary at-or-before now, and returns the
+// number of cycles advanced. Callers must reorder the layer's member list by
+// that offset so PagerDuty's currently-on-call user lands at index 0 in
+// FireHydrant — otherwise FireHydrant's empty-window scheduler will leave the
+// cursor on the original index 0 and the rotation will drift by `offset`
+// positions relative to PagerDuty.
+//
+// Returns (virtualStart, 0) when turn is non-positive or virtualStart is not
+// before now (the rotation either has no defined cycle or hasn't started yet).
+func rollVirtualStartForward(virtualStart time.Time, turn time.Duration, now time.Time) (time.Time, int) {
+	if turn <= 0 || !virtualStart.Before(now) {
+		return virtualStart, 0
 	}
-	cutoff := now.Add(-fhStartTimeWindow)
-	if !virtualStart.Before(cutoff) {
-		return virtualStart
+	elapsed := now.Sub(virtualStart)
+	cycles := int(elapsed / turn)
+	if cycles == 0 {
+		return virtualStart, 0
 	}
-	gap := cutoff.Sub(virtualStart)
-	steps := int64(gap/turn) + 1
-	return virtualStart.Add(time.Duration(steps) * turn)
+	return virtualStart.Add(time.Duration(cycles) * turn), cycles
 }
 
 func (p *PagerDuty) LoadEscalationPolicies(ctx context.Context) error {
