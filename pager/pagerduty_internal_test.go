@@ -172,10 +172,6 @@ func TestRotateUsersForward(t *testing.T) {
 			want:   []string{"b", "a"},
 		},
 		{
-			// Mirrors the production scenario this PR exists to fix: a PagerDuty
-			// weekly layer with seven users whose virtual_start is one full
-			// cycle in the past. The cursor offset of 1 must put the
-			// second-in-PD-order user at index 0 in the emitted FH rotation.
 			name:   "weekly layer with seven users and cursor of one puts second-in-PD user first",
 			input:  []string{"user_a", "user_b", "user_c", "user_d", "user_e", "user_f", "user_g"},
 			cursor: 1,
