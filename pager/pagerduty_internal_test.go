@@ -23,55 +23,68 @@ func TestRollVirtualStartForward(t *testing.T) {
 		name         string
 		virtualStart string
 		turn         time.Duration
-		want         string
+		wantStart    string
+		wantOffset   int
 	}{
 		{
-			name:         "already within window leaves untouched",
-			virtualStart: "2026-04-28T09:30:00-07:00",
+			name:         "less than one turn elapsed leaves anchor and cursor untouched",
+			virtualStart: "2026-05-08T09:30:00-07:00",
 			turn:         day,
-			want:         "2026-04-28T09:30:00-07:00",
+			wantStart:    "2026-05-08T09:30:00-07:00",
+			wantOffset:   0,
 		},
 		{
-			name:         "weekly rotation rolls forward to within window preserving weekday",
+			name:         "weekly rotation rolls one cycle forward when virtual_start is 10 days old",
+			virtualStart: "2026-04-28T09:30:00-07:00",
+			turn:         week,
+			wantStart:    "2026-05-05T09:30:00-07:00",
+			wantOffset:   1,
+		},
+		{
+			name:         "weekly rotation rolls multiple years forward preserving weekday",
 			virtualStart: "2023-06-02T14:00:00-07:00", // Friday
 			turn:         week,
-			want:         "2026-04-17T14:00:00-07:00", // first Friday at-or-after cutoff
+			wantStart:    "2026-05-01T14:00:00-07:00", // most recent Friday cycle boundary at-or-before now
+			wantOffset:   152,
 		},
 		{
-			name:         "daily rotation rolls forward by days",
+			name:         "daily rotation rolls to most recent daily anchor",
 			virtualStart: "2025-02-10T03:00:00-08:00",
 			turn:         day,
-			want:         "2026-04-14T03:00:00-08:00", // first daily anchor at-or-after cutoff
+			wantStart:    "2026-05-08T03:00:00-08:00",
+			wantOffset:   452,
 		},
 		{
 			name:         "future virtual_start untouched",
 			virtualStart: "2026-06-01T00:00:00-07:00",
 			turn:         day,
-			want:         "2026-06-01T00:00:00-07:00",
+			wantStart:    "2026-06-01T00:00:00-07:00",
+			wantOffset:   0,
 		},
 		{
 			name:         "zero turn returns input unchanged",
 			virtualStart: "2020-01-01T00:00:00Z",
 			turn:         0,
-			want:         "2020-01-01T00:00:00Z",
+			wantStart:    "2020-01-01T00:00:00Z",
+			wantOffset:   0,
 		},
 		{
-			name:         "monthly turn jumps past the cutoff in a single step",
+			name:         "monthly turn rolls forward in 30-day steps",
 			virtualStart: "2025-02-10T03:00:00-08:00",
 			turn:         30 * day,
-			want:         "2026-05-06T03:00:00-08:00",
+			wantStart:    "2026-05-06T03:00:00-08:00",
+			wantOffset:   15,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := rollVirtualStartForward(mustParse(tc.virtualStart), tc.turn, now)
-			if !got.Equal(mustParse(tc.want)) {
-				t.Fatalf("got %s, want %s", got.Format(time.RFC3339), tc.want)
+			gotStart, gotOffset := rollVirtualStartForward(mustParse(tc.virtualStart), tc.turn, now)
+			if !gotStart.Equal(mustParse(tc.wantStart)) {
+				t.Errorf("start: got %s, want %s", gotStart.Format(time.RFC3339), tc.wantStart)
 			}
-			cutoff := now.Add(-fhStartTimeWindow)
-			if tc.turn > 0 && got.Before(cutoff) && !got.Equal(mustParse(tc.virtualStart)) {
-				t.Fatalf("rolled value %s is still before cutoff %s", got, cutoff)
+			if gotOffset != tc.wantOffset {
+				t.Errorf("offset: got %d, want %d", gotOffset, tc.wantOffset)
 			}
 		})
 	}
