@@ -38,7 +38,7 @@ func Write(w io.Writer, skips []store.ListRotationMemberSkipsRow) error {
 	fmt.Fprintln(w, "==========================================")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "The following schedules will NOT have 100% member coverage because")
-	fmt.Fprintln(w, "one or more PagerDuty users are not matched to a FireHydrant user.")
+	fmt.Fprintln(w, "one or more users are not matched to a FireHydrant user.")
 	fmt.Fprintln(w)
 
 	for _, k := range order {
@@ -49,7 +49,7 @@ func Write(w io.Writer, skips []store.ListRotationMemberSkipsRow) error {
 			if id == "" {
 				id = s.UserID
 			}
-			fmt.Fprintf(w, "      - %s (PD ID: %s) — %s\n", id, s.UserID, s.Reason)
+			fmt.Fprintf(w, "      - %s (ID: %s) — %s\n", id, s.UserID, s.Reason)
 		}
 		fmt.Fprintln(w)
 	}
