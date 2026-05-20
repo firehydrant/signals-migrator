@@ -288,7 +288,23 @@ func TestPagerDuty(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error listing rotation member skips: %s", err)
 		}
-		assertJSON(t, skips)
+
+		if len(skips) != 1 {
+			t.Fatalf("expected 1 skip record, got %d", len(skips))
+		}
+		skip := skips[0]
+		if skip.UserID != "P1VTA5W" {
+			t.Errorf("skip.UserID: expected %q, got %q", "P1VTA5W", skip.UserID)
+		}
+		if skip.RotationID != "P3BRVNT" {
+			t.Errorf("skip.RotationID: expected %q, got %q", "P3BRVNT", skip.RotationID)
+		}
+		if skip.ScheduleName != "CS-on-call" {
+			t.Errorf("skip.ScheduleName: expected %q, got %q", "CS-on-call", skip.ScheduleName)
+		}
+		if skip.Reason != "missing_fh_user" {
+			t.Errorf("skip.Reason: expected %q, got %q", "missing_fh_user", skip.Reason)
+		}
 	})
 
 	t.Run("LoadSchedulesDailyRestrictionCrossingMidnight", func(t *testing.T) {
