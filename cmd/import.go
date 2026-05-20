@@ -42,6 +42,11 @@ var importFlags = []cli.Flag{
 		EnvVars: []string{"OUTPUT_DIR"},
 		Value:   "./output",
 	},
+	&cli.StringFlag{
+		Name:    "diagnostics",
+		Usage:   "Write diagnostic report to this file path instead of stdout",
+		EnvVars: []string{"DIAGNOSTICS_FILE"},
+	},
 }
 
 var ImportCommand = &cli.Command{
@@ -99,7 +104,75 @@ func importAction(cliCtx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("initializing Terraform render space: %w", err)
 	}
-	return tfr.Write(ctx)
+	if err := tfr.Write(ctx); err != nil {
+		return err
+	}
+	return printDiagnostics(ctx, cliCtx.String("diagnostics"))
+}
+
+func printDiagnostics(ctx context.Context, outputPath string) error {
+	skips, err := store.UseQueries(ctx).ListRotationMemberSkips(ctx)
+	if err != nil {
+		return fmt.Errorf("querying diagnostics: %w", err)
+	}
+	if len(skips) == 0 {
+		return nil
+	}
+
+	// Group skips by schedule name, then rotation name.
+	type rotKey struct{ schedule, rotation string }
+	grouped := make(map[rotKey][]store.ListRotationMemberSkipsRow)
+	var order []rotKey
+	seen := make(map[rotKey]bool)
+	for _, s := range skips {
+		k := rotKey{s.ScheduleName, s.RotationName}
+		if !seen[k] {
+			order = append(order, k)
+			seen[k] = true
+		}
+		grouped[k] = append(grouped[k], s)
+	}
+
+	// Count distinct affected schedules.
+	seenSchedules := make(map[string]bool)
+	for _, s := range skips {
+		seenSchedules[s.ScheduleName] = true
+	}
+
+	var b strings.Builder
+	b.WriteString("DIAGNOSTICS: Incomplete Schedule Coverage\n")
+	b.WriteString("==========================================\n\n")
+	b.WriteString("The following schedules will NOT have 100% member coverage because\n")
+	b.WriteString("one or more PagerDuty users are not matched to a FireHydrant user.\n\n")
+
+	for _, k := range order {
+		fmt.Fprintf(&b, "  Schedule: %q\n", k.schedule)
+		fmt.Fprintf(&b, "    Rotation: %q\n", k.rotation)
+		for _, s := range grouped[k] {
+			email := s.UserEmail
+			if email == "" {
+				email = s.UserID
+			}
+			fmt.Fprintf(&b, "      - %s (PD ID: %s) — missing FireHydrant user\n", email, s.UserID)
+		}
+		b.WriteString("\n")
+	}
+
+	fmt.Fprintf(&b, "%d schedule(s) affected, %d user(s) missing.\n", len(seenSchedules), len(skips))
+	b.WriteString("To fix: ensure these users exist in FireHydrant and re-run the migration.\n")
+
+	report := b.String()
+
+	if outputPath == "" {
+		console.Warnf("%s", report)
+		return nil
+	}
+
+	if err := os.WriteFile(outputPath, []byte(report), 0644); err != nil {
+		return fmt.Errorf("writing diagnostics file: %w", err)
+	}
+	console.Warnf("Diagnostic report written to %s\n", outputPath)
+	return nil
 }
 
 // Because the amount of escalation policies being queried can be large for some organizations,
