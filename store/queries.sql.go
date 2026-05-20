@@ -296,6 +296,28 @@ func (q *Queries) InsertExtRotationMember(ctx context.Context, arg InsertExtRota
 	return err
 }
 
+const insertExtRotationMemberSkip = `-- name: InsertExtRotationMemberSkip :exec
+INSERT INTO ext_rotation_member_skips (rotation_id, user_id, user_email, reason)
+VALUES (?, ?, ?, ?)
+`
+
+type InsertExtRotationMemberSkipParams struct {
+	RotationID string `json:"rotation_id"`
+	UserID     string `json:"user_id"`
+	UserEmail  string `json:"user_email"`
+	Reason     string `json:"reason"`
+}
+
+func (q *Queries) InsertExtRotationMemberSkip(ctx context.Context, arg InsertExtRotationMemberSkipParams) error {
+	_, err := q.db.ExecContext(ctx, insertExtRotationMemberSkip,
+		arg.RotationID,
+		arg.UserID,
+		arg.UserEmail,
+		arg.Reason,
+	)
+	return err
+}
+
 const insertExtRotationRestriction = `-- name: InsertExtRotationRestriction :exec
 INSERT INTO ext_rotation_restrictions (rotation_id, restriction_index, start_time, start_day, end_time, end_day)
 VALUES (?, ?, ?, ?, ?, ?)
@@ -1206,6 +1228,59 @@ func (q *Queries) ListNonGroupExtTeams(ctx context.Context) ([]ExtTeam, error) {
 			&i.IsGroup,
 			&i.ToImport,
 			&i.Annotations,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRotationMemberSkips = `-- name: ListRotationMemberSkips :many
+SELECT
+    s.rotation_id,
+    r.name        AS rotation_name,
+    sch.name      AS schedule_name,
+    s.user_id,
+    s.user_email,
+    s.reason
+FROM ext_rotation_member_skips s
+JOIN ext_rotations r      ON r.id  = s.rotation_id
+JOIN ext_schedules_v2 sch ON sch.id = r.schedule_id
+ORDER BY sch.name, r.name, s.user_email
+`
+
+type ListRotationMemberSkipsRow struct {
+	RotationID   string `json:"rotation_id"`
+	RotationName string `json:"rotation_name"`
+	ScheduleName string `json:"schedule_name"`
+	UserID       string `json:"user_id"`
+	UserEmail    string `json:"user_email"`
+	Reason       string `json:"reason"`
+}
+
+func (q *Queries) ListRotationMemberSkips(ctx context.Context) ([]ListRotationMemberSkipsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listRotationMemberSkips)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListRotationMemberSkipsRow
+	for rows.Next() {
+		var i ListRotationMemberSkipsRow
+		if err := rows.Scan(
+			&i.RotationID,
+			&i.RotationName,
+			&i.ScheduleName,
+			&i.UserID,
+			&i.UserEmail,
+			&i.Reason,
 		); err != nil {
 			return nil, err
 		}

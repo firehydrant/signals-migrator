@@ -203,3 +203,20 @@ SELECT * FROM ext_schedule_overrides WHERE schedule_id = ?;
 -- name: InsertExtScheduleOverride :exec
 INSERT INTO ext_schedule_overrides (id, schedule_id, username, start_time, end_time)
 VALUES (?, ?, ?, ?, ?);
+
+-- name: InsertExtRotationMemberSkip :exec
+INSERT INTO ext_rotation_member_skips (rotation_id, user_id, user_email, reason)
+VALUES (?, ?, ?, ?);
+
+-- name: ListRotationMemberSkips :many
+SELECT
+    s.rotation_id,
+    r.name        AS rotation_name,
+    sch.name      AS schedule_name,
+    s.user_id,
+    s.user_email,
+    s.reason
+FROM ext_rotation_member_skips s
+JOIN ext_rotations r      ON r.id  = s.rotation_id
+JOIN ext_schedules_v2 sch ON sch.id = r.schedule_id
+ORDER BY sch.name, r.name, s.user_email;
