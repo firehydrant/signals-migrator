@@ -133,10 +133,12 @@ func printDiagnostics(ctx context.Context, outputPath string) error {
 		grouped[k] = append(grouped[k], s)
 	}
 
-	// Count distinct affected schedules.
+	// Count distinct affected schedules and distinct missing users.
 	seenSchedules := make(map[string]bool)
+	seenUsers := make(map[string]bool)
 	for _, s := range skips {
 		seenSchedules[s.ScheduleName] = true
+		seenUsers[s.UserID] = true
 	}
 
 	var b strings.Builder
@@ -153,12 +155,12 @@ func printDiagnostics(ctx context.Context, outputPath string) error {
 			if email == "" {
 				email = s.UserID
 			}
-			fmt.Fprintf(&b, "      - %s (PD ID: %s) — missing FireHydrant user\n", email, s.UserID)
+			fmt.Fprintf(&b, "      - %s (PD ID: %s) — %s\n", email, s.UserID, s.Reason)
 		}
 		b.WriteString("\n")
 	}
 
-	fmt.Fprintf(&b, "%d schedule(s) affected, %d user(s) missing.\n", len(seenSchedules), len(skips))
+	fmt.Fprintf(&b, "%d schedule(s) affected, %d user(s) missing.\n", len(seenSchedules), len(seenUsers))
 	b.WriteString("To fix: ensure these users exist in FireHydrant and re-run the migration.\n")
 
 	report := b.String()
