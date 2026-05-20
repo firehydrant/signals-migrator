@@ -1,6 +1,10 @@
 package console
 
-import "github.com/fatih/color"
+import (
+	"io"
+
+	"github.com/fatih/color"
+)
 
 var (
 	Successf = color.New(color.FgHiGreen).Add(color.Bold).PrintfFunc()
@@ -8,6 +12,18 @@ var (
 	Errorf   = color.New(color.FgHiRed).Add(color.Underline).PrintfFunc()
 	Warnf    = color.New(color.FgHiYellow).Add(color.Bold).PrintfFunc()
 )
+
+var warnColor = color.New(color.FgHiYellow).Add(color.Bold)
+
+// WarnWriter returns an io.Writer that writes with warning styling (yellow bold).
+func WarnWriter() io.Writer { return warnWriter{} }
+
+type warnWriter struct{}
+
+func (warnWriter) Write(p []byte) (int, error) {
+	warnColor.Printf("%s", p)
+	return len(p), nil
+}
 
 func PadStrings[T any](elems []T, intFn func(T) int) int {
 	max := 0

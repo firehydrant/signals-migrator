@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/firehydrant/signals-migrator/console"
+	"github.com/firehydrant/signals-migrator/diagnostics"
 	"github.com/firehydrant/signals-migrator/internal/firehydrant"
 	"github.com/firehydrant/signals-migrator/pager"
 	"github.com/firehydrant/signals-migrator/store"
@@ -115,63 +116,19 @@ func printDiagnostics(ctx context.Context, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("querying diagnostics: %w", err)
 	}
-	if len(skips) == 0 {
-		return nil
-	}
-
-	// Group skips by schedule name, then rotation name.
-	type rotKey struct{ schedule, rotation string }
-	grouped := make(map[rotKey][]store.ListRotationMemberSkipsRow)
-	var order []rotKey
-	seen := make(map[rotKey]bool)
-	for _, s := range skips {
-		k := rotKey{s.ScheduleName, s.RotationName}
-		if !seen[k] {
-			order = append(order, k)
-			seen[k] = true
-		}
-		grouped[k] = append(grouped[k], s)
-	}
-
-	// Count distinct affected schedules and distinct missing users.
-	seenSchedules := make(map[string]bool)
-	seenUsers := make(map[string]bool)
-	for _, s := range skips {
-		seenSchedules[s.ScheduleName] = true
-		seenUsers[s.UserID] = true
-	}
-
-	var b strings.Builder
-	b.WriteString("DIAGNOSTICS: Incomplete Schedule Coverage\n")
-	b.WriteString("==========================================\n\n")
-	b.WriteString("The following schedules will NOT have 100% member coverage because\n")
-	b.WriteString("one or more PagerDuty users are not matched to a FireHydrant user.\n\n")
-
-	for _, k := range order {
-		fmt.Fprintf(&b, "  Schedule: %q\n", k.schedule)
-		fmt.Fprintf(&b, "    Rotation: %q\n", k.rotation)
-		for _, s := range grouped[k] {
-			email := s.UserEmail
-			if email == "" {
-				email = s.UserID
-			}
-			fmt.Fprintf(&b, "      - %s (PD ID: %s) — %s\n", email, s.UserID, s.Reason)
-		}
-		b.WriteString("\n")
-	}
-
-	fmt.Fprintf(&b, "%d schedule(s) affected, %d user(s) missing.\n", len(seenSchedules), len(seenUsers))
-	b.WriteString("To fix: ensure these users exist in FireHydrant and re-run the migration.\n")
-
-	report := b.String()
 
 	if outputPath == "" {
-		console.Warnf("%s", report)
-		return nil
+		return diagnostics.Write(console.WarnWriter(), skips)
 	}
 
-	if err := os.WriteFile(outputPath, []byte(report), 0644); err != nil {
-		return fmt.Errorf("writing diagnostics file: %w", err)
+	f, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("creating diagnostics file: %w", err)
+	}
+	defer f.Close()
+
+	if err := diagnostics.Write(f, skips); err != nil {
+		return err
 	}
 	console.Warnf("Diagnostic report written to %s\n", outputPath)
 	return nil
