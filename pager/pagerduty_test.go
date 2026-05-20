@@ -265,6 +265,31 @@ func TestPagerDuty(t *testing.T) {
 		assertJSON(t, schedules)
 	})
 
+	t.Run("LoadSchedulesRecordsMemberSkips", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+		// Load users — P1VTA5W is absent from the fixture, so they'll be missing from ext_users
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		skips, err := store.UseQueries(ctx).ListRotationMemberSkips(ctx)
+		if err != nil {
+			t.Fatalf("error listing rotation member skips: %s", err)
+		}
+		assertJSON(t, skips)
+	})
+
 	t.Run("LoadSchedulesDailyRestrictionCrossingMidnight", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)
