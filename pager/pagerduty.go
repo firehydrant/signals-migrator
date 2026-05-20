@@ -464,6 +464,12 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 		}); err != nil {
 			if strings.Contains(err.Error(), "FOREIGN KEY constraint") {
 				console.Warnf("User %s not found for rotation %s, skipping...\n", user.User.ID, layer.ID)
+				_ = q.InsertExtRotationMemberSkip(ctx, store.InsertExtRotationMemberSkipParams{
+					RotationID: layer.ID,
+					UserID:     user.User.ID,
+					UserEmail:  "",
+					Reason:     "missing_fh_user",
+				})
 			} else if strings.Contains(err.Error(), "UNIQUE constraint") {
 				console.Warnf("User %s already exists for rotation %s, skipping duplicate...\n", user.User.ID, layer.ID)
 			} else {
