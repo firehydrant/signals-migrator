@@ -272,7 +272,8 @@ func TestPagerDuty(t *testing.T) {
 		if err := pd.UseTeamInterface("team"); err != nil {
 			t.Fatalf("error setting team interface: %s", err)
 		}
-		// Load users — P1VTA5W is absent from the fixture, so they'll be missing from ext_users
+		// Load users — P1VTA5W appears in the schedule layer fixture but is absent from
+		// users.json, so it won't be in ext_users and should produce a member skip.
 		if err := pd.LoadUsers(ctx); err != nil {
 			t.Fatalf("error loading users: %s", err)
 		}
