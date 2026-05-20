@@ -265,6 +265,48 @@ func TestPagerDuty(t *testing.T) {
 		assertJSON(t, schedules)
 	})
 
+	t.Run("LoadSchedulesRecordsMemberSkips", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+		// Load users — P1VTA5W appears in the schedule layer fixture but is absent from
+		// users.json, so it won't be in ext_users and should produce a member skip.
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
+		}
+
+		skips, err := store.UseQueries(ctx).ListRotationMemberSkips(ctx)
+		if err != nil {
+			t.Fatalf("error listing rotation member skips: %s", err)
+		}
+
+		if len(skips) != 1 {
+			t.Fatalf("expected 1 skip record, got %d", len(skips))
+		}
+		skip := skips[0]
+		if skip.UserID != "P1VTA5W" {
+			t.Errorf("skip.UserID: expected %q, got %q", "P1VTA5W", skip.UserID)
+		}
+		if skip.RotationID != "P3BRVNT" {
+			t.Errorf("skip.RotationID: expected %q, got %q", "P3BRVNT", skip.RotationID)
+		}
+		if skip.ScheduleName != "CS-on-call" {
+			t.Errorf("skip.ScheduleName: expected %q, got %q", "CS-on-call", skip.ScheduleName)
+		}
+		if skip.Reason != "missing_fh_user" {
+			t.Errorf("skip.Reason: expected %q, got %q", "missing_fh_user", skip.Reason)
+		}
+	})
+
 	t.Run("LoadSchedulesDailyRestrictionCrossingMidnight", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)

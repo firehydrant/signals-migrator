@@ -177,3 +177,11 @@ CREATE TABLE IF NOT EXISTS ext_escalation_policy_step_targets (
   PRIMARY KEY (escalation_policy_step_id, target_type, target_id),
   FOREIGN KEY (escalation_policy_step_id) REFERENCES ext_escalation_policy_steps(id) ON DELETE CASCADE
 ) STRICT;
+
+CREATE TABLE IF NOT EXISTS ext_rotation_member_skips (
+  rotation_id TEXT NOT NULL REFERENCES ext_rotations(id) ON DELETE CASCADE,
+  user_id     TEXT NOT NULL,
+  user_email  TEXT NOT NULL DEFAULT '',
+  reason      TEXT NOT NULL DEFAULT 'missing_fh_user',
+  PRIMARY KEY (rotation_id, user_id)
+) STRICT;

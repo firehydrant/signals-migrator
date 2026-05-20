@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/firehydrant/signals-migrator/console"
+	"github.com/firehydrant/signals-migrator/diagnostics"
 	"github.com/firehydrant/signals-migrator/internal/firehydrant"
 	"github.com/firehydrant/signals-migrator/pager"
 	"github.com/firehydrant/signals-migrator/store"
@@ -41,6 +42,11 @@ var importFlags = []cli.Flag{
 		Usage:   "The directory to write the Terraform configuration to",
 		EnvVars: []string{"OUTPUT_DIR"},
 		Value:   "./output",
+	},
+	&cli.StringFlag{
+		Name:    "diagnostics",
+		Usage:   "Write diagnostic report to this file path instead of stdout",
+		EnvVars: []string{"DIAGNOSTICS_FILE"},
 	},
 }
 
@@ -99,7 +105,33 @@ func importAction(cliCtx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("initializing Terraform render space: %w", err)
 	}
-	return tfr.Write(ctx)
+	if err := tfr.Write(ctx); err != nil {
+		return err
+	}
+	return printDiagnostics(ctx, cliCtx.String("diagnostics"))
+}
+
+func printDiagnostics(ctx context.Context, outputPath string) error {
+	skips, err := store.UseQueries(ctx).ListRotationMemberSkips(ctx)
+	if err != nil {
+		return fmt.Errorf("querying diagnostics: %w", err)
+	}
+
+	if outputPath == "" {
+		return diagnostics.Write(console.WarnWriter(), skips)
+	}
+
+	f, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("creating diagnostics file: %w", err)
+	}
+	defer f.Close()
+
+	if err := diagnostics.Write(f, skips); err != nil {
+		return err
+	}
+	console.Warnf("Diagnostic report written to %s\n", outputPath)
+	return nil
 }
 
 // Because the amount of escalation policies being queried can be large for some organizations,
