@@ -34,31 +34,48 @@ func Write(w io.Writer, skips []store.ListRotationMemberSkipsRow) error {
 		seenUsers[s.UserID] = true
 	}
 
-	fmt.Fprintln(w, "DIAGNOSTICS: Incomplete Schedule Coverage")
-	fmt.Fprintln(w, "==========================================")
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, "The following schedules will NOT have 100% member coverage because")
-	fmt.Fprintln(w, "one or more users are not matched to a FireHydrant user.")
-	fmt.Fprintln(w)
+	lines := []string{
+		"DIAGNOSTICS: Incomplete Schedule Coverage",
+		"==========================================",
+		"",
+		"The following schedules will NOT have 100% member coverage because",
+		"one or more users are not matched to a FireHydrant user.",
+		"",
+	}
+	for _, line := range lines {
+		if _, err := fmt.Fprintln(w, line); err != nil {
+			return err
+		}
+	}
 
 	var lastSchedule string
 	for _, k := range order {
 		if k.schedule != lastSchedule {
-			fmt.Fprintf(w, "  Schedule: %q\n", k.schedule)
+			if _, err := fmt.Fprintf(w, "  Schedule: %q\n", k.schedule); err != nil {
+				return err
+			}
 			lastSchedule = k.schedule
 		}
-		fmt.Fprintf(w, "    Rotation: %q\n", k.rotation)
+		if _, err := fmt.Fprintf(w, "    Rotation: %q\n", k.rotation); err != nil {
+			return err
+		}
 		for _, s := range grouped[k] {
 			id := s.UserEmail
 			if id == "" {
 				id = s.UserID
 			}
-			fmt.Fprintf(w, "      - %s (ID: %s) — %s\n", id, s.UserID, s.Reason)
+			if _, err := fmt.Fprintf(w, "      - %s (ID: %s) — %s\n", id, s.UserID, s.Reason); err != nil {
+				return err
+			}
 		}
-		fmt.Fprintln(w)
+		if _, err := fmt.Fprintln(w); err != nil {
+			return err
+		}
 	}
 
-	fmt.Fprintf(w, "%d schedule(s) affected, %d user(s) missing.\n", len(seenSchedules), len(seenUsers))
-	fmt.Fprintln(w, "To fix: ensure these users exist in FireHydrant and re-run the migration.")
-	return nil
+	if _, err := fmt.Fprintf(w, "%d schedule(s) affected, %d user(s) missing.\n", len(seenSchedules), len(seenUsers)); err != nil {
+		return err
+	}
+	_, err := fmt.Fprintln(w, "To fix: ensure these users exist in FireHydrant and re-run the migration.")
+	return err
 }

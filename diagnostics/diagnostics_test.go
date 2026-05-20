@@ -1,12 +1,18 @@
 package diagnostics_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
 	"github.com/firehydrant/signals-migrator/diagnostics"
 	"github.com/firehydrant/signals-migrator/store"
 )
+
+// errWriter is an io.Writer that always returns an error.
+type errWriter struct{ err error }
+
+func (e errWriter) Write(_ []byte) (int, error) { return 0, e.err }
 
 func TestWrite_NoSkips(t *testing.T) {
 	var b strings.Builder
@@ -116,6 +122,59 @@ func TestWrite_RotationGroupingPreservesOrder(t *testing.T) {
 		t.Errorf(`expected Schedule: "Alpha" to appear once, got %d times`, count)
 	}
 	assertContains(t, out, "1 schedule(s) affected, 3 user(s) missing.")
+}
+
+func TestWrite_WriterError(t *testing.T) {
+	sentinel := errors.New("disk full")
+	skips := []store.ListRotationMemberSkipsRow{
+		{ScheduleName: "S", RotationName: "R", UserID: "P1", Reason: "missing_fh_user"},
+	}
+	err := diagnostics.Write(errWriter{sentinel}, skips)
+	if !errors.Is(err, sentinel) {
+		t.Errorf("expected writer error to be propagated, got: %v", err)
+	}
+}
+
+func TestWrite_SameUserInMultipleRotations(t *testing.T) {
+	// PA is skipped in two different rotations across two schedules.
+	// They should appear in the report twice (once per rotation) but count as 1 missing user.
+	skips := []store.ListRotationMemberSkipsRow{
+		{ScheduleName: "Infra", RotationName: "Primary", UserID: "PA", UserEmail: "a@example.com", Reason: "missing_fh_user"},
+		{ScheduleName: "Platform", RotationName: "Primary", UserID: "PA", UserEmail: "a@example.com", Reason: "missing_fh_user"},
+	}
+
+	var b strings.Builder
+	if err := diagnostics.Write(&b, skips); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	out := b.String()
+	assertContains(t, out, "2 schedule(s) affected, 1 user(s) missing.")
+	if count := strings.Count(out, "a@example.com"); count != 2 {
+		t.Errorf("expected user to appear in report twice (once per rotation), got %d times", count)
+	}
+}
+
+func TestWrite_DuplicateSkipInSameRotation(t *testing.T) {
+	// The DB PRIMARY KEY prevents this at the store layer, but Write accepts a plain slice.
+	// Duplicates should not inflate the user count or collapse the lines.
+	skips := []store.ListRotationMemberSkipsRow{
+		{ScheduleName: "S", RotationName: "R", UserID: "PA", UserEmail: "a@example.com", Reason: "missing_fh_user"},
+		{ScheduleName: "S", RotationName: "R", UserID: "PA", UserEmail: "a@example.com", Reason: "missing_fh_user"},
+	}
+
+	var b strings.Builder
+	if err := diagnostics.Write(&b, skips); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	out := b.String()
+	// Distinct user count should be 1, not 2.
+	assertContains(t, out, "1 schedule(s) affected, 1 user(s) missing.")
+	// Both lines still appear (Write doesn't deduplicate rows, the DB constraint does).
+	if count := strings.Count(out, "a@example.com"); count != 2 {
+		t.Errorf("expected duplicate rows to appear as-is in report, got %d lines", count)
+	}
 }
 
 func assertContains(t *testing.T, output, substr string) {
