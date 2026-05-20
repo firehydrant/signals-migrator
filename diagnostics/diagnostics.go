@@ -41,8 +41,12 @@ func Write(w io.Writer, skips []store.ListRotationMemberSkipsRow) error {
 	fmt.Fprintln(w, "one or more users are not matched to a FireHydrant user.")
 	fmt.Fprintln(w)
 
+	var lastSchedule string
 	for _, k := range order {
-		fmt.Fprintf(w, "  Schedule: %q\n", k.schedule)
+		if k.schedule != lastSchedule {
+			fmt.Fprintf(w, "  Schedule: %q\n", k.schedule)
+			lastSchedule = k.schedule
+		}
 		fmt.Fprintf(w, "    Rotation: %q\n", k.rotation)
 		for _, s := range grouped[k] {
 			id := s.UserEmail
