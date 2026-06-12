@@ -23,11 +23,20 @@ func TestPagerDuty(t *testing.T) {
 	// Asserting the content of database is a little tricky. As such, we encode the data into JSON and compare it
 	// with the expected JSON in ./testdata/TestPagerDuty/[TestName].golden.json for each test case.
 
+	// Rotation anchoring (and therefore member order) depends on how many
+	// rotation cycles have elapsed between each fixture layer's virtual start
+	// and "now", so pin the clock — otherwise order expectations flip as real
+	// time advances past the fixtures. 2024-04-12 is shortly after the most
+	// recent fixture virtual starts (2024-04-05 / 2024-04-08), so those layers
+	// have completed zero cycles and keep their original member order.
+	pinnedNow := time.Date(2024, 4, 12, 0, 0, 0, 0, time.UTC)
+
 	// Avoid sharing setup code between tests to prevent test pollution in parallel execution.
 	setup := func(t *testing.T) (context.Context, pager.Pager) {
 		ctx := withTestDB(t)
 		ts := pagerProviderHttpServer(t)
 		pd := pager.NewPagerDutyWithURL("api-key-very-secret", ts.URL)
+		pd.SetNow(func() time.Time { return pinnedNow })
 		return ctx, pd
 	}
 
@@ -446,7 +455,7 @@ func TestPagerDuty(t *testing.T) {
 		if delta < 0 || delta%week != 0 {
 			t.Errorf("rolled value is not a non-negative multiple of one week from original: delta=%s", delta)
 		}
-		if cutoff := time.Now().Add(-26 * 24 * time.Hour); got.Before(cutoff) {
+		if cutoff := pinnedNow.Add(-26 * 24 * time.Hour); got.Before(cutoff) {
 			t.Errorf("rolled StartTime %s is older than 26 days, FireHydrant will reject it", r.StartTime)
 		}
 	})

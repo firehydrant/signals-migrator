@@ -17,6 +17,7 @@ import (
 
 type PagerDuty struct {
 	client *pagerduty.Client
+	now    func() time.Time
 }
 
 var (
@@ -28,13 +29,23 @@ var (
 func NewPagerDuty(apiKey string) *PagerDuty {
 	return &PagerDuty{
 		client: pagerduty.NewClient(apiKey),
+		now:    time.Now,
 	}
 }
 
 func NewPagerDutyWithURL(apiKey, url string) *PagerDuty {
 	return &PagerDuty{
 		client: pagerduty.NewClient(apiKey, pagerduty.WithAPIEndpoint(url)),
+		now:    time.Now,
 	}
+}
+
+// SetNow overrides the clock used to anchor rotations and filter ended
+// layers. Member ordering depends on how many rotation cycles have elapsed
+// between a layer's virtual start and now, so tests pin this to a fixed
+// instant to keep order expectations deterministic.
+func (p *PagerDuty) SetNow(now func() time.Time) {
+	p.now = now
 }
 
 func (p *PagerDuty) Kind() string {
@@ -375,7 +386,7 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 	// Create rotation records under the parent schedule (each layer becomes a rotation).
 	// PagerDuty keeps ended/replaced layers in the schedule_layers response with a non-null
 	// `end` timestamp. Skip those so they don't show up as extra FireHydrant rotations.
-	now := time.Now()
+	now := p.now()
 	order := 0
 	for _, layer := range schedule.ScheduleLayers {
 		if layer.End != "" {
@@ -441,7 +452,7 @@ func (p *PagerDuty) saveLayerToDB(ctx context.Context, scheduleID string, layer 
 		// of cycles advanced — we use it below to rotate the member list so
 		// PagerDuty's currently-on-call user lands at index 0 in FireHydrant.
 		var rolled time.Time
-		rolled, cursorOffset = rollVirtualStartForward(virtualStart, turn, time.Now())
+		rolled, cursorOffset = rollVirtualStartForward(virtualStart, turn, p.now())
 		rotationParams.StartTime = rolled.Format(time.RFC3339)
 	} else {
 		console.Errorf("unable to parse virtual start time '%v', assuming default values", layer.RotationVirtualStart)
