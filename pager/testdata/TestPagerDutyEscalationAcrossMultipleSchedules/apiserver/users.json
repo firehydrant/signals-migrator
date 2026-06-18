@@ -1,0 +1,16 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "users": [
+    {"id": "U5AVERY",  "name": "Avery",  "email": "avery@example.com",  "html_url": "https://example.pagerduty.com/users/U5AVERY",  "type": "user"},
+    {"id": "U5BLAKE",  "name": "Blake",  "email": "blake@example.com",  "html_url": "https://example.pagerduty.com/users/U5BLAKE",  "type": "user"},
+    {"id": "U5CAM",    "name": "Cam",    "email": "cam@example.com",    "html_url": "https://example.pagerduty.com/users/U5CAM",    "type": "user"},
+    {"id": "U5DREW",   "name": "Drew",   "email": "drew@example.com",   "html_url": "https://example.pagerduty.com/users/U5DREW",   "type": "user"},
+    {"id": "U5EVAN",   "name": "Evan",   "email": "evan@example.com",   "html_url": "https://example.pagerduty.com/users/U5EVAN",   "type": "user"},
+    {"id": "U5FREY",   "name": "Frey",   "email": "frey@example.com",   "html_url": "https://example.pagerduty.com/users/U5FREY",   "type": "user"},
+    {"id": "U5GALE",   "name": "Gale",   "email": "gale@example.com",   "html_url": "https://example.pagerduty.com/users/U5GALE",   "type": "user"},
+    {"id": "U5HARLAN", "name": "Harlan", "email": "harlan@example.com", "html_url": "https://example.pagerduty.com/users/U5HARLAN", "type": "user"}
+  ]
+}

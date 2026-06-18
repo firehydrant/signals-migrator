@@ -1,0 +1,49 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "schedules": [
+    {
+      "id": "S2CAD",
+      "name": "Two-Week Cadence",
+      "description": "Custom 14-day cadence with overnight coverage.",
+      "time_zone": "America/New_York",
+      "type": "schedule",
+      "summary": "Two-Week Cadence",
+      "self": "https://api.pagerduty.com/schedules/S2CAD",
+      "html_url": "https://example.pagerduty.com/schedules/S2CAD",
+      "teams": [
+        {"id": "T2CAD", "type": "team_reference", "summary": "Cadence Squad", "self": "https://api.pagerduty.com/teams/T2CAD", "html_url": "https://example.pagerduty.com/teams/T2CAD"}
+      ],
+      "schedule_layers": [
+        {
+          "id": "L2CAD",
+          "name": "Biweekly Overnight",
+          "end": null,
+          "start": "2024-03-15T22:00:00-04:00",
+          "rotation_turn_length_seconds": 1209600,
+          "rotation_virtual_start": "2024-03-15T22:00:00-04:00",
+          "restrictions": [
+            {"type": "daily_restriction", "start_time_of_day": "22:00:00", "duration_seconds": 32400}
+          ],
+          "users": [
+            {"user": {"id": "U2AVERY", "type": "user_reference"}},
+            {"user": {"id": "U2BLAKE", "type": "user_reference"}},
+            {"user": {"id": "U2CAM",   "type": "user_reference"}},
+            {"user": {"id": "U2DREW",  "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        }
+      ],
+      "users": [
+        {"id": "U2AVERY", "type": "user_reference"},
+        {"id": "U2BLAKE", "type": "user_reference"},
+        {"id": "U2CAM",   "type": "user_reference"},
+        {"id": "U2DREW",  "type": "user_reference"}
+      ],
+      "escalation_policies": []
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null,
+  "members": [
+    {"user": {"id": "U3AVERY", "type": "user_reference"}, "role": "manager"},
+    {"user": {"id": "U3BLAKE", "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U3CAM",   "type": "user_reference"}, "role": "responder"}
+  ]
+}

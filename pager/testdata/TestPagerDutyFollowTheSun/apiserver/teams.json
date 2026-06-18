@@ -1,0 +1,17 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "teams": [
+    {
+      "id": "T1FTS",
+      "name": "Platform On-Call",
+      "type": "team",
+      "summary": "Platform On-Call",
+      "self": "https://api.pagerduty.com/teams/T1FTS",
+      "html_url": "https://example.pagerduty.com/teams/T1FTS",
+      "default_role": "manager"
+    }
+  ]
+}

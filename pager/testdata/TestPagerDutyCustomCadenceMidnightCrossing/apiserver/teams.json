@@ -1,0 +1,17 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "teams": [
+    {
+      "id": "T2CAD",
+      "name": "Cadence Squad",
+      "type": "team",
+      "summary": "Cadence Squad",
+      "self": "https://api.pagerduty.com/teams/T2CAD",
+      "html_url": "https://example.pagerduty.com/teams/T2CAD",
+      "default_role": "manager"
+    }
+  ]
+}

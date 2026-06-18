@@ -1,0 +1,22 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "users": [
+    {"id": "U1AVERY",  "name": "Avery",  "email": "avery@example.com",  "html_url": "https://example.pagerduty.com/users/U1AVERY",  "type": "user"},
+    {"id": "U1BLAKE",  "name": "Blake",  "email": "blake@example.com",  "html_url": "https://example.pagerduty.com/users/U1BLAKE",  "type": "user"},
+    {"id": "U1CAM",    "name": "Cam",    "email": "cam@example.com",    "html_url": "https://example.pagerduty.com/users/U1CAM",    "type": "user"},
+    {"id": "U1DREW",   "name": "Drew",   "email": "drew@example.com",   "html_url": "https://example.pagerduty.com/users/U1DREW",   "type": "user"},
+    {"id": "U1EVAN",   "name": "Evan",   "email": "evan@example.com",   "html_url": "https://example.pagerduty.com/users/U1EVAN",   "type": "user"},
+    {"id": "U1FAYE",   "name": "Faye",   "email": "faye@example.com",   "html_url": "https://example.pagerduty.com/users/U1FAYE",   "type": "user"},
+    {"id": "U1GALE",   "name": "Gale",   "email": "gale@example.com",   "html_url": "https://example.pagerduty.com/users/U1GALE",   "type": "user"},
+    {"id": "U1HARLAN", "name": "Harlan", "email": "harlan@example.com", "html_url": "https://example.pagerduty.com/users/U1HARLAN", "type": "user"},
+    {"id": "U1INDRA",  "name": "Indra",  "email": "indra@example.com",  "html_url": "https://example.pagerduty.com/users/U1INDRA",  "type": "user"},
+    {"id": "U1JULES",  "name": "Jules",  "email": "jules@example.com",  "html_url": "https://example.pagerduty.com/users/U1JULES",  "type": "user"},
+    {"id": "U1KAI",    "name": "Kai",    "email": "kai@example.com",    "html_url": "https://example.pagerduty.com/users/U1KAI",    "type": "user"},
+    {"id": "U1LIU",    "name": "Liu",    "email": "liu@example.com",    "html_url": "https://example.pagerduty.com/users/U1LIU",    "type": "user"},
+    {"id": "U1MORGAN", "name": "Morgan", "email": "morgan@example.com", "html_url": "https://example.pagerduty.com/users/U1MORGAN", "type": "user"},
+    {"id": "U1NOOR",   "name": "Noor",   "email": "noor@example.com",   "html_url": "https://example.pagerduty.com/users/U1NOOR",   "type": "user"}
+  ]
+}

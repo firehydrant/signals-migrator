@@ -1,0 +1,53 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "schedules": [
+    {
+      "id": "S3WK",
+      "name": "All Weekdays Coverage",
+      "description": "",
+      "time_zone": "America/Los_Angeles",
+      "type": "schedule",
+      "summary": "All Weekdays Coverage",
+      "self": "https://api.pagerduty.com/schedules/S3WK",
+      "html_url": "https://example.pagerduty.com/schedules/S3WK",
+      "teams": [
+        {"id": "T3WK", "type": "team_reference", "summary": "Weekly Coverage", "self": "https://api.pagerduty.com/teams/T3WK", "html_url": "https://example.pagerduty.com/teams/T3WK"}
+      ],
+      "schedule_layers": [
+        {
+          "id": "L3WK",
+          "name": "Business Hours",
+          "end": null,
+          "start": "2026-01-04T09:00:00-08:00",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2026-01-04T09:00:00-08:00",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 0, "start_time_of_day": "09:00:00", "duration_seconds": 43200},
+            {"type": "weekly_restriction", "start_day_of_week": 1, "start_time_of_day": "09:00:00", "duration_seconds": 43200},
+            {"type": "weekly_restriction", "start_day_of_week": 2, "start_time_of_day": "09:00:00", "duration_seconds": 43200},
+            {"type": "weekly_restriction", "start_day_of_week": 3, "start_time_of_day": "09:00:00", "duration_seconds": 43200},
+            {"type": "weekly_restriction", "start_day_of_week": 4, "start_time_of_day": "09:00:00", "duration_seconds": 43200},
+            {"type": "weekly_restriction", "start_day_of_week": 5, "start_time_of_day": "09:00:00", "duration_seconds": 43200},
+            {"type": "weekly_restriction", "start_day_of_week": 6, "start_time_of_day": "09:00:00", "duration_seconds": 43200}
+          ],
+          "users": [
+            {"user": {"id": "U3AVERY", "type": "user_reference"}},
+            {"user": {"id": "U3BLAKE", "type": "user_reference"}},
+            {"user": {"id": "U3CAM",   "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        }
+      ],
+      "users": [
+        {"id": "U3AVERY", "type": "user_reference"},
+        {"id": "U3BLAKE", "type": "user_reference"},
+        {"id": "U3CAM",   "type": "user_reference"}
+      ],
+      "escalation_policies": []
+    }
+  ]
+}

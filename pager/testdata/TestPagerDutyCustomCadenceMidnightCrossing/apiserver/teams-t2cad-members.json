@@ -1,0 +1,12 @@
+{
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null,
+  "members": [
+    {"user": {"id": "U2AVERY", "type": "user_reference"}, "role": "manager"},
+    {"user": {"id": "U2BLAKE", "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U2CAM",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U2DREW",  "type": "user_reference"}, "role": "responder"}
+  ]
+}
