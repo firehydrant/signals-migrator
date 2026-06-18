@@ -34,5 +34,14 @@
     "team_id": "PV9JOXL",
     "source_system": "pagerduty",
     "source_schedule_id": "PGR96WL"
+  },
+  {
+    "id": "PSCHED01",
+    "name": "weekend-rotation",
+    "description": "",
+    "timezone": "America/Los_Angeles",
+    "team_id": "PTEAM01",
+    "source_system": "pagerduty",
+    "source_schedule_id": "PSCHED01"
   }
 ]

@@ -70,5 +70,17 @@
     "is_group": 0,
     "to_import": 0,
     "annotations": "[PagerDuty] Jack Team https://acme-inc.pagerduty.com/teams/PD2F80U"
+  },
+  {
+    "id": "PTEAM01",
+    "name": "acme-platform",
+    "slug": "acme-platform",
+    "fh_team_id": {
+      "String": "",
+      "Valid": false
+    },
+    "is_group": 0,
+    "to_import": 0,
+    "annotations": "[PagerDuty] acme-platform https://acme-inc.pagerduty.com/teams/PTEAM01"
   }
 ]

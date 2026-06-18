@@ -1,0 +1,78 @@
+{
+  "members": [
+    {
+      "user": {
+        "id": "PU01A",
+        "type": "user_reference",
+        "summary": "Avery Greene",
+        "self": "https://api.pagerduty.com/users/PU01A",
+        "html_url": "https://acme-inc.pagerduty.com/users/PU01A"
+      },
+      "role": "manager"
+    },
+    {
+      "user": {
+        "id": "PU01B",
+        "type": "user_reference",
+        "summary": "Lee Park",
+        "self": "https://api.pagerduty.com/users/PU01B",
+        "html_url": "https://acme-inc.pagerduty.com/users/PU01B"
+      },
+      "role": "responder"
+    },
+    {
+      "user": {
+        "id": "PU01C",
+        "type": "user_reference",
+        "summary": "Yuki Kato",
+        "self": "https://api.pagerduty.com/users/PU01C",
+        "html_url": "https://acme-inc.pagerduty.com/users/PU01C"
+      },
+      "role": "responder"
+    },
+    {
+      "user": {
+        "id": "PU01D",
+        "type": "user_reference",
+        "summary": "Kai Adler",
+        "self": "https://api.pagerduty.com/users/PU01D",
+        "html_url": "https://acme-inc.pagerduty.com/users/PU01D"
+      },
+      "role": "responder"
+    },
+    {
+      "user": {
+        "id": "PU01E",
+        "type": "user_reference",
+        "summary": "Kim Vance",
+        "self": "https://api.pagerduty.com/users/PU01E",
+        "html_url": "https://acme-inc.pagerduty.com/users/PU01E"
+      },
+      "role": "responder"
+    },
+    {
+      "user": {
+        "id": "PU01F",
+        "type": "user_reference",
+        "summary": "Dana Miles",
+        "self": "https://api.pagerduty.com/users/PU01F",
+        "html_url": "https://acme-inc.pagerduty.com/users/PU01F"
+      },
+      "role": "responder"
+    },
+    {
+      "user": {
+        "id": "PU01G",
+        "type": "user_reference",
+        "summary": "Uma Vega",
+        "self": "https://api.pagerduty.com/users/PU01G",
+        "html_url": "https://acme-inc.pagerduty.com/users/PU01G"
+      },
+      "role": "responder"
+    }
+  ],
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null
+}

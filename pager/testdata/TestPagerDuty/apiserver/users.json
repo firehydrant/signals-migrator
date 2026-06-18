@@ -318,6 +318,321 @@
       ],
       "time_zone": "America/Los_Angeles",
       "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/eeb09aa148a8931e622d2e46c3e1ed49.png?d=mm&r=PG",
+      "billed": true,
+      "color": "blue",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PCMU01A",
+          "self": "https://api.pagerduty.com/users/PU01A/contact_methods/PCMU01A",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "avery+pd@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PU01A",
+      "id": "PU01A",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Avery Greene",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PNRU01A",
+          "self": "https://api.pagerduty.com/users/PU01A/notification_rules/PNRU01A",
+          "summary": "0 minutes: channel PCMU01A",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "user",
+      "self": "https://api.pagerduty.com/users/PU01A",
+      "summary": "Avery Greene",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/d83b4a6efd73775da197d5c76a59bc86.png?d=mm&r=PG",
+      "billed": true,
+      "color": "green",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PCMU01B",
+          "self": "https://api.pagerduty.com/users/PU01B/contact_methods/PCMU01B",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "lee+pd@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PU01B",
+      "id": "PU01B",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Lee Park",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PNRU01B",
+          "self": "https://api.pagerduty.com/users/PU01B/notification_rules/PNRU01B",
+          "summary": "0 minutes: channel PCMU01B",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "user",
+      "self": "https://api.pagerduty.com/users/PU01B",
+      "summary": "Lee Park",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/b3e9e108cf4af05ca55154b171b0f9bf.png?d=mm&r=PG",
+      "billed": true,
+      "color": "purple",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PCMU01C",
+          "self": "https://api.pagerduty.com/users/PU01C/contact_methods/PCMU01C",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "yuki+pd@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PU01C",
+      "id": "PU01C",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Yuki Kato",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PNRU01C",
+          "self": "https://api.pagerduty.com/users/PU01C/notification_rules/PNRU01C",
+          "summary": "0 minutes: channel PCMU01C",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "user",
+      "self": "https://api.pagerduty.com/users/PU01C",
+      "summary": "Yuki Kato",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/a288b8ebce8ae6b302678728354094d5.png?d=mm&r=PG",
+      "billed": true,
+      "color": "orange-red",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PCMU01D",
+          "self": "https://api.pagerduty.com/users/PU01D/contact_methods/PCMU01D",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "kai+pd@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PU01D",
+      "id": "PU01D",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Kai Adler",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PNRU01D",
+          "self": "https://api.pagerduty.com/users/PU01D/notification_rules/PNRU01D",
+          "summary": "0 minutes: channel PCMU01D",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "user",
+      "self": "https://api.pagerduty.com/users/PU01D",
+      "summary": "Kai Adler",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/2910858549fdbb2e04d666900d9614a9.png?d=mm&r=PG",
+      "billed": true,
+      "color": "dark-orchid",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PCMU01E",
+          "self": "https://api.pagerduty.com/users/PU01E/contact_methods/PCMU01E",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "kim+pd@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PU01E",
+      "id": "PU01E",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Kim Vance",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PNRU01E",
+          "self": "https://api.pagerduty.com/users/PU01E/notification_rules/PNRU01E",
+          "summary": "0 minutes: channel PCMU01E",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "user",
+      "self": "https://api.pagerduty.com/users/PU01E",
+      "summary": "Kim Vance",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/60d5c83afe3b1435d80cecd9e8896932.png?d=mm&r=PG",
+      "billed": true,
+      "color": "red",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PCMU01F",
+          "self": "https://api.pagerduty.com/users/PU01F/contact_methods/PCMU01F",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "dana+pd@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PU01F",
+      "id": "PU01F",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Dana Miles",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PNRU01F",
+          "self": "https://api.pagerduty.com/users/PU01F/notification_rules/PNRU01F",
+          "summary": "0 minutes: channel PCMU01F",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "user",
+      "self": "https://api.pagerduty.com/users/PU01F",
+      "summary": "Dana Miles",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
+    },
+    {
+      "avatar_url": "https://secure.gravatar.com/avatar/eeb09aa148a8931e622d2e46c3e1ed49.png?d=mm&r=PG",
+      "billed": true,
+      "color": "teal",
+      "contact_methods": [
+        {
+          "html_url": null,
+          "id": "PCMU01G",
+          "self": "https://api.pagerduty.com/users/PU01G/contact_methods/PCMU01G",
+          "summary": "Default",
+          "type": "email_contact_method_reference"
+        }
+      ],
+      "coordinated_incidents": [],
+      "description": null,
+      "email": "uma+pd@example.com",
+      "html_url": "https://acme-inc.pagerduty.com/users/PU01G",
+      "id": "PU01G",
+      "invitation_sent": false,
+      "job_title": null,
+      "name": "Uma Vega",
+      "notification_rules": [
+        {
+          "html_url": null,
+          "id": "PNRU01G",
+          "self": "https://api.pagerduty.com/users/PU01G/notification_rules/PNRU01G",
+          "summary": "0 minutes: channel PCMU01G",
+          "type": "assignment_notification_rule_reference"
+        }
+      ],
+      "role": "user",
+      "self": "https://api.pagerduty.com/users/PU01G",
+      "summary": "Uma Vega",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "user"
     }
   ]
 }
