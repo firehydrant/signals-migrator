@@ -1,0 +1,88 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "schedules": [
+    {
+      "id": "S5PRI",
+      "name": "Primary On-Call",
+      "description": "",
+      "time_zone": "Etc/UTC",
+      "type": "schedule",
+      "summary": "Primary On-Call",
+      "self": "https://api.pagerduty.com/schedules/S5PRI",
+      "html_url": "https://example.pagerduty.com/schedules/S5PRI",
+      "teams": [
+        {"id": "T5EP", "type": "team_reference", "summary": "Escalation Quad", "self": "https://api.pagerduty.com/teams/T5EP", "html_url": "https://example.pagerduty.com/teams/T5EP"}
+      ],
+      "schedule_layers": [
+        {
+          "id": "L5PRI",
+          "name": "Primary Weekly",
+          "end": null,
+          "start": "2025-06-02T00:00:00Z",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2025-06-02T09:00:00Z",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 1, "start_time_of_day": "09:00:00", "duration_seconds": 28800}
+          ],
+          "users": [
+            {"user": {"id": "U5AVERY", "type": "user_reference"}},
+            {"user": {"id": "U5BLAKE", "type": "user_reference"}},
+            {"user": {"id": "U5CAM",   "type": "user_reference"}},
+            {"user": {"id": "U5DREW",  "type": "user_reference"}},
+            {"user": {"id": "U5EVAN",  "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        }
+      ],
+      "users": [
+        {"id": "U5AVERY", "type": "user_reference"},
+        {"id": "U5BLAKE", "type": "user_reference"},
+        {"id": "U5CAM",   "type": "user_reference"},
+        {"id": "U5DREW",  "type": "user_reference"},
+        {"id": "U5EVAN",  "type": "user_reference"}
+      ],
+      "escalation_policies": []
+    },
+    {
+      "id": "S5MGR",
+      "name": "Manager Escalation",
+      "description": "Monthly manager rotation.",
+      "time_zone": "Etc/UTC",
+      "type": "schedule",
+      "summary": "Manager Escalation",
+      "self": "https://api.pagerduty.com/schedules/S5MGR",
+      "html_url": "https://example.pagerduty.com/schedules/S5MGR",
+      "teams": [
+        {"id": "T5EP", "type": "team_reference", "summary": "Escalation Quad", "self": "https://api.pagerduty.com/teams/T5EP", "html_url": "https://example.pagerduty.com/teams/T5EP"}
+      ],
+      "schedule_layers": [
+        {
+          "id": "L5MGR",
+          "name": "Manager Monthly",
+          "end": null,
+          "start": "2025-06-01T00:00:00Z",
+          "rotation_turn_length_seconds": 2592000,
+          "rotation_virtual_start": "2025-06-01T00:00:00Z",
+          "restrictions": [],
+          "users": [
+            {"user": {"id": "U5AVERY", "type": "user_reference"}},
+            {"user": {"id": "U5FREY",  "type": "user_reference"}},
+            {"user": {"id": "U5GALE",  "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        }
+      ],
+      "users": [
+        {"id": "U5AVERY", "type": "user_reference"},
+        {"id": "U5FREY",  "type": "user_reference"},
+        {"id": "U5GALE",  "type": "user_reference"}
+      ],
+      "escalation_policies": []
+    }
+  ]
+}

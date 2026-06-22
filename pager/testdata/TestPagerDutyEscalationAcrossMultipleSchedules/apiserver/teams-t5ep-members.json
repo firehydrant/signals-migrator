@@ -1,0 +1,16 @@
+{
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null,
+  "members": [
+    {"user": {"id": "U5AVERY",  "type": "user_reference"}, "role": "manager"},
+    {"user": {"id": "U5BLAKE",  "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U5CAM",    "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U5DREW",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U5EVAN",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U5FREY",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U5GALE",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U5HARLAN", "type": "user_reference"}, "role": "responder"}
+  ]
+}

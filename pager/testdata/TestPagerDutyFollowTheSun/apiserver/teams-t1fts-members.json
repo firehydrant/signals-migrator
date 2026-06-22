@@ -1,0 +1,22 @@
+{
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null,
+  "members": [
+    {"user": {"id": "U1AVERY",  "type": "user_reference"}, "role": "manager"},
+    {"user": {"id": "U1BLAKE",  "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1CAM",    "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1DREW",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1EVAN",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1FAYE",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1GALE",   "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1HARLAN", "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1INDRA",  "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1JULES",  "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1KAI",    "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1LIU",    "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1MORGAN", "type": "user_reference"}, "role": "responder"},
+    {"user": {"id": "U1NOOR",   "type": "user_reference"}, "role": "responder"}
+  ]
+}

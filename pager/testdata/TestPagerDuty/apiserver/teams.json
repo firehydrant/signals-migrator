@@ -68,6 +68,17 @@
       "self": "https://api.pagerduty.com/teams/PD2F80U",
       "summary": "Jack Team",
       "type": "team"
+    },
+    {
+      "default_role": "manager",
+      "description": null,
+      "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+      "id": "PTEAM01",
+      "name": "acme-platform",
+      "parent": null,
+      "self": "https://api.pagerduty.com/teams/PTEAM01",
+      "summary": "acme-platform",
+      "type": "team"
     }
   ],
   "total": null

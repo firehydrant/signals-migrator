@@ -335,6 +335,168 @@
           "type": "user_reference"
         }
       ]
+    },
+    {
+      "description": null,
+      "escalation_policies": [],
+      "html_url": "https://acme-inc.pagerduty.com/schedules/PSCHED01",
+      "id": "PSCHED01",
+      "name": "weekend-rotation",
+      "schedule_layers": [
+        {
+          "end": null,
+          "id": "PROT01",
+          "name": "Layer 6",
+          "rendered_coverage_percentage": null,
+          "rendered_schedule_entries": [],
+          "restrictions": [
+            {
+              "duration_seconds": 45000,
+              "start_day_of_week": 5,
+              "start_time_of_day": "20:30:00",
+              "type": "weekly_restriction"
+            },
+            {
+              "duration_seconds": 43200,
+              "start_day_of_week": 6,
+              "start_time_of_day": "21:00:00",
+              "type": "weekly_restriction"
+            }
+          ],
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2026-06-02T12:00:00-07:00",
+          "start": "2026-06-02T12:00:00-07:00",
+          "users": [
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/PU01A",
+                "id": "PU01A",
+                "self": "https://api.pagerduty.com/users/PU01A",
+                "summary": "Avery Greene",
+                "type": "user_reference"
+              }
+            },
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/PU01B",
+                "id": "PU01B",
+                "self": "https://api.pagerduty.com/users/PU01B",
+                "summary": "Lee Park",
+                "type": "user_reference"
+              }
+            },
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/PU01C",
+                "id": "PU01C",
+                "self": "https://api.pagerduty.com/users/PU01C",
+                "summary": "Yuki Kato",
+                "type": "user_reference"
+              }
+            },
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/PU01D",
+                "id": "PU01D",
+                "self": "https://api.pagerduty.com/users/PU01D",
+                "summary": "Kai Adler",
+                "type": "user_reference"
+              }
+            },
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/PU01E",
+                "id": "PU01E",
+                "self": "https://api.pagerduty.com/users/PU01E",
+                "summary": "Kim Vance",
+                "type": "user_reference"
+              }
+            },
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/PU01F",
+                "id": "PU01F",
+                "self": "https://api.pagerduty.com/users/PU01F",
+                "summary": "Dana Miles",
+                "type": "user_reference"
+              }
+            },
+            {
+              "user": {
+                "html_url": "https://acme-inc.pagerduty.com/users/PU01G",
+                "id": "PU01G",
+                "self": "https://api.pagerduty.com/users/PU01G",
+                "summary": "Uma Vega",
+                "type": "user_reference"
+              }
+            }
+          ]
+        }
+      ],
+      "self": "https://api.pagerduty.com/schedules/PSCHED01",
+      "summary": "weekend-rotation",
+      "teams": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/teams/PTEAM01",
+          "id": "PTEAM01",
+          "self": "https://api.pagerduty.com/teams/PTEAM01",
+          "summary": "acme-platform",
+          "type": "team_reference"
+        }
+      ],
+      "time_zone": "America/Los_Angeles",
+      "type": "schedule",
+      "users": [
+        {
+          "html_url": "https://acme-inc.pagerduty.com/users/PU01A",
+          "id": "PU01A",
+          "self": "https://api.pagerduty.com/users/PU01A",
+          "summary": "Avery Greene",
+          "type": "user_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/users/PU01B",
+          "id": "PU01B",
+          "self": "https://api.pagerduty.com/users/PU01B",
+          "summary": "Lee Park",
+          "type": "user_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/users/PU01C",
+          "id": "PU01C",
+          "self": "https://api.pagerduty.com/users/PU01C",
+          "summary": "Yuki Kato",
+          "type": "user_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/users/PU01D",
+          "id": "PU01D",
+          "self": "https://api.pagerduty.com/users/PU01D",
+          "summary": "Kai Adler",
+          "type": "user_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/users/PU01E",
+          "id": "PU01E",
+          "self": "https://api.pagerduty.com/users/PU01E",
+          "summary": "Kim Vance",
+          "type": "user_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/users/PU01F",
+          "id": "PU01F",
+          "self": "https://api.pagerduty.com/users/PU01F",
+          "summary": "Dana Miles",
+          "type": "user_reference"
+        },
+        {
+          "html_url": "https://acme-inc.pagerduty.com/users/PU01G",
+          "id": "PU01G",
+          "self": "https://api.pagerduty.com/users/PU01G",
+          "summary": "Uma Vega",
+          "type": "user_reference"
+        }
+      ]
     }
   ],
   "total": null

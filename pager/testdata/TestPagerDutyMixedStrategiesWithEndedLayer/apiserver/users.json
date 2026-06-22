@@ -1,0 +1,13 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "users": [
+    {"id": "U4AVERY", "name": "Avery", "email": "avery@example.com", "html_url": "https://example.pagerduty.com/users/U4AVERY", "type": "user"},
+    {"id": "U4BLAKE", "name": "Blake", "email": "blake@example.com", "html_url": "https://example.pagerduty.com/users/U4BLAKE", "type": "user"},
+    {"id": "U4CAM",   "name": "Cam",   "email": "cam@example.com",   "html_url": "https://example.pagerduty.com/users/U4CAM",   "type": "user"},
+    {"id": "U4DREW",  "name": "Drew",  "email": "drew@example.com",  "html_url": "https://example.pagerduty.com/users/U4DREW",  "type": "user"},
+    {"id": "U4EVAN",  "name": "Evan",  "email": "evan@example.com",  "html_url": "https://example.pagerduty.com/users/U4EVAN",  "type": "user"}
+  ]
+}

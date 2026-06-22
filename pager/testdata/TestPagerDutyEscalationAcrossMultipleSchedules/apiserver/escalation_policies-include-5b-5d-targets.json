@@ -1,0 +1,45 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "escalation_policies": [
+    {
+      "id": "EP5",
+      "type": "escalation_policy",
+      "name": "Tiered Response",
+      "description": "Three-tier escalation across schedules and a backstop user.",
+      "summary": "Tiered Response",
+      "self": "https://api.pagerduty.com/escalation_policies/EP5",
+      "html_url": "https://example.pagerduty.com/escalation_policies/EP5",
+      "num_loops": 0,
+      "teams": [
+        {"id": "T5EP", "type": "team_reference", "summary": "Escalation Quad", "self": "https://api.pagerduty.com/teams/T5EP", "html_url": "https://example.pagerduty.com/teams/T5EP"}
+      ],
+      "services": [],
+      "escalation_rules": [
+        {
+          "id": "EP5S1",
+          "escalation_delay_in_minutes": 5,
+          "targets": [
+            {"id": "S5PRI", "type": "schedule_reference", "summary": "Primary On-Call", "self": "https://api.pagerduty.com/schedules/S5PRI", "html_url": "https://example.pagerduty.com/schedules/S5PRI"}
+          ]
+        },
+        {
+          "id": "EP5S2",
+          "escalation_delay_in_minutes": 10,
+          "targets": [
+            {"id": "S5MGR", "type": "schedule_reference", "summary": "Manager Escalation", "self": "https://api.pagerduty.com/schedules/S5MGR", "html_url": "https://example.pagerduty.com/schedules/S5MGR"}
+          ]
+        },
+        {
+          "id": "EP5S3",
+          "escalation_delay_in_minutes": 15,
+          "targets": [
+            {"id": "U5HARLAN", "type": "user_reference", "summary": "Harlan", "self": "https://api.pagerduty.com/users/U5HARLAN", "html_url": "https://example.pagerduty.com/users/U5HARLAN"}
+          ]
+        }
+      ]
+    }
+  ]
+}

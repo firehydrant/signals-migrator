@@ -1,0 +1,90 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "schedules": [
+    {
+      "id": "S4MIX",
+      "name": "Mixed Strategies Schedule",
+      "description": "",
+      "time_zone": "Etc/UTC",
+      "type": "schedule",
+      "summary": "Mixed Strategies Schedule",
+      "self": "https://api.pagerduty.com/schedules/S4MIX",
+      "html_url": "https://example.pagerduty.com/schedules/S4MIX",
+      "teams": [
+        {"id": "T4MIX", "type": "team_reference", "summary": "Mixed Strategies", "self": "https://api.pagerduty.com/teams/T4MIX", "html_url": "https://example.pagerduty.com/teams/T4MIX"}
+      ],
+      "schedule_layers": [
+        {
+          "id": "L4END",
+          "name": "Deprecated Layer",
+          "end": "2024-01-01T00:00:00Z",
+          "start": "2023-01-01T00:00:00Z",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2023-01-02T09:00:00Z",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 1, "start_time_of_day": "09:00:00", "duration_seconds": 28800}
+          ],
+          "users": [
+            {"user": {"id": "U4AVERY", "type": "user_reference"}},
+            {"user": {"id": "U4BLAKE", "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        },
+        {
+          "id": "L4PRIM",
+          "name": "Primary Business Hours",
+          "end": null,
+          "start": "2025-01-06T09:00:00Z",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2025-01-06T09:00:00Z",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 1, "start_time_of_day": "09:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 2, "start_time_of_day": "09:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 3, "start_time_of_day": "09:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 4, "start_time_of_day": "09:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 5, "start_time_of_day": "09:00:00", "duration_seconds": 28800}
+          ],
+          "users": [
+            {"user": {"id": "U4AVERY", "type": "user_reference"}},
+            {"user": {"id": "U4BLAKE", "type": "user_reference"}},
+            {"user": {"id": "U4CAM",   "type": "user_reference"}},
+            {"user": {"id": "U4DREW",  "type": "user_reference"}},
+            {"user": {"id": "U4EVAN",  "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        },
+        {
+          "id": "L4SEC",
+          "name": "After Hours",
+          "end": null,
+          "start": "2025-01-06T17:00:00Z",
+          "rotation_turn_length_seconds": 86400,
+          "rotation_virtual_start": "2025-01-06T17:00:00Z",
+          "restrictions": [
+            {"type": "daily_restriction", "start_time_of_day": "17:00:00", "duration_seconds": 50400}
+          ],
+          "users": [
+            {"user": {"id": "U4CAM",  "type": "user_reference"}},
+            {"user": {"id": "U4DREW", "type": "user_reference"}},
+            {"user": {"id": "U4EVAN", "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        }
+      ],
+      "users": [
+        {"id": "U4AVERY", "type": "user_reference"},
+        {"id": "U4BLAKE", "type": "user_reference"},
+        {"id": "U4CAM",   "type": "user_reference"},
+        {"id": "U4DREW",  "type": "user_reference"},
+        {"id": "U4EVAN",  "type": "user_reference"}
+      ],
+      "escalation_policies": []
+    }
+  ]
+}

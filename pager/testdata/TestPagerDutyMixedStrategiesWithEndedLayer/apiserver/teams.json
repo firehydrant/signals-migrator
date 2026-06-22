@@ -1,0 +1,17 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "teams": [
+    {
+      "id": "T4MIX",
+      "name": "Mixed Strategies",
+      "type": "team",
+      "summary": "Mixed Strategies",
+      "self": "https://api.pagerduty.com/teams/T4MIX",
+      "html_url": "https://example.pagerduty.com/teams/T4MIX",
+      "default_role": "manager"
+    }
+  ]
+}

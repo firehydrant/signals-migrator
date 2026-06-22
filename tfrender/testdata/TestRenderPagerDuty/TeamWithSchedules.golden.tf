@@ -88,7 +88,6 @@ resource "firehydrant_on_call_schedule" "aaaa_ipv6_migration_strategy_jen_primar
   rotation_description = "(Layer 2)"
   time_zone            = "America/Los_Angeles"
   start_time           = "2024-04-10T20:39:29-07:00"
-  # Note: Start time must be within 1 month of apply.
 
   member_ids = [data.firehydrant_user.kiran.id]
 
@@ -152,7 +151,6 @@ resource "firehydrant_rotation" "aaaa_ipv6_migration_strategy_jen_primary_layer_
   schedule_id = firehydrant_on_call_schedule.aaaa_ipv6_migration_strategy_jen_primary.id
   time_zone   = "America/Los_Angeles"
   start_time  = "2024-04-10T20:39:29-07:00"
-  # Note: Start time must be within 1 month of apply.
 
   members {
     user_id = data.firehydrant_user.local.id

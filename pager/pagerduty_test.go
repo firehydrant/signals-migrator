@@ -407,7 +407,7 @@ func TestPagerDuty(t *testing.T) {
 		}
 	})
 
-	t.Run("LoadSchedulesRollsVirtualStartIntoFireHydrantWindow", func(t *testing.T) {
+	t.Run("LoadSchedulesPreservesOriginalVirtualStart", func(t *testing.T) {
 		t.Parallel()
 		ctx, pd := setup(t)
 
@@ -424,39 +424,67 @@ func TestPagerDuty(t *testing.T) {
 			t.Fatalf("error loading schedules: %s", err)
 		}
 
-		// Jack's active layer PE2BA4Y has rotation_virtual_start 2023-06-02T14:00:00-07:00
-		// (a Friday) and a 1-week turn. FireHydrant rejects start_time older than 1 month,
-		// so the migrator rolls the anchor forward in whole 7-day cycles. The rolled value
-		// must (a) sit within ~1 month of now, (b) preserve weekday + time-of-day, and
-		// (c) differ from the original by an integer number of weeks.
 		r, err := store.UseQueries(ctx).GetExtRotation(ctx, "PE2BA4Y")
 		if err != nil {
 			t.Fatalf("error loading rotation PE2BA4Y: %s", err)
 		}
 
-		original, err := time.Parse(time.RFC3339, "2023-06-02T14:00:00-07:00")
-		if err != nil {
-			t.Fatalf("parsing original virtual_start: %s", err)
+		if want := "2023-06-02T14:00:00-07:00"; r.StartTime != want {
+			t.Errorf("StartTime: got %q, want %q (original virtual_start should pass through unchanged)", r.StartTime, want)
 		}
-		got, err := time.Parse(time.RFC3339, r.StartTime)
-		if err != nil {
-			t.Fatalf("parsing rolled StartTime %q: %s", r.StartTime, err)
+	})
+
+	t.Run("LoadSchedulesGoldenPathPreservesPagerDutyOrdering", func(t *testing.T) {
+		t.Parallel()
+		ctx, pd := setup(t)
+
+		if err := pd.UseTeamInterface("team"); err != nil {
+			t.Fatalf("error setting team interface: %s", err)
+		}
+		if err := pd.LoadUsers(ctx); err != nil {
+			t.Fatalf("error loading users: %s", err)
+		}
+		if err := pd.LoadTeams(ctx); err != nil {
+			t.Fatalf("error loading teams: %s", err)
+		}
+		if err := pd.LoadSchedules(ctx); err != nil {
+			t.Fatalf("error loading schedules: %s", err)
 		}
 
-		if got.Weekday() != original.Weekday() {
-			t.Errorf("weekday changed: original=%s rolled=%s", original.Weekday(), got.Weekday())
+		r, err := store.UseQueries(ctx).GetExtRotation(ctx, "PROT01")
+		if err != nil {
+			t.Fatalf("error loading rotation PROT01: %s", err)
 		}
-		if got.Hour() != original.Hour() || got.Minute() != original.Minute() || got.Second() != original.Second() {
-			t.Errorf("time-of-day changed: original=%s rolled=%s",
-				original.Format(time.TimeOnly), got.Format(time.TimeOnly))
+
+		if want := "2026-06-02T12:00:00-07:00"; r.StartTime != want {
+			t.Errorf("StartTime: got %q, want %q", r.StartTime, want)
 		}
-		delta := got.Sub(original)
-		week := 7 * 24 * time.Hour
-		if delta < 0 || delta%week != 0 {
-			t.Errorf("rolled value is not a non-negative multiple of one week from original: delta=%s", delta)
+		if want := "weekly"; r.Strategy != want {
+			t.Errorf("Strategy: got %q, want %q", r.Strategy, want)
 		}
-		if cutoff := pinnedNow.Add(-26 * 24 * time.Hour); got.Before(cutoff) {
-			t.Errorf("rolled StartTime %s is older than 26 days, FireHydrant will reject it", r.StartTime)
+		if want := "tuesday"; r.HandoffDay != want {
+			t.Errorf("HandoffDay: got %q, want %q", r.HandoffDay, want)
+		}
+		if want := "12:00:00"; r.HandoffTime != want {
+			t.Errorf("HandoffTime: got %q, want %q", r.HandoffTime, want)
+		}
+
+		members, err := store.UseQueries(ctx).ListExtRotationMembers(ctx, "PROT01")
+		if err != nil {
+			t.Fatalf("error loading rotation members: %s", err)
+		}
+
+		expectedOrder := []string{"PU01A", "PU01B", "PU01C", "PU01D", "PU01E", "PU01F", "PU01G"}
+		if len(members) != len(expectedOrder) {
+			t.Fatalf("rotation PROT01: expected %d members, got %d", len(expectedOrder), len(members))
+		}
+		for i, member := range members {
+			if member.UserID != expectedOrder[i] {
+				t.Errorf("rotation PROT01 member at position %d: expected %s, got %s", i, expectedOrder[i], member.UserID)
+			}
+			if member.MemberOrder != int64(i) {
+				t.Errorf("rotation PROT01 member at position %d: expected order %d, got %d", i, i, member.MemberOrder)
+			}
 		}
 	})
 

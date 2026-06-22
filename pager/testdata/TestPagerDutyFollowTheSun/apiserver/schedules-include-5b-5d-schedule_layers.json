@@ -1,0 +1,127 @@
+{
+  "limit": 25,
+  "more": false,
+  "offset": 0,
+  "total": null,
+  "schedules": [
+    {
+      "id": "S1FTS",
+      "name": "Follow-The-Sun Primary",
+      "description": "",
+      "time_zone": "Etc/UTC",
+      "type": "schedule",
+      "summary": "Follow-The-Sun Primary",
+      "self": "https://api.pagerduty.com/schedules/S1FTS",
+      "html_url": "https://example.pagerduty.com/schedules/S1FTS",
+      "teams": [
+        {"id": "T1FTS", "type": "team_reference", "summary": "Platform On-Call", "self": "https://api.pagerduty.com/teams/T1FTS", "html_url": "https://example.pagerduty.com/teams/T1FTS"}
+      ],
+      "schedule_layers": [
+        {
+          "id": "L1FTSA",
+          "name": "APAC",
+          "end": null,
+          "start": "2025-06-02T00:00:00Z",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2025-06-02T00:00:00Z",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 1, "start_time_of_day": "00:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 2, "start_time_of_day": "00:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 3, "start_time_of_day": "00:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 4, "start_time_of_day": "00:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 5, "start_time_of_day": "00:00:00", "duration_seconds": 28800}
+          ],
+          "users": [
+            {"user": {"id": "U1AVERY", "type": "user_reference"}},
+            {"user": {"id": "U1BLAKE", "type": "user_reference"}},
+            {"user": {"id": "U1CAM",   "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        },
+        {
+          "id": "L1FTSE",
+          "name": "EMEA",
+          "end": null,
+          "start": "2025-06-02T00:00:00Z",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2025-06-02T08:00:00Z",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 1, "start_time_of_day": "08:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 2, "start_time_of_day": "08:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 3, "start_time_of_day": "08:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 4, "start_time_of_day": "08:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 5, "start_time_of_day": "08:00:00", "duration_seconds": 28800}
+          ],
+          "users": [
+            {"user": {"id": "U1DREW", "type": "user_reference"}},
+            {"user": {"id": "U1EVAN", "type": "user_reference"}},
+            {"user": {"id": "U1FAYE", "type": "user_reference"}},
+            {"user": {"id": "U1GALE", "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        },
+        {
+          "id": "L1FTSW",
+          "name": "Americas",
+          "end": null,
+          "start": "2025-06-02T00:00:00Z",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2025-06-02T16:00:00Z",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 1, "start_time_of_day": "16:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 2, "start_time_of_day": "16:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 3, "start_time_of_day": "16:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 4, "start_time_of_day": "16:00:00", "duration_seconds": 28800},
+            {"type": "weekly_restriction", "start_day_of_week": 5, "start_time_of_day": "16:00:00", "duration_seconds": 28800}
+          ],
+          "users": [
+            {"user": {"id": "U1HARLAN", "type": "user_reference"}},
+            {"user": {"id": "U1INDRA",  "type": "user_reference"}},
+            {"user": {"id": "U1JULES",  "type": "user_reference"}},
+            {"user": {"id": "U1KAI",    "type": "user_reference"}},
+            {"user": {"id": "U1LIU",    "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        },
+        {
+          "id": "L1FTSX",
+          "name": "Weekend",
+          "end": null,
+          "start": "2025-06-02T00:00:00Z",
+          "rotation_turn_length_seconds": 604800,
+          "rotation_virtual_start": "2025-06-07T00:00:00Z",
+          "restrictions": [
+            {"type": "weekly_restriction", "start_day_of_week": 6, "start_time_of_day": "00:00:00", "duration_seconds": 86400},
+            {"type": "weekly_restriction", "start_day_of_week": 0, "start_time_of_day": "00:00:00", "duration_seconds": 86400}
+          ],
+          "users": [
+            {"user": {"id": "U1MORGAN", "type": "user_reference"}},
+            {"user": {"id": "U1NOOR",   "type": "user_reference"}}
+          ],
+          "rendered_schedule_entries": [],
+          "rendered_coverage_percentage": null
+        }
+      ],
+      "users": [
+        {"id": "U1AVERY",  "type": "user_reference"},
+        {"id": "U1BLAKE",  "type": "user_reference"},
+        {"id": "U1CAM",    "type": "user_reference"},
+        {"id": "U1DREW",   "type": "user_reference"},
+        {"id": "U1EVAN",   "type": "user_reference"},
+        {"id": "U1FAYE",   "type": "user_reference"},
+        {"id": "U1GALE",   "type": "user_reference"},
+        {"id": "U1HARLAN", "type": "user_reference"},
+        {"id": "U1INDRA",  "type": "user_reference"},
+        {"id": "U1JULES",  "type": "user_reference"},
+        {"id": "U1KAI",    "type": "user_reference"},
+        {"id": "U1LIU",    "type": "user_reference"},
+        {"id": "U1MORGAN", "type": "user_reference"},
+        {"id": "U1NOOR",   "type": "user_reference"}
+      ],
+      "escalation_policies": []
+    }
+  ]
+}
