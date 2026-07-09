@@ -383,12 +383,23 @@ func (p *PagerDuty) saveScheduleToDB(ctx context.Context, schedule pagerduty.Sch
 		return fmt.Errorf("saving schedule: %w", err)
 	}
 
+	// PagerDuty renders wall-clock fields (rotation_virtual_start, restriction
+	// start_time_of_day) in the requesting user's profile time zone, not the
+	// schedule's own. FireHydrant interprets those values in the schedule's
+	// declared time_zone, so re-fetch the schedule rendered in its own zone
+	// and build rotations from that response. Restriction times carry no
+	// offset, so this cannot be corrected after the fact.
+	detail, err := p.client.GetScheduleWithContext(ctx, schedule.ID, pagerduty.GetScheduleOptions{TimeZone: schedule.TimeZone})
+	if err != nil {
+		return fmt.Errorf("fetching schedule %s rendered in %q: %w", schedule.ID, schedule.TimeZone, err)
+	}
+
 	// Create rotation records under the parent schedule (each layer becomes a rotation).
 	// PagerDuty keeps ended/replaced layers in the schedule_layers response with a non-null
 	// `end` timestamp. Skip those so they don't show up as extra FireHydrant rotations.
 	now := p.now()
 	order := 0
-	for _, layer := range schedule.ScheduleLayers {
+	for _, layer := range detail.ScheduleLayers {
 		if layer.End != "" {
 			if end, err := time.Parse(time.RFC3339, layer.End); err == nil && end.Before(now) {
 				console.Warnf("Schedule layer %q (%s) ended at %s, skipping...\n", layer.Name, layer.ID, layer.End)

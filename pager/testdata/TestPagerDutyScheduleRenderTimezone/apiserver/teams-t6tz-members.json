@@ -1,0 +1,9 @@
+{
+  "limit": 100,
+  "offset": 0,
+  "more": false,
+  "total": null,
+  "members": [
+    {"user": {"id": "U6QUINN", "type": "user_reference"}, "role": "manager"}
+  ]
+}

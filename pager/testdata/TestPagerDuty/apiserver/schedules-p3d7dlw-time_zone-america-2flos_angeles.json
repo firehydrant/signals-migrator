@@ -1,0 +1,121 @@
+{
+  "schedule": {
+    "description": "",
+    "escalation_policies": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/escalation_policies/PYO56K0",
+        "id": "PYO56K0",
+        "self": "https://api.pagerduty.com/escalation_policies/PYO56K0",
+        "summary": "Jen",
+        "type": "escalation_policy_reference"
+      }
+    ],
+    "html_url": "https://acme-inc.pagerduty.com/schedules/P3D7DLW",
+    "id": "P3D7DLW",
+    "name": "Jen - primary",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "PC1DX4O",
+        "name": "Layer 2",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 36000,
+            "start_time_of_day": "17:00:00",
+            "type": "daily_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2024-04-08T16:00:00-07:00",
+        "start": "2024-04-08T16:11:41-07:00",
+        "users": [
+          {
+            "user": {
+              "html_url": "https://acme-inc.pagerduty.com/users/P8ZZ1ZB",
+              "id": "P8ZZ1ZB",
+              "self": "https://api.pagerduty.com/users/P8ZZ1ZB",
+              "summary": "Kiran",
+              "type": "user_reference"
+            }
+          }
+        ]
+      },
+      {
+        "end": null,
+        "id": "PSQ0VRL",
+        "name": "Layer 1",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 374400,
+            "start_day_of_week": 1,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2024-04-05T16:00:00-07:00",
+        "start": "2024-04-08T16:11:41-07:00",
+        "users": [
+          {
+            "user": {
+              "html_url": "https://acme-inc.pagerduty.com/users/PXI6XNI",
+              "id": "PXI6XNI",
+              "self": "https://api.pagerduty.com/users/PXI6XNI",
+              "summary": "Acme Engineering",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "html_url": "https://acme-inc.pagerduty.com/users/P2C9LBA",
+              "id": "P2C9LBA",
+              "self": "https://api.pagerduty.com/users/P2C9LBA",
+              "summary": "Wong",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/P3D7DLW",
+    "summary": "Jen - primary",
+    "teams": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/teams/P5PH8KY",
+        "id": "P5PH8KY",
+        "self": "https://api.pagerduty.com/teams/P5PH8KY",
+        "summary": "Page Responder Team",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "America/Los_Angeles",
+    "type": "schedule",
+    "users": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/users/PXI6XNI",
+        "id": "PXI6XNI",
+        "self": "https://api.pagerduty.com/users/PXI6XNI",
+        "summary": "Acme Engineering",
+        "type": "user_reference"
+      },
+      {
+        "html_url": "https://acme-inc.pagerduty.com/users/P2C9LBA",
+        "id": "P2C9LBA",
+        "self": "https://api.pagerduty.com/users/P2C9LBA",
+        "summary": "Wong",
+        "type": "user_reference"
+      },
+      {
+        "html_url": "https://acme-inc.pagerduty.com/users/P8ZZ1ZB",
+        "id": "P8ZZ1ZB",
+        "self": "https://api.pagerduty.com/users/P8ZZ1ZB",
+        "summary": "Kiran",
+        "type": "user_reference"
+      }
+    ]
+  }
+}

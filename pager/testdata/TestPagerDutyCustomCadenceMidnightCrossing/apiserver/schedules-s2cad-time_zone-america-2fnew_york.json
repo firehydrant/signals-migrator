@@ -1,0 +1,85 @@
+{
+  "schedule": {
+    "description": "Custom 14-day cadence with overnight coverage.",
+    "escalation_policies": [],
+    "html_url": "https://example.pagerduty.com/schedules/S2CAD",
+    "id": "S2CAD",
+    "name": "Two-Week Cadence",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "L2CAD",
+        "name": "Biweekly Overnight",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 32400,
+            "start_time_of_day": "22:00:00",
+            "type": "daily_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 1209600,
+        "rotation_virtual_start": "2024-03-15T22:00:00-04:00",
+        "start": "2024-03-15T22:00:00-04:00",
+        "users": [
+          {
+            "user": {
+              "id": "U2AVERY",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U2BLAKE",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U2CAM",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U2DREW",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/S2CAD",
+    "summary": "Two-Week Cadence",
+    "teams": [
+      {
+        "html_url": "https://example.pagerduty.com/teams/T2CAD",
+        "id": "T2CAD",
+        "self": "https://api.pagerduty.com/teams/T2CAD",
+        "summary": "Cadence Squad",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "America/New_York",
+    "type": "schedule",
+    "users": [
+      {
+        "id": "U2AVERY",
+        "type": "user_reference"
+      },
+      {
+        "id": "U2BLAKE",
+        "type": "user_reference"
+      },
+      {
+        "id": "U2CAM",
+        "type": "user_reference"
+      },
+      {
+        "id": "U2DREW",
+        "type": "user_reference"
+      }
+    ]
+  }
+}

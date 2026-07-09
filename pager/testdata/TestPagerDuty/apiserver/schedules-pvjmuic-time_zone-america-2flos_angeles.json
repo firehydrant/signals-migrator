@@ -1,0 +1,65 @@
+{
+  "schedule": {
+    "description": null,
+    "escalation_policies": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/escalation_policies/PNBZQOL",
+        "id": "PNBZQOL",
+        "self": "https://api.pagerduty.com/escalation_policies/PNBZQOL",
+        "summary": "CS-Test-Service-ep",
+        "type": "escalation_policy_reference"
+      }
+    ],
+    "html_url": "https://acme-inc.pagerduty.com/schedules/PVJMUIC",
+    "id": "PVJMUIC",
+    "name": "CS-on-call",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "P3BRVNT",
+        "name": "Layer 1",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [],
+        "rotation_turn_length_seconds": 86400,
+        "rotation_virtual_start": "2022-10-25T10:00:00-07:00",
+        "start": "2022-10-25T10:23:22-07:00",
+        "users": [
+          {
+            "user": {
+              "deleted_at": "2024-02-21T08:42:06-08:00",
+              "html_url": "https://acme-inc.pagerduty.com/users/P1VTA5W",
+              "id": "P1VTA5W",
+              "self": null,
+              "summary": "Wiley",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/PVJMUIC",
+    "summary": "CS-on-call",
+    "teams": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/teams/PO34CI9",
+        "id": "PO34CI9",
+        "self": "https://api.pagerduty.com/teams/PO34CI9",
+        "summary": "CS-Team-Test",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "America/Los_Angeles",
+    "type": "schedule",
+    "users": [
+      {
+        "deleted_at": "2024-02-21T08:42:06-08:00",
+        "html_url": "https://acme-inc.pagerduty.com/users/P1VTA5W",
+        "id": "P1VTA5W",
+        "self": null,
+        "summary": "Wiley",
+        "type": "user_reference"
+      }
+    ]
+  }
+}

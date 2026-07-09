@@ -1,0 +1,69 @@
+{
+  "schedule": {
+    "description": "Monthly manager rotation.",
+    "escalation_policies": [],
+    "html_url": "https://example.pagerduty.com/schedules/S5MGR",
+    "id": "S5MGR",
+    "name": "Manager Escalation",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "L5MGR",
+        "name": "Manager Monthly",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [],
+        "rotation_turn_length_seconds": 2592000,
+        "rotation_virtual_start": "2025-06-01T00:00:00Z",
+        "start": "2025-06-01T00:00:00Z",
+        "users": [
+          {
+            "user": {
+              "id": "U5AVERY",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U5FREY",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U5GALE",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/S5MGR",
+    "summary": "Manager Escalation",
+    "teams": [
+      {
+        "html_url": "https://example.pagerduty.com/teams/T5EP",
+        "id": "T5EP",
+        "self": "https://api.pagerduty.com/teams/T5EP",
+        "summary": "Escalation Quad",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "Etc/UTC",
+    "type": "schedule",
+    "users": [
+      {
+        "id": "U5AVERY",
+        "type": "user_reference"
+      },
+      {
+        "id": "U5FREY",
+        "type": "user_reference"
+      },
+      {
+        "id": "U5GALE",
+        "type": "user_reference"
+      }
+    ]
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "schedule": {
+    "description": "",
+    "escalation_policies": [],
+    "html_url": "https://example.pagerduty.com/schedules/S1FTS",
+    "id": "S1FTS",
+    "name": "Follow-The-Sun Primary",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "L1FTSA",
+        "name": "APAC",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 1,
+            "start_time_of_day": "00:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 2,
+            "start_time_of_day": "00:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 3,
+            "start_time_of_day": "00:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 4,
+            "start_time_of_day": "00:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 5,
+            "start_time_of_day": "00:00:00",
+            "type": "weekly_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2025-06-02T00:00:00Z",
+        "start": "2025-06-02T00:00:00Z",
+        "users": [
+          {
+            "user": {
+              "id": "U1AVERY",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1BLAKE",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1CAM",
+              "type": "user_reference"
+            }
+          }
+        ]
+      },
+      {
+        "end": null,
+        "id": "L1FTSE",
+        "name": "EMEA",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 1,
+            "start_time_of_day": "08:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 2,
+            "start_time_of_day": "08:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 3,
+            "start_time_of_day": "08:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 4,
+            "start_time_of_day": "08:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 5,
+            "start_time_of_day": "08:00:00",
+            "type": "weekly_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2025-06-02T08:00:00Z",
+        "start": "2025-06-02T00:00:00Z",
+        "users": [
+          {
+            "user": {
+              "id": "U1DREW",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1EVAN",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1FAYE",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1GALE",
+              "type": "user_reference"
+            }
+          }
+        ]
+      },
+      {
+        "end": null,
+        "id": "L1FTSW",
+        "name": "Americas",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 1,
+            "start_time_of_day": "16:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 2,
+            "start_time_of_day": "16:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 3,
+            "start_time_of_day": "16:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 4,
+            "start_time_of_day": "16:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 5,
+            "start_time_of_day": "16:00:00",
+            "type": "weekly_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2025-06-02T16:00:00Z",
+        "start": "2025-06-02T00:00:00Z",
+        "users": [
+          {
+            "user": {
+              "id": "U1HARLAN",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1INDRA",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1JULES",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1KAI",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1LIU",
+              "type": "user_reference"
+            }
+          }
+        ]
+      },
+      {
+        "end": null,
+        "id": "L1FTSX",
+        "name": "Weekend",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 86400,
+            "start_day_of_week": 6,
+            "start_time_of_day": "00:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 86400,
+            "start_day_of_week": 0,
+            "start_time_of_day": "00:00:00",
+            "type": "weekly_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2025-06-07T00:00:00Z",
+        "start": "2025-06-02T00:00:00Z",
+        "users": [
+          {
+            "user": {
+              "id": "U1MORGAN",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U1NOOR",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/S1FTS",
+    "summary": "Follow-The-Sun Primary",
+    "teams": [
+      {
+        "html_url": "https://example.pagerduty.com/teams/T1FTS",
+        "id": "T1FTS",
+        "self": "https://api.pagerduty.com/teams/T1FTS",
+        "summary": "Platform On-Call",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "Etc/UTC",
+    "type": "schedule",
+    "users": [
+      {
+        "id": "U1AVERY",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1BLAKE",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1CAM",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1DREW",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1EVAN",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1FAYE",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1GALE",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1HARLAN",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1INDRA",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1JULES",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1KAI",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1LIU",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1MORGAN",
+        "type": "user_reference"
+      },
+      {
+        "id": "U1NOOR",
+        "type": "user_reference"
+      }
+    ]
+  }
+}

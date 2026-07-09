@@ -140,14 +140,14 @@ func TestPagerDutyFollowTheSun(t *testing.T) {
 	}
 
 	expected := []struct {
-		id              string
-		members         []string
-		virtualStart    string
-		restrictionLen  int
-		firstStartDay   string
-		firstEndDay     string
-		firstStartTime  string
-		firstEndTime    string
+		id             string
+		members        []string
+		virtualStart   string
+		restrictionLen int
+		firstStartDay  string
+		firstEndDay    string
+		firstStartTime string
+		firstEndTime   string
 	}{
 		{"L1FTSA", []string{"U1AVERY", "U1BLAKE", "U1CAM"}, "2025-06-02T00:00:00Z", 5, "monday", "monday", "00:00:00", "08:00:00"},
 		{"L1FTSE", []string{"U1DREW", "U1EVAN", "U1FAYE", "U1GALE"}, "2025-06-02T08:00:00Z", 5, "monday", "monday", "08:00:00", "16:00:00"},
@@ -554,5 +554,63 @@ func TestPagerDutyEscalationAcrossMultipleSchedules(t *testing.T) {
 	if err := q.MarkExtEscalationPolicyToImport(ctx, "EP5"); err != nil {
 		t.Fatalf("error marking escalation policy to import: %s", err)
 	}
+	assertGoldenTF(t, ctx)
+}
+
+// =============================================================================
+// Scenario 6: Render time zone differs from the schedule's own time zone.
+// PagerDuty renders wall-clock fields (rotation_virtual_start, restriction
+// start_time_of_day) in the requesting user's profile time zone, not the
+// schedule's. FireHydrant interprets those values in the schedule's declared
+// time_zone, so the migrator must store them as rendered in the schedule's
+// own zone. Here the list response is rendered in America/Los_Angeles while
+// the schedule is configured in America/Chicago (2h ahead).
+// =============================================================================
+func TestPagerDutyScheduleRenderTimezone(t *testing.T) {
+	ctx, pd := pdScenarioSetup(t)
+	loadAll(t, ctx, pd, false)
+	q := store.UseQueries(ctx)
+
+	rotations, err := q.ListExtRotationsByScheduleID(ctx, "S6TZ")
+	if err != nil {
+		t.Fatalf("error loading rotations: %s", err)
+	}
+	if len(rotations) != 1 {
+		t.Fatalf("expected 1 rotation for S6TZ, got %d", len(rotations))
+	}
+
+	// The list response renders the layer as virtual start 12:00-08:00 with a
+	// 06:00-18:00 restriction. In the schedule's own zone (America/Chicago)
+	// those same instants are 14:00-06:00 and 08:00-20:00.
+	got := rotations[0]
+	if want := "2026-01-09T14:00:00-06:00"; got.StartTime != want {
+		t.Errorf("got StartTime %q, want %q (schedule-local rendering)", got.StartTime, want)
+	}
+	if want := "14:00:00"; got.HandoffTime != want {
+		t.Errorf("got HandoffTime %q, want %q (schedule-local rendering)", got.HandoffTime, want)
+	}
+	if want := "friday"; got.HandoffDay != want {
+		t.Errorf("got HandoffDay %q, want %q", got.HandoffDay, want)
+	}
+
+	restrictions, err := q.ListExtRotationRestrictions(ctx, got.ID)
+	if err != nil {
+		t.Fatalf("error loading restrictions: %s", err)
+	}
+	if len(restrictions) != 7 {
+		t.Fatalf("expected 7 restrictions (daily expanded per weekday), got %d", len(restrictions))
+	}
+	for _, r := range restrictions {
+		if r.StartTime != "08:00:00" || r.EndTime != "20:00:00" {
+			t.Errorf("restriction %s: got %s-%s, want 08:00:00-20:00:00 (schedule-local rendering)", r.RestrictionIndex, r.StartTime, r.EndTime)
+		}
+		// 08:00+12h stays within the same day in Chicago; the Pacific-rendered
+		// 06:00-18:00 window would too, so day fields only pin expansion.
+		if r.StartDay != r.EndDay {
+			t.Errorf("restriction %s: got StartDay %q EndDay %q, want same day", r.RestrictionIndex, r.StartDay, r.EndDay)
+		}
+	}
+
+	markAllForImport(t, ctx)
 	assertGoldenTF(t, ctx)
 }

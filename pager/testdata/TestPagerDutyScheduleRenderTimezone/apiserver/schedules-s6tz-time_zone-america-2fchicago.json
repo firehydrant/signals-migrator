@@ -1,0 +1,37 @@
+{
+  "schedule": {
+    "id": "S6TZ",
+    "name": "Daytime Coverage",
+    "description": "Schedule whose list response is rendered in the API user's time zone",
+    "time_zone": "America/Chicago",
+    "type": "schedule",
+    "summary": "Daytime Coverage",
+    "self": "https://api.pagerduty.com/schedules/S6TZ",
+    "html_url": "https://example.pagerduty.com/schedules/S6TZ",
+    "teams": [
+      {"id": "T6TZ", "type": "team_reference", "summary": "Coverage Team", "self": "https://api.pagerduty.com/teams/T6TZ", "html_url": "https://example.pagerduty.com/teams/T6TZ"}
+    ],
+    "schedule_layers": [
+      {
+        "id": "L6TZ",
+        "name": "Daytime Layer",
+        "end": null,
+        "start": "2026-01-09T20:00:00-06:00",
+        "rotation_turn_length_seconds": 86400,
+        "rotation_virtual_start": "2026-01-09T14:00:00-06:00",
+        "restrictions": [
+          {"type": "daily_restriction", "start_time_of_day": "08:00:00", "duration_seconds": 43200}
+        ],
+        "users": [
+          {"user": {"id": "U6QUINN", "type": "user_reference"}}
+        ],
+        "rendered_schedule_entries": [],
+        "rendered_coverage_percentage": null
+      }
+    ],
+    "users": [
+      {"id": "U6QUINN", "type": "user_reference"}
+    ],
+    "escalation_policies": []
+  }
+}
