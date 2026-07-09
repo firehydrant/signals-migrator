@@ -1,0 +1,70 @@
+{
+  "schedule": {
+    "description": "Always 😭",
+    "escalation_policies": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/escalation_policies/PS6ITO0",
+        "id": "PS6ITO0",
+        "self": "https://api.pagerduty.com/escalation_policies/PS6ITO0",
+        "summary": "🐴 Notify",
+        "type": "escalation_policy_reference"
+      },
+      {
+        "html_url": "https://acme-inc.pagerduty.com/escalation_policies/P7U6H5H",
+        "id": "P7U6H5H",
+        "self": "https://api.pagerduty.com/escalation_policies/P7U6H5H",
+        "summary": "service with on-call-ep",
+        "type": "escalation_policy_reference"
+      }
+    ],
+    "html_url": "https://acme-inc.pagerduty.com/schedules/PGR96WL",
+    "id": "PGR96WL",
+    "name": "🐴 is always on call",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "PR3J6XJ",
+        "name": "Layer 1",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2022-06-17T12:00:00-07:00",
+        "start": "2022-06-24T12:00:00-07:00",
+        "users": [
+          {
+            "user": {
+              "html_url": "https://acme-inc.pagerduty.com/users/PRXEEQ8",
+              "id": "PRXEEQ8",
+              "self": "https://api.pagerduty.com/users/PRXEEQ8",
+              "summary": "Horse",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/PGR96WL",
+    "summary": "🐴 always on call",
+    "teams": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/teams/PV9JOXL",
+        "id": "PV9JOXL",
+        "self": "https://api.pagerduty.com/teams/PV9JOXL",
+        "summary": "Service Catalog Team",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "America/Los_Angeles",
+    "type": "schedule",
+    "users": [
+      {
+        "html_url": "https://acme-inc.pagerduty.com/users/PRXEEQ8",
+        "id": "PRXEEQ8",
+        "self": "https://api.pagerduty.com/users/PRXEEQ8",
+        "summary": "Horse",
+        "type": "user_reference"
+      }
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "schedule": {
+    "description": "",
+    "escalation_policies": [],
+    "html_url": "https://example.pagerduty.com/schedules/S5PRI",
+    "id": "S5PRI",
+    "name": "Primary On-Call",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "L5PRI",
+        "name": "Primary Weekly",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 28800,
+            "start_day_of_week": 1,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2025-06-02T09:00:00Z",
+        "start": "2025-06-02T00:00:00Z",
+        "users": [
+          {
+            "user": {
+              "id": "U5AVERY",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U5BLAKE",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U5CAM",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U5DREW",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U5EVAN",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/S5PRI",
+    "summary": "Primary On-Call",
+    "teams": [
+      {
+        "html_url": "https://example.pagerduty.com/teams/T5EP",
+        "id": "T5EP",
+        "self": "https://api.pagerduty.com/teams/T5EP",
+        "summary": "Escalation Quad",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "Etc/UTC",
+    "type": "schedule",
+    "users": [
+      {
+        "id": "U5AVERY",
+        "type": "user_reference"
+      },
+      {
+        "id": "U5BLAKE",
+        "type": "user_reference"
+      },
+      {
+        "id": "U5CAM",
+        "type": "user_reference"
+      },
+      {
+        "id": "U5DREW",
+        "type": "user_reference"
+      },
+      {
+        "id": "U5EVAN",
+        "type": "user_reference"
+      }
+    ]
+  }
+}

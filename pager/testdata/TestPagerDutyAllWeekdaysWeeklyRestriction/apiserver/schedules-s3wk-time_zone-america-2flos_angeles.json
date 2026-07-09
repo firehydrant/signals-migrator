@@ -1,0 +1,112 @@
+{
+  "schedule": {
+    "description": "",
+    "escalation_policies": [],
+    "html_url": "https://example.pagerduty.com/schedules/S3WK",
+    "id": "S3WK",
+    "name": "All Weekdays Coverage",
+    "schedule_layers": [
+      {
+        "end": null,
+        "id": "L3WK",
+        "name": "Business Hours",
+        "rendered_coverage_percentage": null,
+        "rendered_schedule_entries": [],
+        "restrictions": [
+          {
+            "duration_seconds": 43200,
+            "start_day_of_week": 0,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 43200,
+            "start_day_of_week": 1,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 43200,
+            "start_day_of_week": 2,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 43200,
+            "start_day_of_week": 3,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 43200,
+            "start_day_of_week": 4,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 43200,
+            "start_day_of_week": 5,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          },
+          {
+            "duration_seconds": 43200,
+            "start_day_of_week": 6,
+            "start_time_of_day": "09:00:00",
+            "type": "weekly_restriction"
+          }
+        ],
+        "rotation_turn_length_seconds": 604800,
+        "rotation_virtual_start": "2026-01-04T09:00:00-08:00",
+        "start": "2026-01-04T09:00:00-08:00",
+        "users": [
+          {
+            "user": {
+              "id": "U3AVERY",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U3BLAKE",
+              "type": "user_reference"
+            }
+          },
+          {
+            "user": {
+              "id": "U3CAM",
+              "type": "user_reference"
+            }
+          }
+        ]
+      }
+    ],
+    "self": "https://api.pagerduty.com/schedules/S3WK",
+    "summary": "All Weekdays Coverage",
+    "teams": [
+      {
+        "html_url": "https://example.pagerduty.com/teams/T3WK",
+        "id": "T3WK",
+        "self": "https://api.pagerduty.com/teams/T3WK",
+        "summary": "Weekly Coverage",
+        "type": "team_reference"
+      }
+    ],
+    "time_zone": "America/Los_Angeles",
+    "type": "schedule",
+    "users": [
+      {
+        "id": "U3AVERY",
+        "type": "user_reference"
+      },
+      {
+        "id": "U3BLAKE",
+        "type": "user_reference"
+      },
+      {
+        "id": "U3CAM",
+        "type": "user_reference"
+      }
+    ]
+  }
+}
